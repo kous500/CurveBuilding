@@ -1,0 +1,210 @@
+package com.kous.curvebuilding;
+
+import com.sk89q.worldedit.entity.Player;
+import com.sk89q.worldedit.math.Vector3;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.world.World;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
+
+import static com.kous.curvebuilding.Util.floorVector;
+import static com.kous.curvebuilding.Util.lineLength;
+import static java.lang.Math.*;
+
+/**
+ * posのデータの保存方法とデータを操作するメゾットを定義する。
+ */
+public final class Pos {
+    public World world;
+    public NavigableMap<Integer, Vector3[]> p = new TreeMap<>();
+
+    private Pos(World world, Vector3 location, int n, int h) {
+        this.world = world;
+        Vector3[] l = new Vector3[3];
+        l[h] = location;
+        this.p.put(n, l);
+    }
+
+    /**
+     * プレイヤーごとのposのデータを保存する。
+     */
+    private static final Map<UUID, Pos> POS_MAP = new HashMap<>();
+
+    /**
+     * 指定されたプレイヤーのposをposListに追加する。
+     *
+     * @param  player posを保存するプレイヤー
+     * @param  n posの番号
+     * @param  h posの種類
+     * @throws AssertionError hが0以上2以下ではない場合
+     */
+    public static void addPos(@NotNull Player player, int n, int h) {
+        assert (h >= 0) && (h <= 2) : "引数値が不正です。";
+
+        Vector3 location = floorVector(player.getLocation().toVector()).toVector3();
+        World world = player.getWorld();
+        UUID uuid = player.getUniqueId();
+        Pos pos = POS_MAP.get(uuid);
+
+        if (pos != null) {
+            if (pos.world != null && !pos.world.getName().equals(world.getName())) {
+                pos.p = new TreeMap<>();
+            }
+
+            Vector3[] l = pos.p.get(n);
+            Vector3[] la = pos.p.get(n + 1);
+            Vector3[] lb = pos.p.get(n - 1);
+
+            if (l == null) {
+                l = new Vector3[3];
+                l[h] = location;
+                pos.p.put(n, l);
+            } else {
+                if (h == 0 && l[h] != null) {
+                    double x = location.getX() - l[h].getX();
+                    double y = location.getY() - l[h].getY();
+                    double z = location.getZ() - l[h].getZ();
+
+                    if (l[1] != null) l[1] = l[1].add(x, y, z);
+                    if (l[2] != null) l[2] = l[2].add(x, y, z);
+                }
+
+                l[h] = location;
+
+                if (h == 1 && la != null && la[0] != null && l[0] != null) {
+                    l[2] = odPos(l[0], l[1], l[2]);
+                } else if (h == 2 && lb != null && lb[0] != null && l[0] != null) {
+                    l[1] = odPos(l[0], l[2], l[1]);
+                }
+
+                pos.p.replace(n, l);
+            }
+
+            if (h == 0 && lb != null && lb[0] != null && lb[1] != null) {
+                lb[2] = odPos(lb[0], lb[1], lb[2]);
+                pos.p.replace(n - 1, lb);
+            }
+
+            pos.world = world;
+            POS_MAP.replace(uuid, pos);
+            player.printInfo(TextComponent.of("pos" + n + hToString(h) + " を " + location + " に設定しました"));
+        } else {
+            POS_MAP.put(uuid, new Pos(world, location, n, h));
+            player.printInfo(TextComponent.of("pos" + n + hToString(h) + " を " + location + " に設定しました"));
+        }
+    }
+
+    private static Vector3 odPos(Vector3 h0, Vector3 hIN, Vector3 hOUT){
+        double x = hIN.getX() - h0.getX();
+        double y = hIN.getY() - h0.getY();
+        double z = hIN.getZ() - h0.getZ();
+
+        if (hOUT == null) {
+            return h0.add(-x, -y, -z);
+        } else {
+            double agnY = y > 0 ? 1 : y == 0 ? 0 : -1;
+            double theta = acos(z / sqrt(x * x + y * y + z * z));
+            double phi = agnY * acos(x / sqrt(x * x + y * y));
+            double r0 = lineLength(h0, hOUT);
+
+            return h0.add(-r0 * sin(theta) * cos(phi), -r0 * sin(theta) * sin(phi), -r0 * cos(theta));
+        }
+    }
+
+    /**
+     * 指定されたプレイヤーのposをposListから削除する。
+     *
+     * @param player posを削除するプレイヤー
+     */
+    public static void clearPos(Player player) {
+        UUID uuid = player.getUniqueId();
+        Pos pos = POS_MAP.get(uuid);
+        if (pos != null) {
+            pos.p = new TreeMap<>();
+            pos.world = null;
+            POS_MAP.replace(uuid, pos);
+            player.printInfo(TextComponent.of("posをリセットしました"));
+        }
+    }
+
+    /**
+     * 指定されたプレイヤーのposをposListから削除する。
+     *
+     * @param  player posを削除するプレイヤー
+     * @param  n posの番号
+     * @param  h posの種類
+     * @throws AssertionError hが0以上2以下ではない場合
+     */
+    public static void clearPos(@NotNull Player player, int n, int h) {
+        assert (h >= 0) && (h <= 2) : "引数値が不正です。";
+
+        UUID uuid = player.getUniqueId();
+        Pos pos = POS_MAP.get(uuid);
+
+        if (pos != null) {
+            Vector3[] l = pos.p.get(n);
+
+            if (h == 0) {
+                l = new Vector3[3];
+            } else {
+                l[h] = null;
+            }
+
+            pos.p.replace(n, l);
+            POS_MAP.replace(uuid, pos);
+
+            player.printInfo(TextComponent.of("pos" + n + hToString(h) + " をリセットしました"));
+        }
+    }
+
+    /**
+     * 指定されたプレイヤーのposをposListから取得する。
+     *
+     * @param player posを取得するプレイヤー
+     * @return posListにプレイヤーのデータがあればプレイヤーのposを返す<br>無ければnullを返す
+     */
+    public static NavigableMap<Integer, Vector3[]> getPos(Player player) {
+        UUID uuid = player.getUniqueId();
+        Pos pos = POS_MAP.get(uuid);
+        if (pos != null) {
+            return pos.p;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 指定されたプレイヤーのposが保存されているワールドをposListから取得する。
+     * @param player Worldを取得するプレイヤー
+     * @return posListにプレイヤーのデータがあればプレイヤーのWorldを返す<br>無ければnullを返す
+     */
+    public static World getWorld(Player player) {
+        UUID uuid = player.getUniqueId();
+        Pos pos = POS_MAP.get(uuid);
+        if (pos != null) {
+            return pos.world;
+        }
+        return null;
+    }
+
+    /**
+     * posListを取得する。
+     *
+     * @return posList
+     */
+    public static Map<UUID, Pos> getPosMap() {
+        return POS_MAP;
+    }
+
+    private static String hToString(int h) {
+        switch (h) {
+            case 1:
+                return "a";
+            case 2:
+                return "b";
+            default:
+                return "";
+        }
+    }
+}

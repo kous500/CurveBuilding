@@ -1,0 +1,27 @@
+curve:
+  # 計算量は曲線の細かさ×長さに比例します
+  # 曲線の細かさ
+  fineness: 5
+  # 曲線の最大の長さ
+  max-set-length: 1024
+  # trueの場合、中心が太くなります
+  thicken-center: false
+
+particles:
+  pos:
+    # パーティクルの色
+    color:
+      pos: 0x00FFFF
+      start_pos: 0xFF00FF
+      end_pos: 0xFFFF00
+      a: 0xFF0077
+      b: 0x7700FF
+
+    # 1ブロックあたりのパーティクル密度
+    density: 4
+
+  line:
+    # 1ブロックあたりのパーティクル密度
+    density: 4
+    # パーティクルを表示する最大の長さ
+    max-length: 512
