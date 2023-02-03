@@ -77,6 +77,7 @@ public class BcCommand implements TabExecutor {
                         if (s.equals(o) && !useDirectionOption && goodArg) {
                             useDirectionOption = true;
                             isS_Option = true;
+                            break;
                         }
                     }
 

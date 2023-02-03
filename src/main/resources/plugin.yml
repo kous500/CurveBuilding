@@ -4,10 +4,13 @@ description: A plugin to build curves.
 author: kous500
 main: com.kous.curvebuilding.Main
 api-version: 1.19
+depend: [WorldEdit]
+
 commands:
   /bc:
     description: Sets a Bezier curve.
     permission: CurveBuilding.bc
+    permission-message: You do not have <permission>.
     usage: |
       /<command> [-options] [n] [m]
       Example: /<command> -a - The curve will be set only at AirBlocks. (Do not break terrain or buildings)
@@ -24,11 +27,13 @@ commands:
   /pos:
     description: Set your pos.
     permission: CurveBuilding.pos
+    permission-message: You do not have <permission>.
     usage: |
-      Example: /<command> clear [posType] - Clear your pos.
+      Example: /<command> clear <posType> - Clear your pos.
       Example: /<command> clearall - Clear all your pos.
-      Example: /<command> insert [posType] - Insert a new pos.
-      Example: /<command> set [posType] - Set pos to your position.
+      Example: /<command> insert <posType> - Insert a new pos.
+      Example: /<command> set <posType> - Set pos to your position.
+
 permissions:
   CurveBuilding.*:
     description: Gives access to all worldeditExtension commands.

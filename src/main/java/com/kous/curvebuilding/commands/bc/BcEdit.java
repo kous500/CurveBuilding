@@ -9,7 +9,9 @@ import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.SessionManager;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BaseBlock;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -29,7 +31,6 @@ public final class BcEdit {
     private final Config config;
     private final BcArgument argument;
     private EditSession editSession;
-    private EditSession getBlockSession;
 
     /**
      * 設定したposからベジエ曲線または直線をブロックで生成する。
@@ -38,7 +39,7 @@ public final class BcEdit {
      * @param player コマンドを実行したプレイヤー
      * @param argument bcコマンドの引数
      */
-    public BcEdit(Config config, org.bukkit.entity.Player player, BcArgument argument) {
+    public BcEdit(Config config, org.bukkit.entity.Player player, @NotNull BcArgument argument) {
         this.config = config;
         this.argument = argument;
 
@@ -46,10 +47,11 @@ public final class BcEdit {
         SessionManager manager = WorldEdit.getInstance().getSessionManager();
         LocalSession session = manager.get(actor);
 
+        World world = session.getSelectionWorld();
+
         try {
-            editSession = WorldEdit.getInstance().newEditSession(getWorld(actor));
+            editSession = WorldEdit.getInstance().newEditSession(world);
             editSession.setBlockChangeLimit(session.getBlockChangeLimit());
-            getBlockSession = WorldEdit.getInstance().newEditSession(session.getSelectionWorld());
 
             Region region = session.getSelection(session.getSelectionWorld());
             width = region.getWidth();
@@ -63,39 +65,38 @@ public final class BcEdit {
             else direction = "z";
 
             NavigableMap<Integer, Vector3[]> posMap = getPos(actor);
+            World posWorld = getWorld(actor);
 
-            if (posMap != null) {
-                for (int n = 1; n <= posMap.lastEntry().getKey(); n++) {
-                    Vector3[] p = posMap.get(n);
-                    if (p == null){
-                        actor.printError(TextComponent.of("pos"+n+"が設定されていません"));
-                        break;
-                    }
+            if (posMap == null || posMap.get(1) == null || posMap.get(1)[0] == null) throw new IncompletePosException();
 
-                    if (n > 1) {
-                        Vector3[] bp = posMap.get(n - 1);
-                        Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
-                        if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
-                        if (bezierPos[2] == null)  bezierPos[2] =  bezierPos[0];
-                        editBC(bezierPos);
-                    }
+            if (posWorld == null || !posWorld.equals(world)) throw new IncompleteRegionException();
+
+            for (int n = 1; n <= posMap.lastEntry().getKey(); n++) {
+                Vector3[] p = posMap.get(n);
+
+                if (p == null) break;
+
+                if (n > 1) {
+                    Vector3[] bp = posMap.get(n - 1);
+                    Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
+                    if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
+                    if (bezierPos[2] == null)  bezierPos[2] =  bezierPos[0];
+                    editBC(bezierPos);
                 }
-
-                actor.printInfo(TextComponent.of("成功しました！"));
-                actor.printInfo(TextComponent.of("曲線の長さは "+ (double) Math.round(nowLength * 100) / 100 +"m です"));
-                session.remember(editSession);
-            } else {
-                actor.printError(TextComponent.of("posが設定されていません"));
             }
+
+            actor.printInfo(TextComponent.of("操作が完了しました("+ editSession.size() +" blocks affected)"));
+            actor.printInfo(TextComponent.of("曲線の長さ: "+ (double) Math.round(nowLength * 100) / 100 +" blocks (推定)"));
         } catch (IncompleteRegionException e) {
             actor.printError(TextComponent.of("領域を選択してください"));
+        } catch (IncompletePosException e) {
+            actor.printError(TextComponent.of("曲線の始点が設定されていません"));
         } catch (MaxChangedBlocksException e) {
             actor.printError(TextComponent
-                    .of("変更できるブロックの最大値は ("+session.getBlockChangeLimit()+") に設定されています"));
-            session.remember(editSession);
+                    .of("変更できるブロックの最大値は ("+ session.getBlockChangeLimit() +") に設定されています"));
         } finally {
+            session.remember(editSession);
             editSession.close();
-            getBlockSession.close();
         }
     }
 
@@ -129,7 +130,7 @@ public final class BcEdit {
         nowLength += (int)bezierLength(selectionPos, fineness);
     }
 
-    private Map<String, Double> pos(Vector3[] selectionPos, double t) {
+    private @NotNull Map<String, Double> pos(Vector3 @NotNull [] selectionPos, double t) {
         double x0 = selectionPos[0].getX();
         double y0 = selectionPos[0].getY();
         double z0 = selectionPos[0].getZ();
@@ -166,7 +167,7 @@ public final class BcEdit {
         return values;
     }
 
-    private void set(Vector3[] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
+    private void set(Vector3 @NotNull [] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
         double xt1 = selectionPos[0].getX();
         double yt1 = selectionPos[0].getY();
         double zt1 = selectionPos[0].getZ();
@@ -192,10 +193,10 @@ public final class BcEdit {
             BaseBlock idT;
             if (direction.equals("x")) {
                 double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
-                idT = getBlockSession.getFullBlock(floorVector(searchT.add(a, 0, 0)));
+                idT = editSession.getFullBlock(floorVector(searchT.add(a, 0, 0)));
             } else {
                 double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
-                idT = getBlockSession.getFullBlock(floorVector(searchT.add(0 , 0, a)));
+                idT = editSession.getFullBlock(floorVector(searchT.add(0 , 0, a)));
             }
 
             Vector3 vecPosT = Vector3.at(xt, yt, zt);
@@ -219,7 +220,7 @@ public final class BcEdit {
                     notSet.add(posT);
                 } else if ((m != height -1 || !notSet.contains(posT)) && (beforePosT != null && beforePosT.equals(posT))) {
                     if (argument.air) {
-                        String selectionBlock = getBlockSession.getBlock(posT).toString();
+                        String selectionBlock = editSession.getBlock(posT).toString();
                         if (selectionBlock.equals("minecraft:air")) editSession.setBlock(posT, idT);
                     } else {
                         editSession.setBlock(posT, idT);

@@ -1,10 +1,11 @@
 package com.kous.curvebuilding;
 
-import com.github.fierioziy.particlenativeapi.api.types.ParticleTypeMotion;
+import com.github.fierioziy.particlenativeapi.api.particle.type.ParticleTypeMotion;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.world.World;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.TimerTask;
@@ -51,8 +52,8 @@ public class SendParticles extends TimerTask {
                             }
                         }
 
-                        sendLine(p[0], p[1], pos.world, player, particles_1_13.SOUL_FIRE_FLAME());
-                        sendLine(p[0], p[2], pos.world, player, particles_1_13.SOUL_FIRE_FLAME());
+                        sendLine(p[0], p[1], pos.world, player, particles_1_13.SOUL_FIRE_FLAME);
+                        sendLine(p[0], p[2], pos.world, player, particles_1_13.SOUL_FIRE_FLAME);
 
                         if (p[0] == null) endLine = true;
                     } else {
@@ -64,7 +65,7 @@ public class SendParticles extends TimerTask {
                         Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
                         if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
                         if (bezierPos[2] == null)  bezierPos[2] =  bezierPos[3];
-                        sendBezier(bezierPos, pos.world, player, particles_1_13.FLAME());
+                        sendBezier(bezierPos, pos.world, player, particles_1_13.FLAME);
                     }
                 }
             }
@@ -87,14 +88,16 @@ public class SendParticles extends TimerTask {
                     Location location = adapt(adapt(world), pos.add(ax, ay, az));
 
                     if ((isXEdge && isYEdge) || (isYEdge && isZEdge) || (isZEdge && isXEdge)) {
-                        Object packetDust = particles_1_13.DUST()
-                                .color(color, 1D).packet(true, location);
-                        particles_1_13.sendPacket(player, packetDust);
+                        particles_1_13.DUST
+                                .color(color, 1D)
+                                .packet(true, location)
+                                .sendTo(player);
                     }
                 }
                 Location location = adapt(adapt(world), pos.add(0.5, 0.5, 0.5));
-                Object packetSoulFire = particles_1_13.SOUL_FIRE_FLAME().packet(true, location);
-                particles_1_13.sendPacket(player, packetSoulFire);
+                particles_1_13.SOUL_FIRE_FLAME
+                        .packet(true, location)
+                        .sendTo(player);
             }
         }
     }
@@ -110,14 +113,16 @@ public class SendParticles extends TimerTask {
                         double ay = 0.5 * y + (double) (density * y + (-y * 2 + 1) * i) / density * 0.5;
                         double az = 0.5 * z + (double) (density * z + (-z * 2 + 1) * i) / density * 0.5;
                         Location location = adapt(adapt(world), pos.add(ax, ay, az));
-                        Object packetDust = particles_1_13.DUST()
-                                .color(color, 1D).packet(true, location);
-                        particles_1_13.sendPacket(player, packetDust);
+                        particles_1_13.DUST
+                                .color(color, 1D)
+                                .packet(true, location)
+                                .sendTo(player);
                     }
                 }
                 Location location = adapt(adapt(world), pos.add(0.5, 0.5, 0.5));
-                Object packetSoulFire = particles_1_13.SOUL_FIRE_FLAME().packet(true, location);
-                particles_1_13.sendPacket(player, packetSoulFire);
+                particles_1_13.SOUL_FIRE_FLAME
+                        .packet(true, location)
+                        .sendTo(player);
             }
         }
     }
@@ -132,22 +137,24 @@ public class SendParticles extends TimerTask {
                     double y = (1 - i) * pos1.getY() + i * pos2.getY() + 0.5;
                     double z = (1 - i) * pos1.getZ() + i * pos2.getZ() + 0.5;
                     Location location = adapt(adapt(world), Vector3.at(x, y, z));
-                    Object packetSoulFire = particleType.packet(true, location);
-                    particles_1_13.sendPacket(player, packetSoulFire);
+                    particleType
+                            .packet(true, location)
+                            .sendTo(player);
                 }
             }
         }
     }
 
-    private void sendBezier(Vector3[] p,World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType) {
+    private void sendBezier(Vector3 @NotNull [] p, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType) {
         if (p[0] != null && p[1] != null && p[2] != null && p[3] != null) {
             double length = bezierLength(p, p[0].distance(p[3]) * 20);
 
             if (length <= config.lineMaxLength) {
                 for (double i = 0; i <= 1; i += 1.0 / (length * 4)) {
                     Location location = adapt(adapt(world), bezierCoordinate(p, i));
-                    Object packetSoulFire = particleType.packet(true, location);
-                    particles_1_13.sendPacket(player, packetSoulFire);
+                    particleType
+                            .packet(true, location)
+                            .sendTo(player);
                 }
             }
         }

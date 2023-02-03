@@ -4,7 +4,9 @@ import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -88,14 +90,14 @@ public final class Pos {
 
             pos.world = world;
             POS_MAP.replace(uuid, pos);
-            player.printInfo(TextComponent.of("pos" + n + hToString(h) + " を " + location + " に設定しました"));
         } else {
             POS_MAP.put(uuid, new Pos(world, location, n, h));
-            player.printInfo(TextComponent.of("pos" + n + hToString(h) + " を " + location + " に設定しました"));
         }
+
+        player.printInfo(TextComponent.of(posToString(n, h) + " を " + location + " に設定しました"));
     }
 
-    private static Vector3 odPos(Vector3 h0, Vector3 hIN, Vector3 hOUT){
+    private static Vector3 odPos(@NotNull Vector3 h0, @NotNull Vector3 hIN, Vector3 hOUT){
         double x = hIN.getX() - h0.getX();
         double y = hIN.getY() - h0.getY();
         double z = hIN.getZ() - h0.getZ();
@@ -117,14 +119,14 @@ public final class Pos {
      *
      * @param player posを削除するプレイヤー
      */
-    public static void clearPos(Player player) {
+    public static void clearPos(@NotNull Player player) {
         UUID uuid = player.getUniqueId();
         Pos pos = POS_MAP.get(uuid);
         if (pos != null) {
             pos.p = new TreeMap<>();
             pos.world = null;
             POS_MAP.replace(uuid, pos);
-            player.printInfo(TextComponent.of("posをリセットしました"));
+            player.printInfo(TextComponent.of("全てのposをリセットしました"));
         }
     }
 
@@ -154,7 +156,7 @@ public final class Pos {
             pos.p.replace(n, l);
             POS_MAP.replace(uuid, pos);
 
-            player.printInfo(TextComponent.of("pos" + n + hToString(h) + " をリセットしました"));
+            player.printInfo(TextComponent.of(posToString(n, h) + " を削除しました"));
         }
     }
 
@@ -164,7 +166,7 @@ public final class Pos {
      * @param player posを取得するプレイヤー
      * @return posListにプレイヤーのデータがあればプレイヤーのposを返す<br>無ければnullを返す
      */
-    public static NavigableMap<Integer, Vector3[]> getPos(Player player) {
+    public static @Nullable NavigableMap<Integer, Vector3[]> getPos(@NotNull Player player) {
         UUID uuid = player.getUniqueId();
         Pos pos = POS_MAP.get(uuid);
         if (pos != null) {
@@ -179,7 +181,7 @@ public final class Pos {
      * @param player Worldを取得するプレイヤー
      * @return posListにプレイヤーのデータがあればプレイヤーのWorldを返す<br>無ければnullを返す
      */
-    public static World getWorld(Player player) {
+    public static @Nullable World getWorld(@NotNull Player player) {
         UUID uuid = player.getUniqueId();
         Pos pos = POS_MAP.get(uuid);
         if (pos != null) {
@@ -197,14 +199,15 @@ public final class Pos {
         return POS_MAP;
     }
 
-    private static String hToString(int h) {
+    @Contract(pure = true)
+    private static @NotNull String posToString(int n, int h) {
         switch (h) {
             case 1:
-                return "a";
+                return "制御点 " + n + "a";
             case 2:
-                return "b";
+                return "制御点 " + n + "b";
             default:
-                return "";
+                return "接続点 " + n + "";
         }
     }
 }

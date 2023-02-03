@@ -50,7 +50,7 @@ public final class Util {
      * @return 曲線の長さ
      * @throws AssertionError p1からp4にnullが含まれる場合
      */
-    public static double bezierLength(Vector3[] pos, double fineness) {
+    public static double bezierLength(Vector3 @NotNull [] pos, double fineness) {
         assert (pos[0] != null) && (pos[1] != null) && (pos[2] != null) && (pos[3] != null)
                 : "値がnullのposがあります";
 
@@ -79,11 +79,8 @@ public final class Util {
      * @param pos1 始点
      * @param pos2 終点
      * @return 直線の長さ
-     * @throws AssertionError pos1またはpos2の値がnullの場合
      */
-    public static double lineLength(Vector3 pos1, Vector3 pos2) {
-        assert (pos1 != null) && (pos2 != null)
-                : "値がnullのposがあります";
+    public static double lineLength(@NotNull Vector3 pos1, @NotNull Vector3 pos2) {
         return Math.sqrt(
                 pow(pos1.getX() - pos2.getX(), 2)
                         + pow(pos1.getY() - pos2.getY(), 2)
@@ -97,7 +94,7 @@ public final class Util {
      * @return 座標
      * @throws AssertionError p1からp4にnullが含まれる場合もしくはiが0以上1以下でない場合
      */
-    public static Vector3 bezierCoordinate(Vector3[] pos, double i) {
+    public static Vector3 bezierCoordinate(Vector3 @NotNull [] pos, double i) {
         assert (pos[0] != null) && (pos[1] != null) && (pos[2] != null) && (pos[3] != null)
                 : "値がnullのposがあります";
         assert (0 <= i) && (i <= 1)

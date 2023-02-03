@@ -1,6 +1,7 @@
 package com.kous.curvebuilding.commands.bc;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public final class BcArgument {
     public int n = 0;
@@ -18,7 +19,7 @@ public final class BcArgument {
      * @param args bcコマンドの引数
      * @param player コマンドを送信したプレイヤー
      */
-    public BcArgument(String[] args, Player player) {
+    public BcArgument(String @NotNull [] args, Player player) {
         int NumberCount = 0;
         String beforeArg = "";
         for (String arg : args) {
@@ -64,7 +65,7 @@ public final class BcArgument {
         }
     }
 
-    private boolean badArgument(String arg, String beforeArg, Player player, int NumberCount) {
+    private boolean badArgument(@NotNull String arg, String beforeArg, Player player, int NumberCount) {
         if (!arg.matches("^[0-9]+$") || NumberCount > 1) {
             if (NumberCount > 1) {
                 player.sendMessage("\u00A7cコマンドの引数が正しくありません");

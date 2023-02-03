@@ -1,7 +1,7 @@
 package com.kous.curvebuilding;
 
 import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
-import com.github.fierioziy.particlenativeapi.api.Particles_1_13;
+import com.github.fierioziy.particlenativeapi.api.particle.ParticleList_1_13;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
 import com.kous.curvebuilding.commands.pos.PosCommand;
@@ -12,7 +12,7 @@ import java.util.Timer;
 
 public final class Main extends JavaPlugin {
 
-    public static Particles_1_13 particles_1_13;
+    public static ParticleList_1_13 particles_1_13;
 
     @Override
     public void onEnable() {
@@ -20,7 +20,7 @@ public final class Main extends JavaPlugin {
 
         try {
             ParticleNativeAPI api = ParticleNativeCore.loadAPI(this);
-            particles_1_13 = api.getParticles_1_13();
+            particles_1_13 = api.LIST_1_13;
         } catch (ParticleException e) {
             getLogger().info("An error occurred while loading ParticleNativeAPI: " + e);
         }
