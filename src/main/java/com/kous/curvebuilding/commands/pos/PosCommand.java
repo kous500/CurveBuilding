@@ -1,6 +1,6 @@
 package com.kous.curvebuilding.commands.pos;
 
-import com.kous.curvebuilding.Main;
+import com.kous.curvebuilding.CurveBuilding;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -13,14 +13,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.kous.curvebuilding.Message.getMessage;
+import static com.kous.curvebuilding.Message.sendErrorMessage;
 import static com.kous.curvebuilding.Pos.addPos;
 import static com.kous.curvebuilding.Pos.clearPos;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 
 public class PosCommand implements TabExecutor {
-    private final Main plugin;
+    private final CurveBuilding plugin;
 
-    public PosCommand(Main plugin) { this.plugin = plugin; }
+    public PosCommand(CurveBuilding plugin) { this.plugin = plugin; }
 
     @Override
     public boolean onCommand(
@@ -46,13 +48,13 @@ public class PosCommand implements TabExecutor {
 
                                 return true;
                             } else {
-                                adapt(player).sendMessage("\u00A7c「"+posN+"」は無効な整数です");
-
+                                sendErrorMessage(player, getMessage("messages.integer-less", 1, posN));
+                                problemHere(player, args[0], args[1]);
                                 return false;
                             }
                         } else {
-                            adapt(player).sendMessage("\u00A7cコマンドの引数が正しくありません");
-
+                            sendErrorMessage(player, getMessage("messages.incorrect-argument"));
+                            problemHere(player, args[0], args[1]);
                             return false;
                         }
                     }
@@ -62,14 +64,15 @@ public class PosCommand implements TabExecutor {
                         clearPos(player, Integer.parseInt(posN), 0);
                         return true;
                     } else {
-                        adapt(player).sendMessage("\u00A7c「"+posN+"」は無効な整数です");
+                        sendErrorMessage(player, getMessage("messages.integer-less", 1, posN));
+                        problemHere(player, args[0], args[1]);
                         return false;
                     }
                 } else if (args.length >= 1 && args[0].equals("clearall")) {
                     clearPos(player);
                     return true;
                 } else if (args.length >= 1 && args[0].equals("insert")) {
-                    adapt(player).sendMessage("insertはまだ実装されていません");
+                    sendErrorMessage(adapt(player), "'insert' is not yet implemented.");
                     return true;
                 } else if (args.length >= 2 && args[0].equals("set")) {
                     StringBuilder n = new StringBuilder();
@@ -86,11 +89,13 @@ public class PosCommand implements TabExecutor {
                                 }
                                 return true;
                             } else {
-                                adapt(player).sendMessage("\u00A7c「"+posN+"」は無効な整数です");
+                                sendErrorMessage(player, getMessage("messages.integer-less", 1, posN));
+                                problemHere(player, args[0], args[1]);
                                 return false;
                             }
                         } else {
-                            adapt(player).sendMessage("\u00A7cコマンドの引数が正しくありません");
+                            sendErrorMessage(player, getMessage("messages.incorrect-argument"));
+                            problemHere(player, args[0], args[1]);
                             return false;
                         }
                     }
@@ -100,15 +105,19 @@ public class PosCommand implements TabExecutor {
                         addPos(player, Integer.parseInt(posN), 0);
                         return true;
                     } else {
-                        adapt(player).sendMessage("\u00A7c「"+posN+"」は無効な整数です");
+                        sendErrorMessage(player, getMessage("messages.integer-less", 1, posN));
+                        problemHere(player, args[0], args[1]);
                         return false;
                     }
                 } else {
-                    adapt(player).sendMessage("\u00A7cコマンドの引数が正しくありません");
+                    sendErrorMessage(player, getMessage("messages.incorrect-argument"));
+                    if (args.length >= 1) problemHere(player, "pos", args[0]);
+                    return false;
                 }
             }
         } else {
-            plugin.getLogger().info("このコマンドはプレイヤーしか実行できません。");
+            plugin.getLogger().info(getMessage("messages.non-player-execution", sender.getName()));
+            return true;
         }
 
         return false;
@@ -162,5 +171,9 @@ public class PosCommand implements TabExecutor {
                 commands.add(arg + i);
             }
         }
+    }
+
+    private void problemHere(com.sk89q.worldedit.entity.Player player, String beforeArg, String arg) {
+        adapt(player).sendMessage("\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o" + getMessage("messages.problem-here"));
     }
 }

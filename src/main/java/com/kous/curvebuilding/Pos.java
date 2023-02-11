@@ -10,8 +10,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.kous.curvebuilding.Util.floorVector;
-import static com.kous.curvebuilding.Util.lineLength;
+import static com.kous.curvebuilding.Message.getMessage;
+import static com.kous.curvebuilding.Util.*;
 import static java.lang.Math.*;
 
 /**
@@ -42,7 +42,7 @@ public final class Pos {
      * @throws AssertionError hが0以上2以下ではない場合
      */
     public static void addPos(@NotNull Player player, int n, int h) {
-        assert (h >= 0) && (h <= 2) : "引数値が不正です。";
+        assert (h >= 0) && (h <= 2) : "The value of h must be in the range 0 to 2.";
 
         Vector3 location = floorVector(player.getLocation().toVector()).toVector3();
         World world = player.getWorld();
@@ -94,7 +94,7 @@ public final class Pos {
             POS_MAP.put(uuid, new Pos(world, location, n, h));
         }
 
-        player.printInfo(TextComponent.of(posToString(n, h) + " を " + location + " に設定しました"));
+        player.printInfo(TextComponent.of(getMessage("messages.pos-set", posToString(n, h), location)));
     }
 
     private static Vector3 odPos(@NotNull Vector3 h0, @NotNull Vector3 hIN, Vector3 hOUT){
@@ -126,7 +126,7 @@ public final class Pos {
             pos.p = new TreeMap<>();
             pos.world = null;
             POS_MAP.replace(uuid, pos);
-            player.printInfo(TextComponent.of("全てのposをリセットしました"));
+            player.printInfo(TextComponent.of(getMessage("messages.pos-clear-all")));
         }
     }
 
@@ -139,25 +139,25 @@ public final class Pos {
      * @throws AssertionError hが0以上2以下ではない場合
      */
     public static void clearPos(@NotNull Player player, int n, int h) {
-        assert (h >= 0) && (h <= 2) : "引数値が不正です。";
+        assert (h >= 0) && (h <= 2) : "h must be in the range 0 to 2.";
 
         UUID uuid = player.getUniqueId();
         Pos pos = POS_MAP.get(uuid);
 
-        if (pos != null) {
-            Vector3[] l = pos.p.get(n);
+        if (pos == null) return;
+        Vector3[] l = pos.p.get(n);
+        if (l == null) return;
 
-            if (h == 0) {
-                l = new Vector3[3];
-            } else {
-                l[h] = null;
-            }
-
-            pos.p.replace(n, l);
-            POS_MAP.replace(uuid, pos);
-
-            player.printInfo(TextComponent.of(posToString(n, h) + " を削除しました"));
+        if (h == 0) {
+            l = new Vector3[3];
+        } else {
+            l[h] = null;
         }
+
+        pos.p.replace(n, l);
+        POS_MAP.replace(uuid, pos);
+
+        player.printInfo(TextComponent.of(getMessage("messages.pos-clear", posToString(n, h))));
     }
 
     /**
@@ -203,11 +203,11 @@ public final class Pos {
     private static @NotNull String posToString(int n, int h) {
         switch (h) {
             case 1:
-                return "制御点 " + n + "a";
+                return getMessage("messages.pos-Na", n);
             case 2:
-                return "制御点 " + n + "b";
+                return getMessage("messages.pos-Nb", n);
             default:
-                return "接続点 " + n + "";
+                return getMessage("messages.pos-N", n);
         }
     }
 }

@@ -23,9 +23,11 @@ public final class Config{
     public int lineDensity;
     public int lineMaxLength;
 
-    private final Main plugin;
+    public String messageFilePath;
 
-    public Config(@NotNull Main plugin) {
+    private final CurveBuilding plugin;
+
+    public Config(@NotNull CurveBuilding plugin) {
         this.plugin = plugin;
 
         plugin.saveDefaultConfig();
@@ -33,7 +35,7 @@ public final class Config{
 
         if (fineness <= 0 || maxSetLength <= 0 || posDensity <= 0 || lineDensity <= 0 || lineMaxLength <= 0) {
             plugin.reloadConfig();
-            plugin.getLogger().info("config.ymlの値が不正であるためファイルが初期化されました");
+            plugin.getLogger().info("Fill config.yml has been reloaded.");
             road();
         }
     }
@@ -53,5 +55,7 @@ public final class Config{
         posDensity = (int) plugin.getConfig().get("particles.pos.density");
         lineDensity = (int) plugin.getConfig().get("particles.line.density");
         lineMaxLength = (int) plugin.getConfig().get("particles.line.max-length");
+
+        messageFilePath = (String) plugin.getConfig().get("message-file");
     }
 }

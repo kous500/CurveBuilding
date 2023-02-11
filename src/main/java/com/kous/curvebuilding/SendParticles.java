@@ -12,7 +12,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import static com.kous.curvebuilding.Util.*;
-import static com.kous.curvebuilding.Main.particles_1_13;
+import static com.kous.curvebuilding.CurveBuilding.particles_1_13;
 import static com.kous.curvebuilding.Pos.getPosMap;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static java.lang.Math.sqrt;

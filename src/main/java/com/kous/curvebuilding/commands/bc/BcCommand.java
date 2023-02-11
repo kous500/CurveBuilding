@@ -1,7 +1,6 @@
 package com.kous.curvebuilding.commands.bc;
 
-import com.kous.curvebuilding.Config;
-import com.kous.curvebuilding.Main;
+import com.kous.curvebuilding.CurveBuilding;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -14,16 +13,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static com.kous.curvebuilding.Message.getMessage;
+
 public class BcCommand implements TabExecutor {
-    private final Main plugin;
-    private final Config config;
+    private final CurveBuilding plugin;
 
     private final String[] option = {"l", "a", "r"};
     private final String[] directionOption = {"x", "z"};
 
-    public BcCommand(Main plugin, Config config) {
+    public BcCommand(CurveBuilding plugin) {
         this.plugin = plugin;
-        this.config = config;
     }
 
     @Override
@@ -35,12 +34,13 @@ public class BcCommand implements TabExecutor {
                 // プレイヤーが実行した場合の処理
                 BcArgument argument = new BcArgument(args, (Player) sender);
                 if (argument.success) {
-                    new BcEdit(config, (Player) sender, argument);
+                    new BcEdit((Player) sender, argument);
                     return true;
                 }
             } else {
                 // サーバーが実行した場合の処理
-                plugin.getLogger().info("このコマンドはプレイヤーしか実行できません。");
+                plugin.getLogger().info(getMessage("messages.non-player-execution", sender.getName()));
+                return true;
             }
         }
         //コマンドが存在しない場合はfalseを返す

@@ -2,7 +2,7 @@ name: CurveBuilding
 version: '${project.version}'
 description: A plugin to build curves.
 author: kous500
-main: com.kous.curvebuilding.Main
+main: com.kous.curvebuilding.CurveBuilding
 api-version: 1.19
 depend: [WorldEdit]
 

@@ -1,6 +1,5 @@
 package com.kous.curvebuilding.commands.bc;
 
-import com.kous.curvebuilding.Config;
 import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.entity.Player;
@@ -15,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static com.kous.curvebuilding.CurveBuilding.config;
+import static com.kous.curvebuilding.Message.getMessage;
 import static com.kous.curvebuilding.Pos.getPos;
 import static com.kous.curvebuilding.Pos.getWorld;
 import static com.kous.curvebuilding.Util.*;
@@ -28,19 +29,16 @@ public final class BcEdit {
     private Vector3 center;
     private String direction;
     private List<BlockVector3> notSet = new ArrayList<>();
-    private final Config config;
     private final BcArgument argument;
     private EditSession editSession;
 
     /**
      * 設定したposからベジエ曲線または直線をブロックで生成する。
      *
-     * @param config config.ymlのデータ
      * @param player コマンドを実行したプレイヤー
      * @param argument bcコマンドの引数
      */
-    public BcEdit(Config config, org.bukkit.entity.Player player, @NotNull BcArgument argument) {
-        this.config = config;
+    public BcEdit(org.bukkit.entity.Player player, @NotNull BcArgument argument) {
         this.argument = argument;
 
         Player actor = BukkitAdapter.adapt(player);
@@ -85,15 +83,14 @@ public final class BcEdit {
                 }
             }
 
-            actor.printInfo(TextComponent.of("操作が完了しました("+ editSession.size() +" blocks affected)"));
-            actor.printInfo(TextComponent.of("曲線の長さ: "+ (double) Math.round(nowLength * 100) / 100 +" blocks (推定)"));
+            actor.printInfo(TextComponent.of(getMessage("messages.bc-changed", editSession.size())));
+            actor.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round(nowLength * 100) / 100)));
         } catch (IncompleteRegionException e) {
-            actor.printError(TextComponent.of("領域を選択してください"));
+            actor.printError(TextComponent.of(getMessage("messages.incomplete-region")));
         } catch (IncompletePosException e) {
-            actor.printError(TextComponent.of("曲線の始点が設定されていません"));
+            actor.printError(TextComponent.of(getMessage("messages.incomplete-pos")));
         } catch (MaxChangedBlocksException e) {
-            actor.printError(TextComponent
-                    .of("変更できるブロックの最大値は ("+ session.getBlockChangeLimit() +") に設定されています"));
+            actor.printError(TextComponent.of(getMessage("messages.max-changed-blocks", session.getBlockChangeLimit())));
         } finally {
             session.remember(editSession);
             editSession.close();

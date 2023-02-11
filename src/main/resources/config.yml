@@ -1,15 +1,14 @@
 curve:
-  # 計算量は曲線の細かさ×長さに比例します
-  # 曲線の細かさ
+  # Fineness of the curve
   fineness: 5
-  # 曲線の最大の長さ
+  # Maximum length a curve can be built
   max-set-length: 1024
-  # trueの場合、中心が太くなります
+  # If this value is true, the center will be thicker
   thicken-center: false
 
 particles:
   pos:
-    # パーティクルの色
+    # Particle color
     color:
       pos: 0x00FFFF
       start_pos: 0xFF00FF
@@ -17,11 +16,14 @@ particles:
       a: 0xFF0077
       b: 0x7700FF
 
-    # 1ブロックあたりのパーティクル密度
+    # Particle density per block
     density: 4
 
   line:
-    # 1ブロックあたりのパーティクル密度
+    # Particle density per block
     density: 4
-    # パーティクルを表示する最大の長さ
+    # Maximum length to display particles
     max-length: 512
+
+# Message file path
+message-file: "%datafolder%/messages/en.yml"

@@ -52,7 +52,7 @@ public final class Util {
      */
     public static double bezierLength(Vector3 @NotNull [] pos, double fineness) {
         assert (pos[0] != null) && (pos[1] != null) && (pos[2] != null) && (pos[3] != null)
-                : "値がnullのposがあります";
+                : "The value of pos cannot be null.";
 
         double length = 0;
         double xt1 = pos[0].getX();
@@ -89,6 +89,7 @@ public final class Util {
 
     /**
      * pos1からpos4の値から生成されるベジエ曲線の曲線上の位置iの座標を求める。
+     *
      * @param pos pos1からpos4までの値
      * @param i 曲線上の位置(0 <= i <= 1)
      * @return 座標
@@ -96,9 +97,9 @@ public final class Util {
      */
     public static Vector3 bezierCoordinate(Vector3 @NotNull [] pos, double i) {
         assert (pos[0] != null) && (pos[1] != null) && (pos[2] != null) && (pos[3] != null)
-                : "値がnullのposがあります";
+                : "The value of pos cannot be null.";
         assert (0 <= i) && (i <= 1)
-                : "iの値が不正です";
+                : "The value of i must be in the range 0 to 1";
 
         Vector3 p0 = pos[0];
         Vector3 p1 = pos[1];
@@ -112,6 +113,12 @@ public final class Util {
         return Vector3.at(x, y, z);
     }
 
+    /**
+     * Vector3のコピーを作成。
+     *
+     * @param vec コピー元のVector3
+     * @return コピーされたVector3
+     */
     public static Vector3 copyVector(Vector3 vec) {
         if (vec != null) return Vector3.at(vec.getX(), vec.getY(), vec.getZ());
         else return null;

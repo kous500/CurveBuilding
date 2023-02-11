@@ -3,6 +3,9 @@ package com.kous.curvebuilding.commands.bc;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import static com.kous.curvebuilding.Message.getMessage;
+import static com.kous.curvebuilding.Message.sendErrorMessage;
+
 public final class BcArgument {
     public int n = 0;
     public int m = 0;
@@ -25,7 +28,7 @@ public final class BcArgument {
         for (String arg : args) {
             if (arg.matches("-.*")) {
                 if (arg.matches("^-[0-9]+$")) {
-                    badArgument(arg, beforeArg, player, NumberCount);
+                    incorrectArgument(arg, beforeArg, player, NumberCount);
                     NumberCount++;
                 } else {
                     boolean first = true;
@@ -49,15 +52,15 @@ public final class BcArgument {
                         }
                     }
 
-                    if (!goodArg) badArgument(arg, beforeArg, player, NumberCount);
+                    if (!goodArg) incorrectArgument(arg, beforeArg, player, NumberCount);
                 }
             } else {
-                if (NumberCount == 0 && badArgument(arg, beforeArg, player, NumberCount)) {
+                if (NumberCount == 0 && incorrectArgument(arg, beforeArg, player, NumberCount)) {
                     n = Integer.parseInt(arg);
-                } else if (NumberCount == 1 && badArgument(arg, beforeArg, player, NumberCount)) {
+                } else if (NumberCount == 1 && incorrectArgument(arg, beforeArg, player, NumberCount)) {
                     m = Integer.parseInt(arg);
                 } else if (NumberCount > 1) {
-                    badArgument(arg, beforeArg, player, NumberCount);
+                    incorrectArgument(arg, beforeArg, player, NumberCount);
                 }
                 NumberCount++;
             }
@@ -65,20 +68,20 @@ public final class BcArgument {
         }
     }
 
-    private boolean badArgument(@NotNull String arg, String beforeArg, Player player, int NumberCount) {
+    private boolean incorrectArgument(@NotNull String arg, String beforeArg, Player player, int NumberCount) {
         if (!arg.matches("^[0-9]+$") || NumberCount > 1) {
             if (NumberCount > 1) {
-                player.sendMessage("\u00A7cコマンドの引数が正しくありません");
+                sendErrorMessage(player, getMessage(getMessage("messages.incorrect-argument")));
             } else if (arg.matches("^-[0-9]+$")) {
-                player.sendMessage("\u00A7cこの整数は0以上でなくてはならないため、"+arg+"は適しません");
+                sendErrorMessage(player, getMessage(getMessage("messages.integer-less", 0, arg)));
             } else if (arg.matches("[+-]?\\d*(\\.\\d+)?")) {
-                player.sendMessage("\u00A7c「"+arg+"」は無効な整数です");
+                sendErrorMessage(player, getMessage(getMessage("messages.invalid-integer", arg)));
             } else {
-                player.sendMessage("\u00A7cコマンドの引数が正しくありません");
+                sendErrorMessage(player, getMessage(getMessage("messages.incorrect-argument")));
             }
 
             if (beforeArg.equals("")) beforeArg = "bc";
-            player.sendMessage("\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o←［問題箇所］");
+            player.sendMessage("\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o" + getMessage("messages.problem-here"));
 
             success = false;
             return false;
