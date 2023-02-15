@@ -47,8 +47,8 @@ public final class BcEdit {
 
         World world = session.getSelectionWorld();
 
-        try {
-            editSession = WorldEdit.getInstance().newEditSession(world);
+        try (EditSession editSession = session.createEditSession(actor)) {
+            this.editSession = editSession;
             editSession.setBlockChangeLimit(session.getBlockChangeLimit());
 
             Region region = session.getSelection(session.getSelectionWorld());
@@ -93,7 +93,6 @@ public final class BcEdit {
             actor.printError(TextComponent.of(getMessage("messages.max-changed-blocks", session.getBlockChangeLimit())));
         } finally {
             session.remember(editSession);
-            editSession.close();
         }
     }
 

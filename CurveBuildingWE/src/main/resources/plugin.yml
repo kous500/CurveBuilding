@@ -31,7 +31,6 @@ commands:
     usage: |
       Example: /<command> clear <posType> - Clear your pos.
       Example: /<command> clearall - Clear all your pos.
-      Example: /<command> insert <posType> - Insert a new pos.
       Example: /<command> set <posType> - Set pos to your position.
 
 permissions:

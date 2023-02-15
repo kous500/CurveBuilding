@@ -112,6 +112,7 @@ public class PosCommand implements TabExecutor {
                 } else {
                     sendErrorMessage(player, getMessage("messages.incorrect-argument"));
                     if (args.length >= 1) problemHere(player, "pos", args[0]);
+                    else problemHere(player, "pos", "");
                     return false;
                 }
             }
