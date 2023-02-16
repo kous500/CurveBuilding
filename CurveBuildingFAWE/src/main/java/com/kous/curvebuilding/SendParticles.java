@@ -1,6 +1,7 @@
 package com.kous.curvebuilding;
 
 import com.github.fierioziy.particlenativeapi.api.particle.type.ParticleTypeMotion;
+import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.world.World;
 import org.bukkit.Color;
@@ -95,9 +96,15 @@ public class SendParticles extends TimerTask {
                     }
                 }
                 Location location = adapt(adapt(world), pos.add(0.5, 0.5, 0.5));
-                particles_1_13.SOUL_FIRE_FLAME
-                        .packet(true, location)
-                        .sendTo(player);
+                try {
+                    particles_1_13.SOUL_FIRE_FLAME
+                            .packet(true, location)
+                            .sendTo(player);
+                } catch (ParticleException e) {
+                    particles_1_13.HAPPY_VILLAGER
+                            .packet(true, location)
+                            .sendTo(player);
+                }
             }
         }
     }
@@ -120,9 +127,15 @@ public class SendParticles extends TimerTask {
                     }
                 }
                 Location location = adapt(adapt(world), pos.add(0.5, 0.5, 0.5));
-                particles_1_13.SOUL_FIRE_FLAME
-                        .packet(true, location)
-                        .sendTo(player);
+                try {
+                    particles_1_13.SOUL_FIRE_FLAME
+                            .packet(true, location)
+                            .sendTo(player);
+                } catch (ParticleException e) {
+                    particles_1_13.HAPPY_VILLAGER
+                            .packet(true, location)
+                            .sendTo(player);
+                }
             }
         }
     }
@@ -137,9 +150,15 @@ public class SendParticles extends TimerTask {
                     double y = (1 - i) * pos1.getY() + i * pos2.getY() + 0.5;
                     double z = (1 - i) * pos1.getZ() + i * pos2.getZ() + 0.5;
                     Location location = adapt(adapt(world), Vector3.at(x, y, z));
-                    particleType
-                            .packet(true, location)
-                            .sendTo(player);
+                    try {
+                        particleType
+                                .packet(true, location)
+                                .sendTo(player);
+                    } catch (ParticleException e) {
+                        particles_1_13.HAPPY_VILLAGER
+                                .packet(true, location)
+                                .sendTo(player);
+                    }
                 }
             }
         }
@@ -152,9 +171,15 @@ public class SendParticles extends TimerTask {
             if (length <= config.lineMaxLength) {
                 for (double i = 0; i <= 1; i += 1.0 / (length * 4)) {
                     Location location = adapt(adapt(world), bezierCoordinate(p, i));
-                    particleType
-                            .packet(true, location)
-                            .sendTo(player);
+                    try {
+                        particleType
+                                .packet(true, location)
+                                .sendTo(player);
+                    } catch (ParticleException e) {
+                        particles_1_13.HAPPY_VILLAGER
+                                .packet(true, location)
+                                .sendTo(player);
+                    }
                 }
             }
         }
