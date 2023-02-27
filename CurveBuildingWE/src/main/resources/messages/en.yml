@@ -1,6 +1,6 @@
 messages:
   plugin-load-error: "An error occurred while loading {0}: "
-  non-player-execution: "{0} is not allowed to execute that command. Must be of type Player."
+  non-player-execution: "Can not execute this command from console."
   incorrect-argument: "Invalid argument for command."
   integer-less: "Integer must not be less than {0}, found {1}."
   invalid-integer: "Invalid integer '{0}'."
