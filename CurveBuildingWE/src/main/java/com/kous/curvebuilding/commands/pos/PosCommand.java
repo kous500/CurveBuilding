@@ -37,10 +37,10 @@ public class PosCommand implements TabExecutor {
                     for(String s : args[1].split("")) {
                         if (s.matches("^[0-9]$")) {
                             n.append(s);
-                        } else if (s.matches("[ab]")) {
+                        } else if (s.matches("[fb]")) {
                             String posN = n.toString();
                             if(!posN.equals("") && Integer.parseInt(posN) > 0) {
-                                if (s.equals("a")) {
+                                if (s.equals("f")) {
                                     clearPos(player, Integer.parseInt(posN), 1);
                                 } else if (s.equals("b")) {
                                     clearPos(player, Integer.parseInt(posN), 2);
@@ -79,10 +79,10 @@ public class PosCommand implements TabExecutor {
                     for(String s : args[1].split("")) {
                         if (s.matches("^[0-9]$")) {
                             n.append(s);
-                        } else if (s.matches("[ab]")) {
+                        } else if (s.matches("[fb]")) {
                             String posN = n.toString();
                             if(!posN.equals("") && Integer.parseInt(posN) > 0) {
-                                if (s.equals("a")) {
+                                if (s.equals("f")) {
                                     addPos(player, Integer.parseInt(posN), 1);
                                 } else if (s.equals("b")) {
                                     addPos(player, Integer.parseInt(posN), 2);
@@ -117,7 +117,7 @@ public class PosCommand implements TabExecutor {
                 }
             }
         } else {
-            plugin.getLogger().info(getMessage("messages.non-player-execution", sender.getName()));
+            plugin.getLogger().info(getMessage("messages.non-player-execution"));
             return true;
         }
 
@@ -127,7 +127,7 @@ public class PosCommand implements TabExecutor {
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        String[] types = new String[] {"a", "b"};
+        String[] types = new String[] {"f", "b"};
         List<String> completions = new ArrayList<>();
 
         if (command.getName().equalsIgnoreCase("/pos")) {

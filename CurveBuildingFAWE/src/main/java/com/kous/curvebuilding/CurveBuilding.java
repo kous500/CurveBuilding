@@ -4,8 +4,8 @@ import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
 import com.github.fierioziy.particlenativeapi.api.particle.ParticleList_1_13;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
-import com.kous.curvebuilding.commands.pos.PosCommand;
 import com.kous.curvebuilding.commands.bc.BcCommand;
+import com.kous.curvebuilding.commands.pos.PosCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Timer;

@@ -39,7 +39,7 @@ public class BcCommand implements TabExecutor {
                 }
             } else {
                 // サーバーが実行した場合の処理
-                plugin.getLogger().info(getMessage("messages.non-player-execution", sender.getName()));
+                plugin.getLogger().info(getMessage("messages.non-player-execution"));
                 return true;
             }
         }

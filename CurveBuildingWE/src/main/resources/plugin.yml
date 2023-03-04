@@ -28,9 +28,9 @@ commands:
     permission: CurveBuilding.pos
     permission-message: You do not have <permission>.
     usage: |
-      Example: /<command> clear <posType> - Clear your pos.
-      Example: /<command> clearall - Clear all your pos.
-      Example: /<command> set <posType> - Set pos to your position.
+      Example: /<command> clear <posType> - Delete your pos.
+      Example: /<command> clearall - Delete all your pos.
+      Example: /<command> set <posType> - Select pos to your position.
 
 permissions:
   CurveBuilding.*:

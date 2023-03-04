@@ -6,7 +6,7 @@ messages:
   invalid-integer: "Invalid integer '{0}'."
   problem-here: "<--[HERE]"
   pos-N: "Connection position {0}"
-  pos-Na: "Control position {0}a"
+  pos-Nf: "Control position {0}f"
   pos-Nb: "Control position {0}b"
   pos-set: "{0} set to {1}."
   pos-clear: "{0} deleted."

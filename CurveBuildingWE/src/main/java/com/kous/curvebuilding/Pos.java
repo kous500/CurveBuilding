@@ -203,7 +203,7 @@ public final class Pos {
     private static @NotNull String posToString(int n, int h) {
         switch (h) {
             case 1:
-                return getMessage("messages.pos-Na", n);
+                return getMessage("messages.pos-Nf", n);
             case 2:
                 return getMessage("messages.pos-Nb", n);
             default:

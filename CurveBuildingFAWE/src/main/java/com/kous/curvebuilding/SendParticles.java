@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.TimerTask;
 import java.util.UUID;
 
-import static com.kous.curvebuilding.Util.*;
 import static com.kous.curvebuilding.CurveBuilding.particles_1_13;
 import static com.kous.curvebuilding.Pos.getPosMap;
+import static com.kous.curvebuilding.Util.*;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static java.lang.Math.sqrt;
 import static org.bukkit.Bukkit.getPlayer;

@@ -104,23 +104,9 @@ public final class BcEdit {
 
         xz(selectionPos, height, fineness, center.add(0, height - h, 0));
 
-        //yの処理
         for (int m = 0; m <= height - 1; m++) {
             Vector3 vec = center.add(0, m - h, 0);
             xz(selectionPos, m, fineness, vec);
-        }
-
-        //中心を再設置
-        int size;
-        if (direction.equals("x")) size = length;
-        else size = width;
-        if (size != 1 && size % 2 == 1) {
-            for (int m = 0; m <= height - 1; m++) {
-                int n = argument.n;
-                if (argument.n == 0 && !config.tCenter) n = 1;
-                Vector3 searchT = center.add(0, m - h, 0);
-                set(selectionPos, 0, m, n, fineness, searchT);
-            }
         }
 
         nowLength += (int)bezierLength(selectionPos, fineness);
@@ -214,7 +200,7 @@ public final class BcEdit {
                     (afterPosT != null && afterPosT.getX() == posT.getX() && afterPosT.getY() != posT.getY() && afterPosT.getZ() == posT.getZ()))) {
                 if (m == height) {
                     notSet.add(posT);
-                } else if ((m != height -1 || !notSet.contains(posT)) && (beforePosT != null && beforePosT.equals(posT))) {
+                } else if (m != height -1 || !notSet.contains(posT)) {
                     if (argument.air) {
                         String selectionBlock = editSession.getBlock(posT).toString();
                         if (selectionBlock.equals("minecraft:air")) editSession.setBlock(posT, idT);
@@ -234,27 +220,32 @@ public final class BcEdit {
     private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
         Vector3 posA = vec;
         Vector3 posB = vec;
+        int n = argument.n;
 
         if (direction.equals("x")) {
             for (int l = 0; l <= length / 2; l++) {
                 if (l != length / 2 || length % 2 != 0) {
-                    set(selectionPos, l, m, argument.n, fineness, posA);
+                    set(selectionPos, l, m, n, fineness, posA);
                     posA = posA.add(0, 0, -1);
                 }
 
-                set(selectionPos, -l, m, argument.n, fineness, posB);
+                set(selectionPos, -l, m, n, fineness, posB);
                 posB = posB.add(0, 0, 1);
             }
         } else {
             for (int l = 0; l <= width / 2; l++) {
-                set(selectionPos, l, m, argument.n, fineness, posA);
+                set(selectionPos, l, m, n, fineness, posA);
                 posA = posA.add(1, 0, 0);
 
                 if (l != width / 2 || width % 2 != 0) {
-                    set(selectionPos, -l, m, argument.n, fineness, posB);
+                    set(selectionPos, -l, m, n, fineness, posB);
                     posB = posB.add(-1, 0, 0);
                 }
             }
         }
+
+        //中心を再設置
+        if (argument.n == 0 && !config.tCenter) n = 1;
+        set(selectionPos, 0, m, n, fineness, vec);
     }
 }
