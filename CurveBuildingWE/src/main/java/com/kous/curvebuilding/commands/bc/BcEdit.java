@@ -19,7 +19,6 @@ import static com.kous.curvebuilding.Message.getMessage;
 import static com.kous.curvebuilding.Pos.getPos;
 import static com.kous.curvebuilding.Pos.getWorld;
 import static com.kous.curvebuilding.Util.*;
-import static com.kous.curvebuilding.Util.bezierLength;
 
 public final class BcEdit {
     private int width;
@@ -155,6 +154,8 @@ public final class BcEdit {
         double zt1 = selectionPos[0].getZ();
 
         int L1 = argument.m;
+        if (nowLength != 0 && n != 0) L1 += nowLength % n;
+
         double s = 0;
         double L = 0;
         BlockVector3 beforePosT = null;
@@ -185,7 +186,7 @@ public final class BcEdit {
             BlockVector3 posT = roundVector(vecPosT.add(l*Math.cos(-r), m, l*Math.sin(-r)));
 
             BlockVector3 afterPosT = null;
-            if (L >= Math.ceil(L1)) {
+            if (L >= L1) {
                 Map<String, Double> apos = pos(selectionPos, s + 1.0 / fineness);
                 double axt = apos.get("xt");
                 double ayt = apos.get("yt");
@@ -195,7 +196,7 @@ public final class BcEdit {
                 afterPosT = roundVector(vecAfterPosT.add(l*Math.cos(-ar), m, l*Math.sin(-ar)));
             }
 
-            if (L >= Math.ceil(L1) ||
+            if (L >= L1 ||
                     ((beforePosT != null && beforePosT.getX() == posT.getX() && beforePosT.getY() != posT.getY() && beforePosT.getZ() == posT.getZ()) ||
                     (afterPosT != null && afterPosT.getX() == posT.getX() && afterPosT.getY() != posT.getY() && afterPosT.getZ() == posT.getZ()))) {
                 if (m == height) {
