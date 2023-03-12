@@ -75,16 +75,16 @@ public final class Pos {
                 l[h] = location;
 
                 if (h == 1 && la != null && la[0] != null && l[0] != null) {
-                    l[2] = odPos(l[0], l[1], l[2]);
+                    l[2] = posAutocompletion(l[0], l[1], l[2]);
                 } else if (h == 2 && lb != null && lb[0] != null && l[0] != null) {
-                    l[1] = odPos(l[0], l[2], l[1]);
+                    l[1] = posAutocompletion(l[0], l[2], l[1]);
                 }
 
                 pos.p.replace(n, l);
             }
 
-            if (h == 0 && lb != null && lb[0] != null && lb[1] != null) {
-                lb[2] = odPos(lb[0], lb[1], lb[2]);
+            if (h == 0 && lb != null && lb[0] != null && lb[1] != null && lb[2] == null) {
+                lb[2] = posAutocompletion(lb[0], lb[1], null);
                 pos.p.replace(n - 1, lb);
             }
 
@@ -97,7 +97,7 @@ public final class Pos {
         player.printInfo(TextComponent.of(getMessage("messages.pos-set", posToString(n, h), location)));
     }
 
-    private static Vector3 odPos(@NotNull Vector3 h0, @NotNull Vector3 hIN, Vector3 hOUT){
+    private static Vector3 posAutocompletion(@NotNull Vector3 h0, @NotNull Vector3 hIN, Vector3 hOUT){
         double x = hIN.getX() - h0.getX();
         double y = hIN.getY() - h0.getY();
         double z = hIN.getZ() - h0.getZ();
@@ -105,12 +105,12 @@ public final class Pos {
         if (hOUT == null) {
             return h0.add(-x, -y, -z);
         } else {
-            double agnY = y > 0 ? 1 : y == 0 ? 0 : -1;
+            int agnY = y >= 0 ? 1 : -1;
+            double r = lineLength(h0, hOUT);
             double theta = acos(z / sqrt(x * x + y * y + z * z));
             double phi = agnY * acos(x / sqrt(x * x + y * y));
-            double r0 = lineLength(h0, hOUT);
 
-            return h0.add(-r0 * sin(theta) * cos(phi), -r0 * sin(theta) * sin(phi), -r0 * cos(theta));
+            return h0.add(-r * sin(theta) * cos(phi), -r * sin(theta) * sin(phi), -r * cos(theta));
         }
     }
 
