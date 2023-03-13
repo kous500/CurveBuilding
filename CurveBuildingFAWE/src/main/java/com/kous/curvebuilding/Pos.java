@@ -12,7 +12,6 @@ import java.util.*;
 
 import static com.kous.curvebuilding.Message.getMessage;
 import static com.kous.curvebuilding.Util.*;
-import static java.lang.Math.*;
 
 /**
  * posのデータの保存方法とデータを操作するメゾットを定義する。
@@ -105,12 +104,8 @@ public final class Pos {
         if (hOUT == null) {
             return h0.add(-x, -y, -z);
         } else {
-            int agnY = y >= 0 ? 1 : -1;
-            double r = lineLength(h0, hOUT);
-            double theta = acos(z / sqrt(x * x + y * y + z * z));
-            double phi = agnY * acos(x / sqrt(x * x + y * y));
-
-            return h0.add(-r * sin(theta) * cos(phi), -r * sin(theta) * sin(phi), -r * cos(theta));
+            double[] newH = changeR(x, y, z, -lineLength(h0, hOUT));
+            return h0.add(newH[0], newH[1], newH[2]);
         }
     }
 

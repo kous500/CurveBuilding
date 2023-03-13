@@ -3,9 +3,10 @@ package com.kous.curvebuilding;
 
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import static java.lang.Math.pow;
+import static java.lang.Math.*;
 
 /**
  * このプラグインで共通で使う処理をまとめています。
@@ -122,5 +123,23 @@ public final class Util {
     public static Vector3 copyVector(Vector3 vec) {
         if (vec != null) return Vector3.at(vec.getX(), vec.getY(), vec.getZ());
         else return null;
+    }
+
+    public static double @NotNull [] changeR(double x, double y, double z, double newR) {
+        double[] polar = toPolar(x, y, z);
+        double theta = polar[1];
+        double phi = polar[2];
+        double x1 = newR * sin(phi) * cos(theta);
+        double y1 = newR * sin(phi) * sin(theta);
+        double z1 = newR * cos(phi);
+        return new double[]{ x1, y1, z1 };
+    }
+
+    @Contract("_, _, _ -> new")
+    public static double @NotNull [] toPolar(double x, double y, double z) {
+        double r = sqrt(x * x + y * y + z * z);
+        double theta = atan2(y, x);
+        double phi = acos(z / r);
+        return new double[]{ r, theta, phi };
     }
 }
