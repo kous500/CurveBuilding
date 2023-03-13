@@ -13,7 +13,7 @@ particles:
       pos: 0x00FFFF
       start_pos: 0xFF00FF
       end_pos: 0xFFFF00
-      a: 0xFF0077
+      f: 0xFF0077
       b: 0x7700FF
 
     # Particle density per block
