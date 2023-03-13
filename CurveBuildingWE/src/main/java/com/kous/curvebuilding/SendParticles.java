@@ -42,7 +42,7 @@ public class SendParticles extends TimerTask {
                         for (int h = 0; h <= 2; h++) {
                             if (p[h] != null) {
                                 Color color;
-                                if (h == 1) color = config.aColor;
+                                if (h == 1) color = config.fColor;
                                 else if (h == 2) color = config.bColor;
                                 else if (n == 1) color = config.startColor;
                                 else if (n == pos.p.lastEntry().getKey()) color = config.endColor;

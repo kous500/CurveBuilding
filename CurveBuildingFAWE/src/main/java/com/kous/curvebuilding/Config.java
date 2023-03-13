@@ -16,7 +16,7 @@ public final class Config{
     public Color posColor;
     public Color startColor;
     public Color endColor;
-    public Color aColor;
+    public Color fColor;
     public Color bColor;
 
     public int posDensity;
@@ -49,7 +49,7 @@ public final class Config{
         posColor = fromRGB((int) plugin.getConfig().get("particles.pos.color.pos"));
         startColor = fromRGB((int) plugin.getConfig().get("particles.pos.color.start_pos"));
         endColor = fromRGB((int) plugin.getConfig().get("particles.pos.color.end_pos"));
-        aColor = fromRGB((int) plugin.getConfig().get("particles.pos.color.a"));
+        fColor = fromRGB((int) plugin.getConfig().get("particles.pos.color.f"));
         bColor = fromRGB((int) plugin.getConfig().get("particles.pos.color.b"));
 
         posDensity = (int) plugin.getConfig().get("particles.pos.density");
