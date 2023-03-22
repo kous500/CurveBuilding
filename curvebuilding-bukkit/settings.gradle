@@ -1,0 +1,3 @@
+rootProject.name = 'CurveBuilding'
+include ':curvebuilding-core'
+project(':curvebuilding-core').projectDir = new File(settingsDir, '../curvebuilding-core')

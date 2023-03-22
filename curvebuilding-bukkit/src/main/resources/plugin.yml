@@ -1,0 +1,45 @@
+name: CurveBuilding
+version: '${version}'
+description: A plugin to build curves.
+author: kous500
+main: me.kous500.curvebuilding.bukkit.CurveBuilding
+depend: [WorldEdit]
+
+commands:
+  /bc:
+    description: Sets a Bezier curve.
+    permission: CurveBuilding.bc
+    permission-message: You do not have <permission>.
+    usage: |
+      /<command> [-options] [n] [m]
+      Example: /<command> -a - The curve will be set only at AirBlocks. (Do not break terrain or buildings)
+      Example: /<command> -l - Set the plane on a straight line between P1-P4.You don't have to set P2 and P3 when you use this option.
+      Example: /<command> -r - The curve will fit with RealTrainMod rail.
+      Example: /<command> -x - Read selection in x direction.
+      Example: /<command> -z - Read selection in z direction.
+      Example: /<command> n
+      Example: /<command> n m
+      n: Input a integral number or 0.
+      Set the plane every n meters the curve goes.
+      m: Input a integral number or 0.
+      Set the plane after m meters the curve goes.
+  /pos:
+    description: Set your pos.
+    permission: CurveBuilding.pos
+    permission-message: You do not have <permission>.
+    usage: |
+      Example: /<command> clear <posType> - Delete your pos.
+      Example: /<command> clearall - Delete all your pos.
+      Example: /<command> set <posType> - Select pos to your position.
+
+permissions:
+  CurveBuilding.*:
+    description: Gives access to all worldeditExtension commands.
+    default: op
+    children:
+      CurveBuilding.bc: true
+      CurveBuilding.pos: true
+  CurveBuilding.bc:
+    description: Gives access to bc commands.
+  CurveBuilding.pos:
+    description: Gives access to pos commands.
