@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.bukkit.commands.bc;
 
-import me.kous500.curvebuilding.bukkit.CurveBuilding;
+import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -16,12 +16,12 @@ import java.util.List;
 import static me.kous500.curvebuilding.bukkit.Message.getMessage;
 
 public class BcCommand implements TabExecutor {
-    private final CurveBuilding plugin;
+    private final CurveBuildingPlugin plugin;
 
     private final String[] option = {"l", "a", "r"};
     private final String[] directionOption = {"x", "z"};
 
-    public BcCommand(CurveBuilding plugin) {
+    public BcCommand(CurveBuildingPlugin plugin) {
         this.plugin = plugin;
     }
 

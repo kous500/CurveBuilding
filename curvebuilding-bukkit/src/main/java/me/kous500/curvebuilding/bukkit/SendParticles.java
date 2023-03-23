@@ -13,7 +13,9 @@ import java.util.Map;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.particles_1_13;
 import static me.kous500.curvebuilding.bukkit.Pos.getPosMap;
+import static me.kous500.curvebuilding.bukkit.Util.*;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static java.lang.Math.sqrt;
 import static org.bukkit.Bukkit.getPlayer;
@@ -52,8 +54,8 @@ public class SendParticles extends TimerTask {
                             }
                         }
 
-                        sendLine(p[0], p[1], pos.world, player, CurveBuilding.particles_1_13.SOUL_FIRE_FLAME);
-                        sendLine(p[0], p[2], pos.world, player, CurveBuilding.particles_1_13.SOUL_FIRE_FLAME);
+                        sendLine(p[0], p[1], pos.world, player, particles_1_13.SOUL_FIRE_FLAME);
+                        sendLine(p[0], p[2], pos.world, player, particles_1_13.SOUL_FIRE_FLAME);
 
                         if (p[0] == null) endLine = true;
                     } else {
@@ -62,10 +64,10 @@ public class SendParticles extends TimerTask {
 
                     if (!endLine && n != 1) {
                         Vector3[] bp = pos.p.get(n - 1);
-                        Vector3[] bezierPos = new Vector3[] {Util.copyVector(bp[0]), Util.copyVector(bp[2]), Util.copyVector(p[1]), Util.copyVector(p[0])};
+                        Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
                         if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
                         if (bezierPos[2] == null)  bezierPos[2] =  bezierPos[3];
-                        sendBezier(bezierPos, pos.world, player, CurveBuilding.particles_1_13.FLAME);
+                        sendBezier(bezierPos, pos.world, player, particles_1_13.FLAME);
                     }
                 }
             }
@@ -88,7 +90,7 @@ public class SendParticles extends TimerTask {
                     Location location = adapt(adapt(world), pos.add(ax, ay, az));
 
                     if ((isXEdge && isYEdge) || (isYEdge && isZEdge) || (isZEdge && isXEdge)) {
-                        CurveBuilding.particles_1_13.DUST
+                        particles_1_13.DUST
                                 .color(color, 1D)
                                 .packet(true, location)
                                 .sendTo(player);
@@ -96,11 +98,11 @@ public class SendParticles extends TimerTask {
                 }
                 Location location = adapt(adapt(world), pos.add(0.5, 0.5, 0.5));
                 try {
-                    CurveBuilding.particles_1_13.SOUL_FIRE_FLAME
+                    particles_1_13.SOUL_FIRE_FLAME
                             .packet(true, location)
                             .sendTo(player);
                 } catch (ParticleException e) {
-                    CurveBuilding.particles_1_13.HAPPY_VILLAGER
+                    particles_1_13.HAPPY_VILLAGER
                             .packet(true, location)
                             .sendTo(player);
                 }
@@ -119,7 +121,7 @@ public class SendParticles extends TimerTask {
                         double ay = 0.5 * y + (double) (density * y + (-y * 2 + 1) * i) / density * 0.5;
                         double az = 0.5 * z + (double) (density * z + (-z * 2 + 1) * i) / density * 0.5;
                         Location location = adapt(adapt(world), pos.add(ax, ay, az));
-                        CurveBuilding.particles_1_13.DUST
+                        particles_1_13.DUST
                                 .color(color, 1D)
                                 .packet(true, location)
                                 .sendTo(player);
@@ -127,11 +129,11 @@ public class SendParticles extends TimerTask {
                 }
                 Location location = adapt(adapt(world), pos.add(0.5, 0.5, 0.5));
                 try {
-                    CurveBuilding.particles_1_13.SOUL_FIRE_FLAME
+                    particles_1_13.SOUL_FIRE_FLAME
                             .packet(true, location)
                             .sendTo(player);
                 } catch (ParticleException e) {
-                    CurveBuilding.particles_1_13.HAPPY_VILLAGER
+                    particles_1_13.HAPPY_VILLAGER
                             .packet(true, location)
                             .sendTo(player);
                 }
@@ -141,7 +143,7 @@ public class SendParticles extends TimerTask {
 
     private void sendLine(Vector3 pos1, Vector3 pos2, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType) {
         if (pos1 != null && pos2 != null) {
-            int distance = (int) Util.lineLength(pos1, pos2);
+            int distance = (int) lineLength(pos1, pos2);
 
             if (distance <= config.lineMaxLength) {
                 for (double i = 0; i <= 1; i += 1.0 / (distance * config.lineDensity)) {
@@ -154,7 +156,7 @@ public class SendParticles extends TimerTask {
                                 .packet(true, location)
                                 .sendTo(player);
                     } catch (ParticleException e) {
-                        CurveBuilding.particles_1_13.HAPPY_VILLAGER
+                        particles_1_13.HAPPY_VILLAGER
                                 .packet(true, location)
                                 .sendTo(player);
                     }
@@ -165,17 +167,17 @@ public class SendParticles extends TimerTask {
 
     private void sendBezier(Vector3 @NotNull [] p, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType) {
         if (p[0] != null && p[1] != null && p[2] != null && p[3] != null) {
-            double length = Util.bezierLength(p, p[0].distance(p[3]) * 20);
+            double length = bezierLength(p, p[0].distance(p[3]) * 20);
 
             if (length <= config.lineMaxLength) {
                 for (double i = 0; i <= 1; i += 1.0 / (length * 4)) {
-                    Location location = BukkitAdapter.adapt(adapt(world), Util.bezierCoordinate(p, i));
+                    Location location = BukkitAdapter.adapt(adapt(world), bezierCoordinate(p, i));
                     try {
                         particleType
                                 .packet(true, location)
                                 .sendTo(player);
                     } catch (ParticleException e) {
-                        CurveBuilding.particles_1_13.HAPPY_VILLAGER
+                        particles_1_13.HAPPY_VILLAGER
                                 .packet(true, location)
                                 .sendTo(player);
                     }

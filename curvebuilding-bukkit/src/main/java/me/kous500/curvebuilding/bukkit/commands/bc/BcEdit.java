@@ -10,14 +10,14 @@ import com.sk89q.worldedit.session.SessionManager;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BaseBlock;
-import me.kous500.curvebuilding.bukkit.Util;
-import me.kous500.curvebuilding.bukkit.Pos;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static me.kous500.curvebuilding.bukkit.CurveBuilding.config;
+import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.config;
 import static me.kous500.curvebuilding.bukkit.Message.getMessage;
+import static me.kous500.curvebuilding.bukkit.Pos.*;
+import static me.kous500.curvebuilding.bukkit.Util.*;
 
 public final class BcEdit {
     private int width;
@@ -62,8 +62,8 @@ public final class BcEdit {
             else if (width <= length) direction = "x";
             else direction = "z";
 
-            NavigableMap<Integer, Vector3[]> posMap = Pos.getPos(actor);
-            World posWorld = Pos.getWorld(actor);
+            NavigableMap<Integer, Vector3[]> posMap = getPos(actor);
+            World posWorld = getWorld(actor);
 
             if (posMap == null || posMap.get(1) == null || posMap.get(1)[0] == null) throw new IncompletePosException();
 
@@ -76,7 +76,7 @@ public final class BcEdit {
 
                 if (n > 1) {
                     Vector3[] bp = posMap.get(n - 1);
-                    Vector3[] bezierPos = new Vector3[] {Util.copyVector(bp[0]), Util.copyVector(bp[2]), Util.copyVector(p[1]), Util.copyVector(p[0])};
+                    Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
                     if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
                     if (bezierPos[2] == null)  bezierPos[2] =  bezierPos[0];
                     editBC(bezierPos);
@@ -97,7 +97,7 @@ public final class BcEdit {
     }
 
     private void editBC(Vector3[] selectionPos) throws MaxChangedBlocksException {
-        double selectionLength = Util.bezierLength(selectionPos, selectionPos[0].distance(selectionPos[3]) * 20);
+        double selectionLength = bezierLength(selectionPos, selectionPos[0].distance(selectionPos[3]) * 20);
         double fineness = config.fineness * selectionLength;
         double h = Math.floor(height / 2.0 - 0.5);
         notSet = new ArrayList<>();
@@ -109,7 +109,7 @@ public final class BcEdit {
             xz(selectionPos, m, fineness, vec);
         }
 
-        nowLength += (int) Util.bezierLength(selectionPos, fineness);
+        nowLength += (int) bezierLength(selectionPos, fineness);
     }
 
     private @NotNull Map<String, Double> pos(Vector3 @NotNull [] selectionPos, double t) {
@@ -176,15 +176,15 @@ public final class BcEdit {
 
             BaseBlock idT;
             if (direction.equals("x")) {
-                double a = Util.floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
-                idT = editSession.getFullBlock(Util.floorVector(searchT.add(a, 0, 0)));
+                double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
+                idT = editSession.getFullBlock(floorVector(searchT.add(a, 0, 0)));
             } else {
-                double a = Util.floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
-                idT = editSession.getFullBlock(Util.floorVector(searchT.add(0 , 0, a)));
+                double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
+                idT = editSession.getFullBlock(floorVector(searchT.add(0 , 0, a)));
             }
 
             Vector3 vecPosT = Vector3.at(xt, yt, zt);
-            BlockVector3 posT = Util.roundVector(vecPosT.add(l*Math.cos(-r), m, l*Math.sin(-r)));
+            BlockVector3 posT = roundVector(vecPosT.add(l*Math.cos(-r), m, l*Math.sin(-r)));
 
             BlockVector3 afterPosT = null;
             if (L >= L1) {
@@ -194,7 +194,7 @@ public final class BcEdit {
                 double azt = apos.get("zt");
                 double ar = apos.get("r");
                 Vector3 vecAfterPosT = Vector3.at(axt, ayt, azt);
-                afterPosT = Util.roundVector(vecAfterPosT.add(l*Math.cos(-ar), m, l*Math.sin(-ar)));
+                afterPosT = roundVector(vecAfterPosT.add(l*Math.cos(-ar), m, l*Math.sin(-ar)));
             }
 
             if (L >= L1 ||

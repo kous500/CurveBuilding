@@ -1,20 +1,25 @@
 plugins {
-    id 'java'
+    id "java"
+    id "maven-publish"
 }
 
 repositories {
     mavenCentral()
+    maven {
+        name = "enginehub-maven"
+        url = uri("https://maven.enginehub.org/repo/")
+    }
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+    compileOnly "com.sk89q.worldedit:worldedit-bukkit:7.2.14"
+    implementation "org.jetbrains:annotations:24.0.1"
 }
 
 tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+    options.encoding = "UTF-8"
 }
 
 tasks.withType(Javadoc) {
-    options.encoding = 'UTF-8'
+    options.encoding = "UTF-8"
 }

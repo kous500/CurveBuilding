@@ -1,7 +1,6 @@
 package me.kous500.curvebuilding.bukkit.commands.pos;
 
-import me.kous500.curvebuilding.bukkit.CurveBuilding;
-import me.kous500.curvebuilding.bukkit.Pos;
+import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -16,13 +15,13 @@ import java.util.List;
 
 import static me.kous500.curvebuilding.bukkit.Message.getMessage;
 import static me.kous500.curvebuilding.bukkit.Message.sendErrorMessage;
-import static me.kous500.curvebuilding.bukkit.Pos.clearPos;
+import static me.kous500.curvebuilding.bukkit.Pos.*;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 
 public class PosCommand implements TabExecutor {
-    private final CurveBuilding plugin;
+    private final CurveBuildingPlugin plugin;
 
-    public PosCommand(CurveBuilding plugin) { this.plugin = plugin; }
+    public PosCommand(CurveBuildingPlugin plugin) { this.plugin = plugin; }
 
     @Override
     public boolean onCommand(
@@ -41,9 +40,9 @@ public class PosCommand implements TabExecutor {
                             String posN = n.toString();
                             if(!posN.equals("") && Integer.parseInt(posN) > 0) {
                                 if (s.equals("f")) {
-                                    Pos.clearPos(player, Integer.parseInt(posN), 1);
+                                    clearPos(player, Integer.parseInt(posN), 1);
                                 } else if (s.equals("b")) {
-                                    Pos.clearPos(player, Integer.parseInt(posN), 2);
+                                    clearPos(player, Integer.parseInt(posN), 2);
                                 }
 
                                 return true;
@@ -61,7 +60,7 @@ public class PosCommand implements TabExecutor {
 
                     String posN = n.toString();
                     if(!posN.equals("") && Integer.parseInt(posN) > 0) {
-                        Pos.clearPos(player, Integer.parseInt(posN), 0);
+                        clearPos(player, Integer.parseInt(posN), 0);
                         return true;
                     } else {
                         sendErrorMessage(player, getMessage("messages.integer-less", 1, posN));
@@ -69,7 +68,7 @@ public class PosCommand implements TabExecutor {
                         return false;
                     }
                 } else if (args.length >= 1 && args[0].equals("clearall")) {
-                    Pos.clearPos(player);
+                    clearPos(player);
                     return true;
                 } else if (args.length >= 1 && args[0].equals("insert")) {
                     sendErrorMessage(adapt(player), "'insert' is not yet implemented.");
@@ -83,9 +82,9 @@ public class PosCommand implements TabExecutor {
                             String posN = n.toString();
                             if(!posN.equals("") && Integer.parseInt(posN) > 0) {
                                 if (s.equals("f")) {
-                                    Pos.addPos(player, Integer.parseInt(posN), 1);
+                                    addPos(player, Integer.parseInt(posN), 1);
                                 } else if (s.equals("b")) {
-                                    Pos.addPos(player, Integer.parseInt(posN), 2);
+                                    addPos(player, Integer.parseInt(posN), 2);
                                 }
                                 return true;
                             } else {
@@ -102,7 +101,7 @@ public class PosCommand implements TabExecutor {
 
                     String posN = n.toString();
                     if(!posN.equals("") && Integer.parseInt(posN) > 0) {
-                        Pos.addPos(player, Integer.parseInt(posN), 0);
+                        addPos(player, Integer.parseInt(posN), 0);
                         return true;
                     } else {
                         sendErrorMessage(player, getMessage("messages.integer-less", 1, posN));

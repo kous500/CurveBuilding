@@ -10,7 +10,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Timer;
 
-public final class CurveBuilding extends JavaPlugin {
+import static me.kous500.curvebuilding.bukkit.Message.getMessage;
+
+public final class CurveBuildingPlugin extends JavaPlugin {
 
     public static Config config;
     public static ParticleList_1_13 particles_1_13;
@@ -27,7 +29,7 @@ public final class CurveBuilding extends JavaPlugin {
             ParticleNativeAPI api = ParticleNativeCore.loadAPI(this);
             particles_1_13 = api.LIST_1_13;
         } catch (ParticleException e) {
-            getLogger().warning(Message.getMessage("messages.plugin-load-error", "ParticleNativeAPI") + e);
+            getLogger().warning(getMessage("messages.plugin-load-error", "ParticleNativeAPI") + e);
         }
 
         BcCommand bcCommand = new BcCommand(this);

@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
+import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.config;
 
 public class Message {
     final private Plugin plugin;
@@ -25,7 +26,7 @@ public class Message {
         }
 
         final File dataFolder = plugin.getDataFolder();
-        final File file = new File(CurveBuilding.config.messageFilePath.replace("%datafolder%", dataFolder.toPath().toString()));
+        final File file = new File(config.messageFilePath.replace("%datafolder%", dataFolder.toPath().toString()));
 
         if (file.exists())
             messages = YamlConfiguration.loadConfiguration(file);

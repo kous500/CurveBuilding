@@ -9,6 +9,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static me.kous500.curvebuilding.bukkit.Message.getMessage;
+import static me.kous500.curvebuilding.bukkit.Util.*;
+
 /**
  * posのデータの保存方法とデータを操作するメゾットを定義する。
  */
@@ -39,7 +42,7 @@ public final class Pos {
     public static void addPos(@NotNull Player player, int n, int h) {
         assert (h >= 0) && (h <= 2) : "The value of h must be in the range 0 to 2.";
 
-        Vector3 location = Util.floorVector(player.getLocation().toVector()).toVector3();
+        Vector3 location = floorVector(player.getLocation().toVector()).toVector3();
         World world = player.getWorld();
         UUID uuid = player.getUniqueId();
         Pos pos = POS_MAP.get(uuid);
@@ -89,7 +92,7 @@ public final class Pos {
             POS_MAP.put(uuid, new Pos(world, location, n, h));
         }
 
-        player.printInfo(TextComponent.of(Message.getMessage("messages.pos-set", posToString(n, h), location)));
+        player.printInfo(TextComponent.of(getMessage("messages.pos-set", posToString(n, h), location)));
     }
 
     private static Vector3 posAutocompletion(@NotNull Vector3 h0, @NotNull Vector3 hIN, Vector3 hOUT){
@@ -100,7 +103,7 @@ public final class Pos {
         if (hOUT == null) {
             return h0.add(-x, -y, -z);
         } else {
-            double[] newH = Util.changeR(x, y, z, -Util.lineLength(h0, hOUT));
+            double[] newH = changeR(x, y, z, -lineLength(h0, hOUT));
             return h0.add(newH[0], newH[1], newH[2]);
         }
     }
@@ -117,7 +120,7 @@ public final class Pos {
             pos.p = new TreeMap<>();
             pos.world = null;
             POS_MAP.replace(uuid, pos);
-            player.printInfo(TextComponent.of(Message.getMessage("messages.pos-clear-all")));
+            player.printInfo(TextComponent.of(getMessage("messages.pos-clear-all")));
         }
     }
 
@@ -148,7 +151,7 @@ public final class Pos {
         pos.p.replace(n, l);
         POS_MAP.replace(uuid, pos);
 
-        player.printInfo(TextComponent.of(Message.getMessage("messages.pos-clear", posToString(n, h))));
+        player.printInfo(TextComponent.of(getMessage("messages.pos-clear", posToString(n, h))));
     }
 
     /**
@@ -191,13 +194,10 @@ public final class Pos {
     }
 
     private static @NotNull String posToString(int n, int h) {
-        switch (h) {
-            case 1:
-                return Message.getMessage("messages.pos-Nf", n);
-            case 2:
-                return Message.getMessage("messages.pos-Nb", n);
-            default:
-                return Message.getMessage("messages.pos-N", n);
-        }
+        return switch (h) {
+            case 1 -> getMessage("messages.pos-Nf", n);
+            case 2 -> getMessage("messages.pos-Nb", n);
+            default -> getMessage("messages.pos-N", n);
+        };
     }
 }

@@ -25,9 +25,9 @@ public final class Config{
 
     public String messageFilePath;
 
-    private final CurveBuilding plugin;
+    private final CurveBuildingPlugin plugin;
 
-    public Config(@NotNull CurveBuilding plugin) {
+    public Config(@NotNull CurveBuildingPlugin plugin) {
         this.plugin = plugin;
 
         plugin.saveDefaultConfig();
