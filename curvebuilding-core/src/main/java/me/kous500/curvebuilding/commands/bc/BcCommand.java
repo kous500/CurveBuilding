@@ -1,12 +1,12 @@
-package me.kous500.curvebuilding.bukkit.commands.bc;
+package me.kous500.curvebuilding.commands.bc;
 
-import org.bukkit.entity.Player;
+import com.sk89q.worldedit.entity.Player;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
 
-import static me.kous500.curvebuilding.bukkit.Message.getMessage;
-import static me.kous500.curvebuilding.bukkit.Message.sendErrorMessage;
+import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 
-public final class BcArgument {
+public final class BcCommand {
     public int n = 0;
     public int m = 0;
     public boolean line = false;
@@ -15,20 +15,24 @@ public final class BcArgument {
     public boolean isDirectionX = false;
     public boolean isDirectionZ = false;
 
-    public  boolean success = true;
+    public boolean success = true;
+
+    private final Player player;
 
     /**
      * bcコマンドの引数が正しいか調べ、引数の値をフィールドに代入する
      * @param args bcコマンドの引数
      * @param player コマンドを送信したプレイヤー
      */
-    public BcArgument(String @NotNull [] args, Player player) {
+    public BcCommand(String @NotNull [] args, Player player) {
+        this.player = player;
+
         int NumberCount = 0;
         String beforeArg = "";
         for (String arg : args) {
             if (arg.matches("-.*")) {
                 if (arg.matches("^-[0-9]+$")) {
-                    incorrectArgument(arg, beforeArg, player, NumberCount);
+                    incorrectArgument(arg, beforeArg, NumberCount);
                     NumberCount++;
                 } else {
                     boolean first = true;
@@ -52,15 +56,15 @@ public final class BcArgument {
                         }
                     }
 
-                    if (!goodArg) incorrectArgument(arg, beforeArg, player, NumberCount);
+                    if (!goodArg) incorrectArgument(arg, beforeArg, NumberCount);
                 }
             } else {
-                if (NumberCount == 0 && incorrectArgument(arg, beforeArg, player, NumberCount)) {
+                if (NumberCount == 0 && incorrectArgument(arg, beforeArg, NumberCount)) {
                     n = Integer.parseInt(arg);
-                } else if (NumberCount == 1 && incorrectArgument(arg, beforeArg, player, NumberCount)) {
+                } else if (NumberCount == 1 && incorrectArgument(arg, beforeArg, NumberCount)) {
                     m = Integer.parseInt(arg);
                 } else if (NumberCount > 1) {
-                    incorrectArgument(arg, beforeArg, player, NumberCount);
+                    incorrectArgument(arg, beforeArg, NumberCount);
                 }
                 NumberCount++;
             }
@@ -68,20 +72,20 @@ public final class BcArgument {
         }
     }
 
-    private boolean incorrectArgument(@NotNull String arg, String beforeArg, Player player, int NumberCount) {
+    private boolean incorrectArgument(@NotNull String arg, String beforeArg, int NumberCount) {
         if (!arg.matches("^[0-9]+$") || NumberCount > 1) {
             if (NumberCount > 1) {
-                sendErrorMessage(player, getMessage(getMessage("messages.incorrect-argument")));
+                player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
             } else if (arg.matches("^-[0-9]+$")) {
-                sendErrorMessage(player, getMessage(getMessage("messages.integer-less", 0, arg)));
+                player.printError(TextComponent.of(getMessage("messages.integer-less", 0, arg)));
             } else if (arg.matches("[+-]?\\d*(\\.\\d+)?")) {
-                sendErrorMessage(player, getMessage(getMessage("messages.invalid-integer", arg)));
+                player.printError(TextComponent.of(getMessage("messages.invalid-integer", arg)));
             } else {
-                sendErrorMessage(player, getMessage(getMessage("messages.incorrect-argument")));
+                player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
             }
 
             if (beforeArg.equals("")) beforeArg = "bc";
-            player.sendMessage("\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o" + getMessage("messages.problem-here"));
+            player.printInfo(TextComponent.of("\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o" + getMessage("messages.problem-here")));
 
             success = false;
             return false;

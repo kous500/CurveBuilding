@@ -1,6 +1,8 @@
-package me.kous500.curvebuilding.bukkit.commands.bc;
+package me.kous500.curvebuilding.bukkit.commands;
 
 import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
+import me.kous500.curvebuilding.commands.bc.BcCommand;
+import me.kous500.curvebuilding.commands.bc.BcEdit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -13,15 +15,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static me.kous500.curvebuilding.bukkit.Message.getMessage;
+import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
+import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 
-public class BcCommand implements TabExecutor {
+public class Bc implements TabExecutor {
     private final CurveBuildingPlugin plugin;
 
     private final String[] option = {"l", "a", "r"};
     private final String[] directionOption = {"x", "z"};
 
-    public BcCommand(CurveBuildingPlugin plugin) {
+    public Bc(CurveBuildingPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -32,9 +35,9 @@ public class BcCommand implements TabExecutor {
         if (command.getName().equalsIgnoreCase("/bc")) {
             if (sender instanceof Player) {
                 // プレイヤーが実行した場合の処理
-                BcArgument argument = new BcArgument(args, (Player) sender);
+                BcCommand argument = new BcCommand(args, adapt((Player) sender));
                 if (argument.success) {
-                    new BcEdit((Player) sender, argument);
+                    new BcEdit(adapt((Player) sender), argument);
                     return true;
                 }
             } else {

@@ -5,8 +5,10 @@ import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.world.World;
+import me.kous500.curvebuilding.PosData;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -14,8 +16,8 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.particles_1_13;
-import static me.kous500.curvebuilding.bukkit.Pos.getPosMap;
-import static me.kous500.curvebuilding.bukkit.Util.*;
+import static me.kous500.curvebuilding.PosData.getPosMap;
+import static me.kous500.curvebuilding.Util.*;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static java.lang.Math.sqrt;
 import static org.bukkit.Bukkit.getPlayer;
@@ -24,21 +26,23 @@ import static org.bukkit.Bukkit.getPlayer;
  * posの状態を各プレイヤーに送信し続ける。
  */
 public class SendParticles extends TimerTask {
-    private final Config config;
+    private final BukkitConfig config;
 
-    public SendParticles(Config config) { this.config = config; }
+    public SendParticles(BukkitConfig bukkitConfig) {
+        this.config = bukkitConfig;
+    }
 
     @Override
     public void run() {
-        for (Map.Entry<UUID, Pos> entry : getPosMap().entrySet()) {
+        for (Map.Entry<UUID, PosData> entry : getPosMap().entrySet()) {
             UUID uuid = entry.getKey();
-            Pos pos = entry.getValue();
-            org.bukkit.entity.Player player = getPlayer(uuid);
+            PosData posData = entry.getValue();
+            Player player = getPlayer(uuid);
             boolean endLine = false;
 
-            if (player != null && pos.world != null && pos.world.getName().equals(player.getWorld().getName())) {
-                for (int n = 1; n <= pos.p.lastEntry().getKey(); n++) {
-                    Vector3[] p = pos.p.get(n);
+            if (player != null && posData.world != null && posData.world.getName().equals(player.getWorld().getName())) {
+                for (int n = 1; n <= posData.p.lastEntry().getKey(); n++) {
+                    Vector3[] p = posData.p.get(n);
                     if (p != null) {
                         for (int h = 0; h <= 2; h++) {
                             if (p[h] != null) {
@@ -46,16 +50,16 @@ public class SendParticles extends TimerTask {
                                 if (h == 1) color = config.fColor;
                                 else if (h == 2) color = config.bColor;
                                 else if (n == 1) color = config.startColor;
-                                else if (n == pos.p.lastEntry().getKey()) color = config.endColor;
+                                else if (n == posData.p.lastEntry().getKey()) color = config.endColor;
                                 else color = config.posColor;
 
-                                if (h == 0) sendCube(p[h], pos.world, player, color);
-                                else sendCross(p[h], pos.world, player, color);
+                                if (h == 0) sendCube(p[h], posData.world, player, color);
+                                else sendCross(p[h], posData.world, player, color);
                             }
                         }
 
-                        sendLine(p[0], p[1], pos.world, player, particles_1_13.SOUL_FIRE_FLAME);
-                        sendLine(p[0], p[2], pos.world, player, particles_1_13.SOUL_FIRE_FLAME);
+                        sendLine(p[0], p[1], posData.world, player, particles_1_13.SOUL_FIRE_FLAME);
+                        sendLine(p[0], p[2], posData.world, player, particles_1_13.SOUL_FIRE_FLAME);
 
                         if (p[0] == null) endLine = true;
                     } else {
@@ -63,11 +67,11 @@ public class SendParticles extends TimerTask {
                     }
 
                     if (!endLine && n != 1) {
-                        Vector3[] bp = pos.p.get(n - 1);
+                        Vector3[] bp = posData.p.get(n - 1);
                         Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
                         if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
-                        if (bezierPos[2] == null)  bezierPos[2] =  bezierPos[3];
-                        sendBezier(bezierPos, pos.world, player, particles_1_13.FLAME);
+                        if (bezierPos[2] == null) bezierPos[2] = bezierPos[3];
+                        sendBezier(bezierPos, posData.world, player, particles_1_13.FLAME);
                     }
                 }
             }

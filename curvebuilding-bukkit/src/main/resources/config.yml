@@ -1,3 +1,6 @@
+# Message file path
+message-file: "%datafolder%/messages/en.yml"
+
 curve:
   # Fineness of the curve
   fineness: 5
@@ -24,6 +27,3 @@ particles:
     density: 4
     # Maximum length to display particles
     max-length: 512
-
-# Message file path
-message-file: "%datafolder%/messages/en.yml"

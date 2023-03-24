@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.bukkit;
+package me.kous500.curvebuilding;
 
 
 import com.sk89q.worldedit.math.BlockVector3;
@@ -141,5 +141,15 @@ public final class Util {
         double theta = atan2(y, x);
         double phi = acos(z / r);
         return new double[]{ r, theta, phi };
+    }
+
+    public static String messageReplace(@NotNull String message, Object @NotNull ... args) {
+        int i = 0;
+        for (Object arg: args) {
+            message = message.replace("{" + i + "}", arg.toString());
+            i++;
+        }
+
+        return message;
     }
 }

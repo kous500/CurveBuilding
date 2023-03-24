@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.bukkit;
+package me.kous500.curvebuilding;
 
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.math.Vector3;
@@ -9,17 +9,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static me.kous500.curvebuilding.bukkit.Message.getMessage;
-import static me.kous500.curvebuilding.bukkit.Util.*;
+import static me.kous500.curvebuilding.CurveBuilding.getMessage;
+import static me.kous500.curvebuilding.Util.*;
 
 /**
  * posのデータの保存方法とデータを操作するメゾットを定義する。
  */
-public final class Pos {
+public final class PosData {
     public World world;
     public NavigableMap<Integer, Vector3[]> p = new TreeMap<>();
 
-    private Pos(World world, Vector3 location, int n, int h) {
+    private PosData(World world, Vector3 location, int n, int h) {
         this.world = world;
         Vector3[] l = new Vector3[3];
         l[h] = location;
@@ -29,7 +29,7 @@ public final class Pos {
     /**
      * プレイヤーごとのposのデータを保存する。
      */
-    private static final Map<UUID, Pos> POS_MAP = new HashMap<>();
+    private static final Map<UUID, PosData> POS_MAP = new HashMap<>();
 
     /**
      * 指定されたプレイヤーのposをposListに追加する。
@@ -45,21 +45,21 @@ public final class Pos {
         Vector3 location = floorVector(player.getLocation().toVector()).toVector3();
         World world = player.getWorld();
         UUID uuid = player.getUniqueId();
-        Pos pos = POS_MAP.get(uuid);
+        PosData posData = POS_MAP.get(uuid);
 
-        if (pos != null) {
-            if (pos.world != null && !pos.world.getName().equals(world.getName())) {
-                pos.p = new TreeMap<>();
+        if (posData != null) {
+            if (posData.world != null && !posData.world.getName().equals(world.getName())) {
+                posData.p = new TreeMap<>();
             }
 
-            Vector3[] l = pos.p.get(n);
-            Vector3[] la = pos.p.get(n + 1);
-            Vector3[] lb = pos.p.get(n - 1);
+            Vector3[] l = posData.p.get(n);
+            Vector3[] la = posData.p.get(n + 1);
+            Vector3[] lb = posData.p.get(n - 1);
 
             if (l == null) {
                 l = new Vector3[3];
                 l[h] = location;
-                pos.p.put(n, l);
+                posData.p.put(n, l);
             } else {
                 if (h == 0 && l[h] != null) {
                     double x = location.getX() - l[h].getX();
@@ -78,18 +78,18 @@ public final class Pos {
                     l[1] = posAutocompletion(l[0], l[2], l[1]);
                 }
 
-                pos.p.replace(n, l);
+                posData.p.replace(n, l);
             }
 
             if (h == 0 && lb != null && lb[0] != null && lb[1] != null && lb[2] == null) {
                 lb[2] = posAutocompletion(lb[0], lb[1], null);
-                pos.p.replace(n - 1, lb);
+                posData.p.replace(n - 1, lb);
             }
 
-            pos.world = world;
-            POS_MAP.replace(uuid, pos);
+            posData.world = world;
+            POS_MAP.replace(uuid, posData);
         } else {
-            POS_MAP.put(uuid, new Pos(world, location, n, h));
+            POS_MAP.put(uuid, new PosData(world, location, n, h));
         }
 
         player.printInfo(TextComponent.of(getMessage("messages.pos-set", posToString(n, h), location)));
@@ -115,11 +115,11 @@ public final class Pos {
      */
     public static void clearPos(@NotNull Player player) {
         UUID uuid = player.getUniqueId();
-        Pos pos = POS_MAP.get(uuid);
-        if (pos != null) {
-            pos.p = new TreeMap<>();
-            pos.world = null;
-            POS_MAP.replace(uuid, pos);
+        PosData posData = POS_MAP.get(uuid);
+        if (posData != null) {
+            posData.p = new TreeMap<>();
+            posData.world = null;
+            POS_MAP.replace(uuid, posData);
             player.printInfo(TextComponent.of(getMessage("messages.pos-clear-all")));
         }
     }
@@ -136,10 +136,10 @@ public final class Pos {
         assert (h >= 0) && (h <= 2) : "h must be in the range 0 to 2.";
 
         UUID uuid = player.getUniqueId();
-        Pos pos = POS_MAP.get(uuid);
+        PosData posData = POS_MAP.get(uuid);
 
-        if (pos == null) return;
-        Vector3[] l = pos.p.get(n);
+        if (posData == null) return;
+        Vector3[] l = posData.p.get(n);
         if (l == null) return;
 
         if (h == 0) {
@@ -148,8 +148,8 @@ public final class Pos {
             l[h] = null;
         }
 
-        pos.p.replace(n, l);
-        POS_MAP.replace(uuid, pos);
+        posData.p.replace(n, l);
+        POS_MAP.replace(uuid, posData);
 
         player.printInfo(TextComponent.of(getMessage("messages.pos-clear", posToString(n, h))));
     }
@@ -162,9 +162,9 @@ public final class Pos {
      */
     public static @Nullable NavigableMap<Integer, Vector3[]> getPos(@NotNull Player player) {
         UUID uuid = player.getUniqueId();
-        Pos pos = POS_MAP.get(uuid);
-        if (pos != null) {
-            return pos.p;
+        PosData posData = POS_MAP.get(uuid);
+        if (posData != null) {
+            return posData.p;
         } else {
             return null;
         }
@@ -177,9 +177,9 @@ public final class Pos {
      */
     public static @Nullable World getWorld(@NotNull Player player) {
         UUID uuid = player.getUniqueId();
-        Pos pos = POS_MAP.get(uuid);
-        if (pos != null) {
-            return pos.world;
+        PosData posData = POS_MAP.get(uuid);
+        if (posData != null) {
+            return posData.world;
         }
         return null;
     }
@@ -189,7 +189,7 @@ public final class Pos {
      *
      * @return posList
      */
-    public static Map<UUID, Pos> getPosMap() {
+    public static Map<UUID, PosData> getPosMap() {
         return POS_MAP;
     }
 

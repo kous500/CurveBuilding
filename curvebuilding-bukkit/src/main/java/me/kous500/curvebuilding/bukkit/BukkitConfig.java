@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding.bukkit;
 
+import me.kous500.curvebuilding.Config;
 import org.bukkit.Color;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,11 +9,7 @@ import static org.bukkit.Color.fromRGB;
 /**
  * config.ymlのデータを読み込む。
  */
-public final class Config{
-    public int fineness;
-    public int maxSetLength;
-    public boolean tCenter;
-
+public final class BukkitConfig extends Config {
     public Color posColor;
     public Color startColor;
     public Color endColor;
@@ -23,11 +20,9 @@ public final class Config{
     public int lineDensity;
     public int lineMaxLength;
 
-    public String messageFilePath;
-
     private final CurveBuildingPlugin plugin;
 
-    public Config(@NotNull CurveBuildingPlugin plugin) {
+    public BukkitConfig(@NotNull CurveBuildingPlugin plugin) {
         this.plugin = plugin;
 
         plugin.saveDefaultConfig();
@@ -35,7 +30,7 @@ public final class Config{
 
         if (fineness <= 0 || maxSetLength <= 0 || posDensity <= 0 || lineDensity <= 0 || lineMaxLength <= 0) {
             plugin.reloadConfig();
-            plugin.getLogger().info("Fill config.yml has been reloaded.");
+            plugin.getLogger().info("Fill bukkitConfig.yml has been reloaded.");
             road();
         }
     }

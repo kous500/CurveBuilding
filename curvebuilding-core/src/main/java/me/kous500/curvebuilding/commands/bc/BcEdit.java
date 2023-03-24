@@ -1,7 +1,6 @@
-package me.kous500.curvebuilding.bukkit.commands.bc;
+package me.kous500.curvebuilding.commands.bc;
 
 import com.sk89q.worldedit.*;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
@@ -14,10 +13,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.config;
-import static me.kous500.curvebuilding.bukkit.Message.getMessage;
-import static me.kous500.curvebuilding.bukkit.Pos.*;
-import static me.kous500.curvebuilding.bukkit.Util.*;
+import static me.kous500.curvebuilding.CurveBuilding.config;
+import static me.kous500.curvebuilding.CurveBuilding.getMessage;
+import static me.kous500.curvebuilding.PosData.*;
+import static me.kous500.curvebuilding.Util.*;
 
 public final class BcEdit {
     private int width;
@@ -27,7 +26,7 @@ public final class BcEdit {
     private Vector3 center;
     private String direction;
     private List<BlockVector3> notSet = new ArrayList<>();
-    private final BcArgument argument;
+    private final BcCommand argument;
     private EditSession editSession;
 
     /**
@@ -36,18 +35,18 @@ public final class BcEdit {
      * @param player コマンドを実行したプレイヤー
      * @param argument bcコマンドの引数
      */
-    public BcEdit(org.bukkit.entity.Player player, @NotNull BcArgument argument) {
+    public BcEdit(Player player, @NotNull BcCommand argument) {
         this.argument = argument;
 
-        Player actor = BukkitAdapter.adapt(player);
         SessionManager manager = WorldEdit.getInstance().getSessionManager();
-        LocalSession session = manager.get(actor);
+        LocalSession session = manager.get(player);
 
         World world = session.getSelectionWorld();
 
-        try (EditSession editSession = session.createEditSession(actor)) {
+        try (EditSession editSession = session.createEditSession(player)) {
             this.editSession = editSession;
             try {
+                //FAWEの場合は実行されない
                 editSession.setBlockChangeLimit(session.getBlockChangeLimit());
             } catch (NoSuchMethodError ignored) {}
 
@@ -62,8 +61,8 @@ public final class BcEdit {
             else if (width <= length) direction = "x";
             else direction = "z";
 
-            NavigableMap<Integer, Vector3[]> posMap = getPos(actor);
-            World posWorld = getWorld(actor);
+            NavigableMap<Integer, Vector3[]> posMap = getPos(player);
+            World posWorld = getWorld(player);
 
             if (posMap == null || posMap.get(1) == null || posMap.get(1)[0] == null) throw new IncompletePosException();
 
@@ -83,14 +82,14 @@ public final class BcEdit {
                 }
             }
 
-            actor.printInfo(TextComponent.of(getMessage("messages.bc-changed", editSession.size())));
-            actor.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round(nowLength * 100) / 100)));
+            player.printInfo(TextComponent.of(getMessage("messages.bc-changed", editSession.size())));
+            player.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round(nowLength * 100) / 100)));
         } catch (IncompleteRegionException e) {
-            actor.printError(TextComponent.of(getMessage("messages.incomplete-region")));
+            player.printError(TextComponent.of(getMessage("messages.incomplete-region")));
         } catch (IncompletePosException e) {
-            actor.printError(TextComponent.of(getMessage("messages.incomplete-pos")));
+            player.printError(TextComponent.of(getMessage("messages.incomplete-pos")));
         } catch (MaxChangedBlocksException e) {
-            actor.printError(TextComponent.of(getMessage("messages.max-changed-blocks", session.getBlockChangeLimit())));
+            player.printError(TextComponent.of(getMessage("messages.max-changed-blocks", session.getBlockChangeLimit())));
         } finally {
             session.remember(editSession);
         }
@@ -188,11 +187,11 @@ public final class BcEdit {
 
             BlockVector3 afterPosT = null;
             if (L >= L1) {
-                Map<String, Double> apos = pos(selectionPos, s + 1.0 / fineness);
-                double axt = apos.get("xt");
-                double ayt = apos.get("yt");
-                double azt = apos.get("zt");
-                double ar = apos.get("r");
+                Map<String, Double> aPos = pos(selectionPos, s + 1.0 / fineness);
+                double axt = aPos.get("xt");
+                double ayt = aPos.get("yt");
+                double azt = aPos.get("zt");
+                double ar = aPos.get("r");
                 Vector3 vecAfterPosT = Vector3.at(axt, ayt, azt);
                 afterPosT = roundVector(vecAfterPosT.add(l*Math.cos(-ar), m, l*Math.sin(-ar)));
             }
