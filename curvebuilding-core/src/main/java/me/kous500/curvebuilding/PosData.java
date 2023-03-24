@@ -4,8 +4,6 @@ import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -39,7 +37,7 @@ public final class PosData {
      * @param  h posの種類
      * @throws AssertionError hが0以上2以下ではない場合
      */
-    public static void addPos(@NotNull Player player, int n, int h) {
+    public static void addPos(Player player, int n, int h) {
         assert (h >= 0) && (h <= 2) : "The value of h must be in the range 0 to 2.";
 
         Vector3 location = floorVector(player.getLocation().toVector()).toVector3();
@@ -95,7 +93,7 @@ public final class PosData {
         player.printInfo(TextComponent.of(getMessage("messages.pos-set", posToString(n, h), location)));
     }
 
-    private static Vector3 posAutocompletion(@NotNull Vector3 h0, @NotNull Vector3 hIN, Vector3 hOUT){
+    private static Vector3 posAutocompletion(Vector3 h0, Vector3 hIN, Vector3 hOUT){
         double x = hIN.getX() - h0.getX();
         double y = hIN.getY() - h0.getY();
         double z = hIN.getZ() - h0.getZ();
@@ -113,7 +111,7 @@ public final class PosData {
      *
      * @param player posを削除するプレイヤー
      */
-    public static void clearPos(@NotNull Player player) {
+    public static void clearPos(Player player) {
         UUID uuid = player.getUniqueId();
         PosData posData = POS_MAP.get(uuid);
         if (posData != null) {
@@ -132,7 +130,7 @@ public final class PosData {
      * @param  h posの種類
      * @throws AssertionError hが0以上2以下ではない場合
      */
-    public static void clearPos(@NotNull Player player, int n, int h) {
+    public static void clearPos(Player player, int n, int h) {
         assert (h >= 0) && (h <= 2) : "h must be in the range 0 to 2.";
 
         UUID uuid = player.getUniqueId();
@@ -160,7 +158,7 @@ public final class PosData {
      * @param player posを取得するプレイヤー
      * @return posListにプレイヤーのデータがあればプレイヤーのposを返す<br>無ければnullを返す
      */
-    public static @Nullable NavigableMap<Integer, Vector3[]> getPos(@NotNull Player player) {
+    public static NavigableMap<Integer, Vector3[]> getPos(Player player) {
         UUID uuid = player.getUniqueId();
         PosData posData = POS_MAP.get(uuid);
         if (posData != null) {
@@ -175,7 +173,7 @@ public final class PosData {
      * @param player Worldを取得するプレイヤー
      * @return posListにプレイヤーのデータがあればプレイヤーのWorldを返す<br>無ければnullを返す
      */
-    public static @Nullable World getWorld(@NotNull Player player) {
+    public static World getWorld(Player player) {
         UUID uuid = player.getUniqueId();
         PosData posData = POS_MAP.get(uuid);
         if (posData != null) {
@@ -193,7 +191,7 @@ public final class PosData {
         return POS_MAP;
     }
 
-    private static @NotNull String posToString(int n, int h) {
+    private static String posToString(int n, int h) {
         return switch (h) {
             case 1 -> getMessage("messages.pos-Nf", n);
             case 2 -> getMessage("messages.pos-Nb", n);

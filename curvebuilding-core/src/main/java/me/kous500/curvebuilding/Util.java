@@ -3,8 +3,6 @@ package me.kous500.curvebuilding;
 
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import static java.lang.Math.*;
 
@@ -15,14 +13,14 @@ public final class Util {
     /**
      * Vector3をroundで丸める。
      */
-    public static BlockVector3 roundVector(@NotNull Vector3 vec){
+    public static BlockVector3 roundVector(Vector3 vec){
         return BlockVector3.at(Math.round(vec.getX()), Math.round(vec.getY()), Math.round(vec.getZ()));
     }
 
     /**
      * Vector3をfloorで丸める。
      */
-    public static BlockVector3 floorVector(@NotNull Vector3 vec){
+    public static BlockVector3 floorVector(Vector3 vec){
         double e = 0.0001;
         return BlockVector3.at(floorE(vec.getX(), e), floorE(vec.getY(), e), floorE(vec.getZ(), e));
     }
@@ -51,7 +49,7 @@ public final class Util {
      * @return 曲線の長さ
      * @throws AssertionError p1からp4にnullが含まれる場合
      */
-    public static double bezierLength(Vector3 @NotNull [] pos, double fineness) {
+    public static double bezierLength(Vector3[] pos, double fineness) {
         assert (pos[0] != null) && (pos[1] != null) && (pos[2] != null) && (pos[3] != null)
                 : "The value of pos cannot be null.";
 
@@ -81,7 +79,7 @@ public final class Util {
      * @param pos2 終点
      * @return 直線の長さ
      */
-    public static double lineLength(@NotNull Vector3 pos1, @NotNull Vector3 pos2) {
+    public static double lineLength(Vector3 pos1, Vector3 pos2) {
         return Math.sqrt(
                 pow(pos1.getX() - pos2.getX(), 2)
                         + pow(pos1.getY() - pos2.getY(), 2)
@@ -96,7 +94,7 @@ public final class Util {
      * @return 座標
      * @throws AssertionError p1からp4にnullが含まれる場合もしくはiが0以上1以下でない場合
      */
-    public static Vector3 bezierCoordinate(Vector3 @NotNull [] pos, double i) {
+    public static Vector3 bezierCoordinate(Vector3[] pos, double i) {
         assert (pos[0] != null) && (pos[1] != null) && (pos[2] != null) && (pos[3] != null)
                 : "The value of pos cannot be null.";
         assert (0 <= i) && (i <= 1)
@@ -125,7 +123,7 @@ public final class Util {
         else return null;
     }
 
-    public static double @NotNull [] changeR(double x, double y, double z, double newR) {
+    public static double[] changeR(double x, double y, double z, double newR) {
         double[] polar = toPolar(x, y, z);
         double theta = polar[1];
         double phi = polar[2];
@@ -135,15 +133,14 @@ public final class Util {
         return new double[]{ x1, y1, z1 };
     }
 
-    @Contract("_, _, _ -> new")
-    public static double @NotNull [] toPolar(double x, double y, double z) {
+    public static double[] toPolar(double x, double y, double z) {
         double r = sqrt(x * x + y * y + z * z);
         double theta = atan2(y, x);
         double phi = acos(z / r);
         return new double[]{ r, theta, phi };
     }
 
-    public static String messageReplace(@NotNull String message, Object @NotNull ... args) {
+    public static String messageReplace(String message, Object... args) {
         int i = 0;
         for (Object arg: args) {
             message = message.replace("{" + i + "}", arg.toString());

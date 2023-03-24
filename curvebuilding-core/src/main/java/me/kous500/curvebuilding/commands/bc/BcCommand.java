@@ -2,7 +2,6 @@ package me.kous500.curvebuilding.commands.bc;
 
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
-import org.jetbrains.annotations.NotNull;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 
@@ -24,7 +23,7 @@ public final class BcCommand {
      * @param args bcコマンドの引数
      * @param player コマンドを送信したプレイヤー
      */
-    public BcCommand(String @NotNull [] args, Player player) {
+    public BcCommand(String[] args, Player player) {
         this.player = player;
 
         int NumberCount = 0;
@@ -72,7 +71,7 @@ public final class BcCommand {
         }
     }
 
-    private boolean incorrectArgument(@NotNull String arg, String beforeArg, int NumberCount) {
+    private boolean incorrectArgument(String arg, String beforeArg, int NumberCount) {
         if (!arg.matches("^[0-9]+$") || NumberCount > 1) {
             if (NumberCount > 1) {
                 player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));

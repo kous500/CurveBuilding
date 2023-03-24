@@ -9,7 +9,6 @@ import me.kous500.curvebuilding.PosData;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.TimerTask;
@@ -169,7 +168,7 @@ public class SendParticles extends TimerTask {
         }
     }
 
-    private void sendBezier(Vector3 @NotNull [] p, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType) {
+    private void sendBezier(Vector3[] p, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType) {
         if (p[0] != null && p[1] != null && p[2] != null && p[3] != null) {
             double length = bezierLength(p, p[0].distance(p[3]) * 20);
 

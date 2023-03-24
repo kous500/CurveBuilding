@@ -52,7 +52,7 @@ public class Bc implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(
-            @NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+            @NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         List<String> completions = new ArrayList<>();
         List<String> commands;
 

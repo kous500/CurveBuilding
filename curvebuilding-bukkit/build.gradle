@@ -1,11 +1,9 @@
 plugins {
     id "java-library"
-    id "maven-publish"
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
 repositories {
-    mavenCentral()
     maven {
         name = "spigotmc-repo"
         url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
@@ -26,9 +24,9 @@ repositories {
 dependencies {
     compileOnly "org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT"
     compileOnly "com.sk89q.worldedit:worldedit-bukkit:7.2.14"
+    compileOnly "org.jetbrains:annotations:24.0.1"
     api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.0.0"
     api project(':curvebuilding-core')
-    implementation "org.jetbrains:annotations:24.0.1"
 }
 
 shadowJar {
@@ -64,14 +62,6 @@ processResources {
     filteringCharset "UTF-8"
     filesMatching("plugin.yml") {
         expand props
-    }
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from(components.java)
-        }
     }
 }
 

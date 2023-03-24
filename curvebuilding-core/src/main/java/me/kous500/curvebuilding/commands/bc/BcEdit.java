@@ -9,7 +9,6 @@ import com.sk89q.worldedit.session.SessionManager;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BaseBlock;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -35,7 +34,7 @@ public final class BcEdit {
      * @param player コマンドを実行したプレイヤー
      * @param argument bcコマンドの引数
      */
-    public BcEdit(Player player, @NotNull BcCommand argument) {
+    public BcEdit(Player player, BcCommand argument) {
         this.argument = argument;
 
         SessionManager manager = WorldEdit.getInstance().getSessionManager();
@@ -111,7 +110,7 @@ public final class BcEdit {
         nowLength += (int) bezierLength(selectionPos, fineness);
     }
 
-    private @NotNull Map<String, Double> pos(Vector3 @NotNull [] selectionPos, double t) {
+    private Map<String, Double> pos(Vector3[] selectionPos, double t) {
         double x0 = selectionPos[0].getX();
         double y0 = selectionPos[0].getY();
         double z0 = selectionPos[0].getZ();
@@ -148,7 +147,7 @@ public final class BcEdit {
         return values;
     }
 
-    private void set(Vector3 @NotNull [] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
+    private void set(Vector3[] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
         double xt1 = selectionPos[0].getX();
         double yt1 = selectionPos[0].getY();
         double zt1 = selectionPos[0].getZ();

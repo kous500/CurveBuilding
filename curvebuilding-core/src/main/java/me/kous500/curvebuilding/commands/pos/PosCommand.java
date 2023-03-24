@@ -2,14 +2,13 @@ package me.kous500.curvebuilding.commands.pos;
 
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
-import org.jetbrains.annotations.NotNull;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.PosData.addPos;
 import static me.kous500.curvebuilding.PosData.clearPos;
 
 public class PosCommand {
-    public static boolean posCommand(Player player, @NotNull String command, @NotNull String[] args) {
+    public static boolean posCommand(Player player, String command, String[] args) {
         if (command.equalsIgnoreCase("/pos")) {
             if (args.length >= 2 && args[0].equals("clear")) {
                 StringBuilder n = new StringBuilder();
@@ -100,7 +99,7 @@ public class PosCommand {
         return false;
     }
 
-    public static void problemHere(@NotNull Player player, String beforeArg, String arg) {
+    public static void problemHere(Player player, String beforeArg, String arg) {
         player.printInfo(TextComponent.of(
                 "\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o" + getMessage("messages.problem-here")));
     }

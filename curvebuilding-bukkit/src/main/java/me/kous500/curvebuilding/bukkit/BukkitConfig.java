@@ -2,7 +2,6 @@ package me.kous500.curvebuilding.bukkit;
 
 import me.kous500.curvebuilding.Config;
 import org.bukkit.Color;
-import org.jetbrains.annotations.NotNull;
 
 import static org.bukkit.Color.fromRGB;
 
@@ -22,7 +21,7 @@ public final class BukkitConfig extends Config {
 
     private final CurveBuildingPlugin plugin;
 
-    public BukkitConfig(@NotNull CurveBuildingPlugin plugin) {
+    public BukkitConfig(CurveBuildingPlugin plugin) {
         this.plugin = plugin;
 
         plugin.saveDefaultConfig();

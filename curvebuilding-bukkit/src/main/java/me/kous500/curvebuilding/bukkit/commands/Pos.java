@@ -65,7 +65,7 @@ public class Pos implements TabExecutor {
         return completions;
     }
 
-    private void posComplete(@NotNull String arg, List<String> commands, String[] types) {
+    private void posComplete(String arg, List<String> commands, String[] types) {
         if (arg.matches("^[1-9][0-9]*$")) {
             for (String t : types) {
                 commands.add(arg + t);

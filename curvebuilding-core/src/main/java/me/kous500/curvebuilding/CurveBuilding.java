@@ -1,13 +1,11 @@
 package me.kous500.curvebuilding;
 
-import org.jetbrains.annotations.NotNull;
-
 public class CurveBuilding {
     private static Resources resources;
 
     public static Config config;
 
-    public static void setResources(@NotNull Resources resources) {
+    public static void setResources(Resources resources) {
         CurveBuilding.resources = resources;
         config = resources.getConfig();
     }
@@ -20,7 +18,7 @@ public class CurveBuilding {
      * @param args 文字列に挿入する値
      * @return 結果の文字列
      */
-    public static String getMessage(@NotNull String path, Object @NotNull ... args) {
+    public static String getMessage(String path, Object... args) {
         return resources != null ? resources.getMessage(path, args) : path;
     }
 }

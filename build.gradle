@@ -5,8 +5,4 @@ plugins {
 allprojects {
     group = "me.kous500.curvebuilding"
     version = "0.2.0-SNAPSHOT"
-
-    repositories {
-        mavenCentral()
-    }
 }
