@@ -76,7 +76,7 @@ public final class BcEdit {
                     Vector3[] bp = posMap.get(n - 1);
                     Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
                     if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
-                    if (bezierPos[2] == null)  bezierPos[2] =  bezierPos[0];
+                    if (bezierPos[2] == null)  bezierPos[2] = bezierPos[3];
                     editBC(bezierPos);
                 }
             }

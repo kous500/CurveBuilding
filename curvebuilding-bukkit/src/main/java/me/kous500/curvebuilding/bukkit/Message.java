@@ -25,10 +25,9 @@ public class Message {
         final File dataFolder = plugin.getDataFolder();
         final File file = new File(config.messageFilePath.replace("%datafolder%", dataFolder.toPath().toString()));
 
-        if (file.exists())
-            BukkitResources.messages = YamlConfiguration.loadConfiguration(file);
-        else
-            BukkitResources.messages = new YamlConfiguration();
+        BukkitResources.messages = file.exists()
+                ? YamlConfiguration.loadConfiguration(file)
+                : new YamlConfiguration();
     }
 
     public void create(String file) {
