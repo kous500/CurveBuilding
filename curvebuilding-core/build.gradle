@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.sk89q.worldedit:worldedit-bukkit:7.2.14"
+    compileOnly "com.sk89q.worldedit:worldedit-core:7.2.14"
 }
 
 tasks.withType(JavaCompile) {
