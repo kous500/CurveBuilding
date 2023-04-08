@@ -90,7 +90,7 @@ public final class BcEdit {
             for (int n = 1; n <= posMap.lastEntry().getKey(); n++) {
                 Vector3[] p = posMap.get(n);
 
-                if (p == null) break;
+                if (p == null || p[0] == null) break;
 
                 if (n > 1) {
                     Vector3[] bp = posMap.get(n - 1);
