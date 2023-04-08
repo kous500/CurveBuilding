@@ -126,39 +126,39 @@ public final class BcEdit {
 
         nowLength += (int) bezierLength(selectionPos, fineness);
     }
+	
+    private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
+        Vector3 posA = vec;
+        Vector3 posB = vec;
+        int n = argument.n;
 
-    private PosCoordinates pos(Vector3[] selectionPos, double t) {
-        double x0 = selectionPos[0].getX();
-        double y0 = selectionPos[0].getY();
-        double z0 = selectionPos[0].getZ();
+        if (direction == Direction.x) {
+            for (int l = 0; l <= length / 2; l++) {
+                if (l != length / 2 || length % 2 != 0) {
+                    set(selectionPos, l, m, n, fineness, posA);
+                    posA = posA.add(0, 0, -1);
+                }
 
-        double x1 = selectionPos[1].getX();
-        double y1 = selectionPos[1].getY();
-        double z1 = selectionPos[1].getZ();
+                set(selectionPos, -l, m, n, fineness, posB);
+                posB = posB.add(0, 0, 1);
+            }
+        } else {
+            for (int l = 0; l <= width / 2; l++) {
+                set(selectionPos, l, m, n, fineness, posA);
+                posA = posA.add(1, 0, 0);
 
-        double x2 = selectionPos[2].getX();
-        double y2 = selectionPos[2].getY();
-        double z2 = selectionPos[2].getZ();
-
-        double x3 = selectionPos[3].getX();
-        double y3 = selectionPos[3].getY();
-        double z3 = selectionPos[3].getZ();
-
-        double xt = (1-t)*(1-t)*(1-t)*x0 + 3*(1-t)*(1-t)*t*x1 + 3*(1-t)*t*t*x2 + t*t*t*x3;
-        double yt = (1-t)*(1-t)*(1-t)*y0 + 3*(1-t)*(1-t)*t*y1 + 3*(1-t)*t*t*y2 + t*t*t*y3;
-        double zt = (1-t)*(1-t)*(1-t)*z0 + 3*(1-t)*(1-t)*t*z1 + 3*(1-t)*t*t*z2 + t*t*t*z3;
-        double dxt = 3 * t * t * (-x0 + 3 * x1 - 3 * x2 + x3) + 6 * t * (x0 - 2 * x1 + x2) + 3 * (-x0 + x1);
-        //double dyt = 3*t*t*(-y0+3*y1-3*y2+y3) + 6*t*(y0-2*y1+y2) + 3*(-y0+y1);
-        double dzt = 3 * t * t * (-z0 + 3 * z1 - 3 * z2 + z3) + 6 * t * (z0 - 2 * z1 + z2) + 3 * (-z0 + z1);
-        double r = Math.atan(dxt / dzt);
-
-        if (argument.rtm) {
-            yt = (1-t)*y0 + t*y3 - 0.3;
+                if (l != width / 2 || width % 2 != 0) {
+                    set(selectionPos, -l, m, n, fineness, posB);
+                    posB = posB.add(-1, 0, 0);
+                }
+            }
         }
 
-        return new PosCoordinates(xt, yt, zt, r);
+        //中心を再設置
+        if (argument.n == 0 && !config.tCenter) n = 1;
+        set(selectionPos, 0, m, n, fineness, vec);
     }
-
+	
     private void set(Vector3[] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
         double xt1 = selectionPos[0].getX();
         double yt1 = selectionPos[0].getY();
@@ -220,36 +220,36 @@ public final class BcEdit {
         }
     }
 
-    private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
-        Vector3 posA = vec;
-        Vector3 posB = vec;
-        int n = argument.n;
+    private PosCoordinates pos(Vector3[] selectionPos, double t) {
+        double x0 = selectionPos[0].getX();
+        double y0 = selectionPos[0].getY();
+        double z0 = selectionPos[0].getZ();
 
-        if (direction == Direction.x) {
-            for (int l = 0; l <= length / 2; l++) {
-                if (l != length / 2 || length % 2 != 0) {
-                    set(selectionPos, l, m, n, fineness, posA);
-                    posA = posA.add(0, 0, -1);
-                }
+        double x1 = selectionPos[1].getX();
+        double y1 = selectionPos[1].getY();
+        double z1 = selectionPos[1].getZ();
 
-                set(selectionPos, -l, m, n, fineness, posB);
-                posB = posB.add(0, 0, 1);
-            }
-        } else {
-            for (int l = 0; l <= width / 2; l++) {
-                set(selectionPos, l, m, n, fineness, posA);
-                posA = posA.add(1, 0, 0);
+        double x2 = selectionPos[2].getX();
+        double y2 = selectionPos[2].getY();
+        double z2 = selectionPos[2].getZ();
 
-                if (l != width / 2 || width % 2 != 0) {
-                    set(selectionPos, -l, m, n, fineness, posB);
-                    posB = posB.add(-1, 0, 0);
-                }
-            }
+        double x3 = selectionPos[3].getX();
+        double y3 = selectionPos[3].getY();
+        double z3 = selectionPos[3].getZ();
+
+        double xt = (1-t)*(1-t)*(1-t)*x0 + 3*(1-t)*(1-t)*t*x1 + 3*(1-t)*t*t*x2 + t*t*t*x3;
+        double yt = (1-t)*(1-t)*(1-t)*y0 + 3*(1-t)*(1-t)*t*y1 + 3*(1-t)*t*t*y2 + t*t*t*y3;
+        double zt = (1-t)*(1-t)*(1-t)*z0 + 3*(1-t)*(1-t)*t*z1 + 3*(1-t)*t*t*z2 + t*t*t*z3;
+        double dxt = 3 * t * t * (-x0 + 3 * x1 - 3 * x2 + x3) + 6 * t * (x0 - 2 * x1 + x2) + 3 * (-x0 + x1);
+        //double dyt = 3*t*t*(-y0+3*y1-3*y2+y3) + 6*t*(y0-2*y1+y2) + 3*(-y0+y1);
+        double dzt = 3 * t * t * (-z0 + 3 * z1 - 3 * z2 + z3) + 6 * t * (z0 - 2 * z1 + z2) + 3 * (-z0 + z1);
+        double r = Math.atan(dxt / dzt);
+
+        if (argument.rtm) {
+            yt = (1-t)*y0 + t*y3 - 0.3;
         }
 
-        //中心を再設置
-        if (argument.n == 0 && !config.tCenter) n = 1;
-        set(selectionPos, 0, m, n, fineness, vec);
+        return new PosCoordinates(xt, yt, zt, r);
     }
 
     private static class PosCoordinates {
