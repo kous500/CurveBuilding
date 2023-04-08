@@ -184,32 +184,33 @@ public final class BcEdit {
             yt1 = yt;
             zt1 = zt;
 
-            BaseBlock idT;
-            if (direction == Direction.x) {
-                double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
-                idT = regionBlocks.get(floorVector(searchT.add(a, 0, 0)));
-            } else {
-                double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
-                idT = regionBlocks.get(floorVector(searchT.add(0 , 0, a)));
-            }
+            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l*Math.cos(-r), m, l*Math.sin(-r)));
 
-            Vector3 vecPosT = Vector3.at(xt, yt, zt);
-            BlockVector3 posT = roundVector(vecPosT.add(l*Math.cos(-r), m, l*Math.sin(-r)));
+            if (!posT.equals(beforePosT) && L >= L1 && !Double.isNaN(r)) {
+                BaseBlock idT;
+                if (direction == Direction.x) {
+                    double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
+                    idT = regionBlocks.get(floorVector(searchT.add(a, 0, 0)));
+                } else {
+                    double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
+                    idT = regionBlocks.get(floorVector(searchT.add(0 , 0, a)));
+                }
 
-            if (idT != null && !Double.isNaN(r) && !posT.equals(beforePosT) && L >= L1) {
-                if (argument.air) {
-                    String selectionBlock = editSession.getBlock(posT).toString();
-                    if (selectionBlock.equals("minecraft:air")) {
+                if (idT != null) {
+                    if (argument.air) {
+                        String selectionBlock = editSession.getBlock(posT).toString();
+                        if (selectionBlock.equals("minecraft:air")) {
+                            editSession.setBlock(posT, idT);
+                            changedBlocks++;
+                        }
+                    } else {
                         editSession.setBlock(posT, idT);
                         changedBlocks++;
                     }
-                } else {
-                    editSession.setBlock(posT, idT);
-                    changedBlocks++;
-                }
 
-                if (0 < maxChangeLimit && maxChangeLimit < changedBlocks) {
-                    throw new MaxChangedBlocksException(maxChangeLimit);
+                    if (0 < maxChangeLimit && maxChangeLimit < changedBlocks) {
+                        throw new MaxChangedBlocksException(maxChangeLimit);
+                    }
                 }
 
                 L1 += n;
