@@ -196,7 +196,7 @@ public final class BcEdit {
             Vector3 vecPosT = Vector3.at(xt, yt, zt);
             BlockVector3 posT = roundVector(vecPosT.add(l*Math.cos(-r), m, l*Math.sin(-r)));
 
-            if (idT != null && !posT.equals(beforePosT) && L >= L1) {
+            if (idT != null && !Double.isNaN(r) && !posT.equals(beforePosT) && L >= L1) {
                 if (argument.air) {
                     String selectionBlock = editSession.getBlock(posT).toString();
                     if (selectionBlock.equals("minecraft:air")) {
