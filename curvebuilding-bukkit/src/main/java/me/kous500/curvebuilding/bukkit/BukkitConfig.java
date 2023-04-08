@@ -36,9 +36,12 @@ public final class BukkitConfig extends Config {
 
     @SuppressWarnings("ConstantConditions")
     private void road() {
+        messageFilePath = (String) plugin.getConfig().get("message-file");
+
         fineness = (int) plugin.getConfig().get("curve.fineness");
         maxSetLength = (int) plugin.getConfig().get("curve.max-set-length");
         tCenter = (boolean) plugin.getConfig().get("curve.thicken-center");
+        defaultMaxChangeLimit = (int) plugin.getConfig().get("curve.default-max-change-limit");
 
         posColor = fromRGB((int) plugin.getConfig().get("particles.pos.color.pos"));
         startColor = fromRGB((int) plugin.getConfig().get("particles.pos.color.start_pos"));
@@ -49,7 +52,5 @@ public final class BukkitConfig extends Config {
         posDensity = (int) plugin.getConfig().get("particles.pos.density");
         lineDensity = (int) plugin.getConfig().get("particles.line.density");
         lineMaxLength = (int) plugin.getConfig().get("particles.line.max-length");
-
-        messageFilePath = (String) plugin.getConfig().get("message-file");
     }
 }

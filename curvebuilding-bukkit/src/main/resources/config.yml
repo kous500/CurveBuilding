@@ -3,11 +3,14 @@ message-file: "%datafolder%/messages/en.yml"
 
 curve:
   # Fineness of the curve
-  fineness: 5
+  fineness: 10
   # Maximum length a curve can be built
   max-set-length: 1024
   # If this value is true, the center will be thicker
   thicken-center: false
+  # Default maximum block change limit for CurveBuilding
+  # If this value is -1, it means unlimited
+  default-max-change-limit: 1000000
 
 particles:
   pos:

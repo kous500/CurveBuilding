@@ -1,9 +1,10 @@
 package me.kous500.curvebuilding;
 
 public class CurveBuilding {
-    private static Resources resources;
 
+    public static boolean fawe = false;
     public static Config config;
+    private static Resources resources;
 
     public static void setResources(Resources resources) {
         CurveBuilding.resources = resources;

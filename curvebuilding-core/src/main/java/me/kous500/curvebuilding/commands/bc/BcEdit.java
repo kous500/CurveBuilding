@@ -12,8 +12,7 @@ import com.sk89q.worldedit.world.block.BaseBlock;
 
 import java.util.*;
 
-import static me.kous500.curvebuilding.CurveBuilding.config;
-import static me.kous500.curvebuilding.CurveBuilding.getMessage;
+import static me.kous500.curvebuilding.CurveBuilding.*;
 import static me.kous500.curvebuilding.PosData.*;
 import static me.kous500.curvebuilding.Util.*;
 
@@ -22,11 +21,15 @@ public final class BcEdit {
     private int length;
     private int height;
     private int nowLength = 0;
+    private int changedBlocks = 0;
+    private int maxChangeLimit;
     private Vector3 center;
-    private String direction;
-    private List<BlockVector3> notSet = new ArrayList<>();
-    private final BcCommand argument;
+    private Direction direction;
     private EditSession editSession;
+    private final BcCommand argument;
+    private final Map<BlockVector3, BaseBlock> regionBlocks = new HashMap<>();
+
+    private enum Direction {x, z}
 
     /**
      * 設定したposからベジエ曲線または直線をブロックで生成する。
@@ -44,10 +47,6 @@ public final class BcEdit {
 
         try (EditSession editSession = session.createEditSession(player)) {
             this.editSession = editSession;
-            try {
-                //FAWEの場合は実行されない
-                editSession.setBlockChangeLimit(session.getBlockChangeLimit());
-            } catch (NoSuchMethodError ignored) {}
 
             Region region = session.getSelection(session.getSelectionWorld());
             width = region.getWidth();
@@ -55,10 +54,10 @@ public final class BcEdit {
             height = region.getHeight();
             center = region.getCenter();
 
-            if (argument.isDirectionX) direction = "x";
-            else if (argument.isDirectionZ) direction = "z";
-            else if (width <= length) direction = "x";
-            else direction = "z";
+            if (argument.isDirectionX) direction = Direction.x;
+            else if (argument.isDirectionZ) direction = Direction.z;
+            else if (width <= length) direction = Direction.x;
+            else direction = Direction.z;
 
             NavigableMap<Integer, Vector3[]> posMap = getPos(player);
             World posWorld = getWorld(player);
@@ -67,10 +66,31 @@ public final class BcEdit {
 
             if (posWorld == null || !posWorld.equals(world)) throw new IncompleteRegionException();
 
+            maxChangeLimit = session.getBlockChangeLimit();
+            int configLimit = config.defaultMaxChangeLimit;
+            if (configLimit >= 0 && (maxChangeLimit < 0 || maxChangeLimit > configLimit)) {
+                maxChangeLimit = configLimit;
+                if (!fawe) session.setBlockChangeLimit(configLimit);
+            }
+            if (0 < maxChangeLimit && maxChangeLimit < region.getVolume()) {
+                throw new MaxChangedBlocksException (maxChangeLimit);
+            }
+
+            BlockVector3 maxRegion = region.getMaximumPoint();
+            BlockVector3 minRegion = region.getMinimumPoint();
+            for (int x = minRegion.getX(); x <= maxRegion.getX(); x++) {
+                for (int y = minRegion.getY(); y <= maxRegion.getY(); y++) {
+                    for (int z = minRegion.getZ(); z <= maxRegion.getZ(); z++) {
+                        BlockVector3 pos = BlockVector3.at(x, y, z);
+                        regionBlocks.put(pos, editSession.getFullBlock(pos));
+                    }
+                }
+            }
+
             for (int n = 1; n <= posMap.lastEntry().getKey(); n++) {
                 Vector3[] p = posMap.get(n);
 
-                if (p == null) break;
+                if (p == null || p[0] == null) break;
 
                 if (n > 1) {
                     Vector3[] bp = posMap.get(n - 1);
@@ -98,9 +118,6 @@ public final class BcEdit {
         double selectionLength = bezierLength(selectionPos, selectionPos[0].distance(selectionPos[3]) * 20);
         double fineness = config.fineness * selectionLength;
         double h = Math.floor(height / 2.0 - 0.5);
-        notSet = new ArrayList<>();
-
-        xz(selectionPos, height, fineness, center.add(0, height - h, 0));
 
         for (int m = 0; m <= height - 1; m++) {
             Vector3 vec = center.add(0, m - h, 0);
@@ -109,8 +126,102 @@ public final class BcEdit {
 
         nowLength += (int) bezierLength(selectionPos, fineness);
     }
+	
+    private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
+        Vector3 posA = vec;
+        Vector3 posB = vec;
+        int n = argument.n;
 
-    private Map<String, Double> pos(Vector3[] selectionPos, double t) {
+        if (direction == Direction.x) {
+            for (int l = 0; l <= length / 2; l++) {
+                if (l != length / 2 || length % 2 != 0) {
+                    set(selectionPos, l, m, n, fineness, posA);
+                    posA = posA.add(0, 0, -1);
+                }
+
+                set(selectionPos, -l, m, n, fineness, posB);
+                posB = posB.add(0, 0, 1);
+            }
+        } else {
+            for (int l = 0; l <= width / 2; l++) {
+                set(selectionPos, l, m, n, fineness, posA);
+                posA = posA.add(1, 0, 0);
+
+                if (l != width / 2 || width % 2 != 0) {
+                    set(selectionPos, -l, m, n, fineness, posB);
+                    posB = posB.add(-1, 0, 0);
+                }
+            }
+        }
+
+        //中心を再設置
+        if (argument.n == 0 && !config.tCenter) n = 1;
+        set(selectionPos, 0, m, n, fineness, vec);
+    }
+	
+    private void set(Vector3[] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
+        double xt1 = selectionPos[0].getX();
+        double yt1 = selectionPos[0].getY();
+        double zt1 = selectionPos[0].getZ();
+
+        int L1 = argument.m;
+        if (nowLength != 0 && n != 0) L1 += nowLength % n;
+
+        double s = 0;
+        double L = 0;
+        BlockVector3 beforePosT = null;
+
+        while (s <= 1) {
+            PosCoordinates pos = pos(selectionPos, s);
+            double xt = pos.xt;
+            double yt = pos.yt;
+            double zt = pos.zt;
+            double r = pos.r;
+
+            //通過距離近似計算
+            L += Math.sqrt((xt - xt1)*(xt - xt1) + (yt - yt1)*(yt - yt1) + (zt - zt1)*(zt - zt1));
+            xt1 = xt;
+            yt1 = yt;
+            zt1 = zt;
+
+            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l*Math.cos(-r), m, l*Math.sin(-r)));
+
+            if (!posT.equals(beforePosT) && L >= L1 && !Double.isNaN(r)) {
+                BaseBlock idT;
+                if (direction == Direction.x) {
+                    double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
+                    idT = regionBlocks.get(floorVector(searchT.add(a, 0, 0)));
+                } else {
+                    double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
+                    idT = regionBlocks.get(floorVector(searchT.add(0 , 0, a)));
+                }
+
+                if (idT != null) {
+                    if (argument.air) {
+                        String selectionBlock = editSession.getBlock(posT).toString();
+                        if (selectionBlock.equals("minecraft:air")) {
+                            editSession.setBlock(posT, idT);
+                            changedBlocks++;
+                        }
+                    } else {
+                        editSession.setBlock(posT, idT);
+                        changedBlocks++;
+                    }
+
+                    if (0 < maxChangeLimit && maxChangeLimit < changedBlocks) {
+                        throw new MaxChangedBlocksException(maxChangeLimit);
+                    }
+                }
+
+                L1 += n;
+            }
+
+            s += 1.0 / fineness;
+            beforePosT = posT;
+        }
+    }
+
+    private PosCoordinates pos(Vector3[] selectionPos, double t) {
         double x0 = selectionPos[0].getX();
         double y0 = selectionPos[0].getY();
         double z0 = selectionPos[0].getZ();
@@ -139,113 +250,20 @@ public final class BcEdit {
             yt = (1-t)*y0 + t*y3 - 0.3;
         }
 
-        Map<String, Double> values = new HashMap<>();
-        values.put("xt", xt);
-        values.put("yt", yt);
-        values.put("zt", zt);
-        values.put("r", r);
-        return values;
+        return new PosCoordinates(xt, yt, zt, r);
     }
 
-    private void set(Vector3[] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
-        double xt1 = selectionPos[0].getX();
-        double yt1 = selectionPos[0].getY();
-        double zt1 = selectionPos[0].getZ();
+    private static class PosCoordinates {
+        double xt;
+        double yt;
+        double zt;
+        double r;
 
-        int L1 = argument.m;
-        if (nowLength != 0 && n != 0) L1 += nowLength % n;
-
-        double s = 0;
-        double L = 0;
-        BlockVector3 beforePosT = null;
-
-        while (s <= 1) {
-            Map<String, Double> pos = pos(selectionPos, s);
-            double xt = pos.get("xt");
-            double yt = pos.get("yt");
-            double zt = pos.get("zt");
-            double r = pos.get("r");
-
-            //通過距離近似計算
-            L += Math.sqrt((xt - xt1)*(xt - xt1) + (yt - yt1)*(yt - yt1) + (zt - zt1)*(zt - zt1));
-            xt1 = xt;
-            yt1 = yt;
-            zt1 = zt;
-
-            BaseBlock idT;
-            if (direction.equals("x")) {
-                double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
-                idT = editSession.getFullBlock(floorVector(searchT.add(a, 0, 0)));
-            } else {
-                double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
-                idT = editSession.getFullBlock(floorVector(searchT.add(0 , 0, a)));
-            }
-
-            Vector3 vecPosT = Vector3.at(xt, yt, zt);
-            BlockVector3 posT = roundVector(vecPosT.add(l*Math.cos(-r), m, l*Math.sin(-r)));
-
-            BlockVector3 afterPosT = null;
-            if (L >= L1) {
-                Map<String, Double> aPos = pos(selectionPos, s + 1.0 / fineness);
-                double axt = aPos.get("xt");
-                double ayt = aPos.get("yt");
-                double azt = aPos.get("zt");
-                double ar = aPos.get("r");
-                Vector3 vecAfterPosT = Vector3.at(axt, ayt, azt);
-                afterPosT = roundVector(vecAfterPosT.add(l*Math.cos(-ar), m, l*Math.sin(-ar)));
-            }
-
-            if (L >= L1 ||
-                    ((beforePosT != null && beforePosT.getX() == posT.getX() && beforePosT.getY() != posT.getY() && beforePosT.getZ() == posT.getZ()) ||
-                    (afterPosT != null && afterPosT.getX() == posT.getX() && afterPosT.getY() != posT.getY() && afterPosT.getZ() == posT.getZ()))) {
-                if (m == height) {
-                    notSet.add(posT);
-                } else if (m != height -1 || !notSet.contains(posT)) {
-                    if (argument.air) {
-                        String selectionBlock = editSession.getBlock(posT).toString();
-                        if (selectionBlock.equals("minecraft:air")) editSession.setBlock(posT, idT);
-                    } else {
-                        editSession.setBlock(posT, idT);
-                    }
-                }
-
-                L1 += n;
-            }
-
-            s += 1.0 / fineness;
-            beforePosT = posT;
+        PosCoordinates(double xt, double yt, double zt, double r) {
+            this.xt = xt;
+            this.yt = yt;
+            this.zt = zt;
+            this.r = r;
         }
-    }
-
-    private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
-        Vector3 posA = vec;
-        Vector3 posB = vec;
-        int n = argument.n;
-
-        if (direction.equals("x")) {
-            for (int l = 0; l <= length / 2; l++) {
-                if (l != length / 2 || length % 2 != 0) {
-                    set(selectionPos, l, m, n, fineness, posA);
-                    posA = posA.add(0, 0, -1);
-                }
-
-                set(selectionPos, -l, m, n, fineness, posB);
-                posB = posB.add(0, 0, 1);
-            }
-        } else {
-            for (int l = 0; l <= width / 2; l++) {
-                set(selectionPos, l, m, n, fineness, posA);
-                posA = posA.add(1, 0, 0);
-
-                if (l != width / 2 || width % 2 != 0) {
-                    set(selectionPos, -l, m, n, fineness, posB);
-                    posB = posB.add(-1, 0, 0);
-                }
-            }
-        }
-
-        //中心を再設置
-        if (argument.n == 0 && !config.tCenter) n = 1;
-        set(selectionPos, 0, m, n, fineness, vec);
     }
 }
