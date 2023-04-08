@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Timer;
 
+import static java.util.Objects.requireNonNull;
 import static me.kous500.curvebuilding.CurveBuilding.*;
 
 
@@ -18,7 +19,9 @@ public final class CurveBuildingPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
+        if (getServer().getPluginManager().isPluginEnabled("FastAsyncWorldEdit")){
+            fawe = true;
+        }
 
         setResources(new BukkitResources(this));
 
@@ -32,12 +35,12 @@ public final class CurveBuildingPlugin extends JavaPlugin {
         }
 
         Bc bc = new Bc(this);
-        this.getCommand("/bc").setExecutor(bc);
-        this.getCommand("/bc").setTabCompleter(bc);
+        requireNonNull(this.getCommand("/bc")).setExecutor(bc);
+        requireNonNull(this.getCommand("/bc")).setTabCompleter(bc);
 
         Pos pos = new Pos(this);
-        this.getCommand("/pos").setExecutor(pos);
-        this.getCommand("/pos").setTabCompleter(pos);
+        requireNonNull(this.getCommand("/pos")).setExecutor(pos);
+        requireNonNull(this.getCommand("/pos")).setTabCompleter(pos);
 
         new Timer(true).schedule(new SendParticles((BukkitConfig) config), 0, 200);
     }
