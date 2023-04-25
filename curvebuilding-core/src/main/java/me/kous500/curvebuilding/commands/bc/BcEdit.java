@@ -26,8 +26,8 @@ public final class BcEdit {
     private Vector3 center;
     private Direction direction;
     private EditSession editSession;
+    private RegionBlocks regionBlocks;
     private final BcCommand argument;
-    private final Map<BlockVector3, BaseBlock> regionBlocks = new HashMap<>();
 
     private enum Direction {x, z}
 
@@ -76,16 +76,7 @@ public final class BcEdit {
                 throw new MaxChangedBlocksException (maxChangeLimit);
             }
 
-            BlockVector3 maxRegion = region.getMaximumPoint();
-            BlockVector3 minRegion = region.getMinimumPoint();
-            for (int x = minRegion.getX(); x <= maxRegion.getX(); x++) {
-                for (int y = minRegion.getY(); y <= maxRegion.getY(); y++) {
-                    for (int z = minRegion.getZ(); z <= maxRegion.getZ(); z++) {
-                        BlockVector3 pos = BlockVector3.at(x, y, z);
-                        regionBlocks.put(pos, editSession.getFullBlock(pos));
-                    }
-                }
-            }
+            regionBlocks = new RegionBlocks(editSession, region);
 
             for (int n = 1; n <= posMap.lastEntry().getKey(); n++) {
                 Vector3[] p = posMap.get(n);
