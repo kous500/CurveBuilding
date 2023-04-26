@@ -8,9 +8,7 @@ import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 public final class BcCommand {
     public int n = 0;
     public int m = 0;
-    public boolean line = false;
     public boolean air = false;
-    public boolean rtm = false;
     public boolean isDirectionX = false;
     public boolean isDirectionZ = false;
 
@@ -40,12 +38,8 @@ public final class BcCommand {
                     for(String s : arg.split("")) {
                         if (s.equals("-") && first) {
                             first = false;
-                        } else if (s.equals("l") && !line) {
-                            line = true;
                         } else if (s.equals("a") && !air) {
                             air = true;
-                        } else if (s.equals("r") && !rtm) {
-                            rtm = true;
                         } else if (s.equals("x") && !isDirectionX && !isDirectionZ) {
                             isDirectionX = true;
                         } else if (s.equals("z") && !isDirectionX && !isDirectionZ) {

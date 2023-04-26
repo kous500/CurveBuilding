@@ -239,10 +239,6 @@ public final class BcEdit {
         double dzt = 3 * t * t * (-z0 + 3 * z1 - 3 * z2 + z3) + 6 * t * (z0 - 2 * z1 + z2) + 3 * (-z0 + z1);
         double r = Math.atan(dxt / dzt);
 
-        if (argument.rtm) {
-            yt = (1-t)*y0 + t*y3 - 0.3;
-        }
-
         if (Double.isNaN(r)) {
             if (dxt > 0) r = Math.PI / 2;
             else if (dxt < 0) r = -Math.PI / 2;
