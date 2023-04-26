@@ -249,6 +249,8 @@ public final class BcEdit {
             else r = 0;
         }
 
+        if (dzt < 0) r += Math.PI;
+
         return new PosCoordinates(xt, yt, zt, r);
     }
 
