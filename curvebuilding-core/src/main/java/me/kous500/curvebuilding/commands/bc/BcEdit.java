@@ -175,9 +175,9 @@ public final class BcEdit {
             yt1 = yt;
             zt1 = zt;
 
-            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l*Math.cos(-r), m, l*Math.sin(-r)));
+            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l * Math.cos(-r), m,  l * Math.sin(-r)));
 
-            if (!posT.equals(beforePosT) && L >= L1 && !Double.isNaN(r)) {
+            if (!posT.equals(beforePosT) && L >= L1) {
                 BaseBlock idT;
                 if (direction == Direction.x) {
                     double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
@@ -213,6 +213,8 @@ public final class BcEdit {
     }
 
     private PosCoordinates pos(Vector3[] selectionPos, double t) {
+        if (t == 0) t = 0.00001;
+
         double x0 = selectionPos[0].getX();
         double y0 = selectionPos[0].getY();
         double z0 = selectionPos[0].getZ();
@@ -239,6 +241,12 @@ public final class BcEdit {
 
         if (argument.rtm) {
             yt = (1-t)*y0 + t*y3 - 0.3;
+        }
+
+        if (Double.isNaN(r)) {
+            if (dxt > 0) r = Math.PI / 2;
+            else if (dxt < 0) r = -Math.PI / 2;
+            else r = 0;
         }
 
         return new PosCoordinates(xt, yt, zt, r);
