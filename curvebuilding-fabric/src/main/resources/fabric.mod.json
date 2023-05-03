@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "curvebuilding",
+  "version": "1.0-SNAPSHOT",
+  "name": "CurveBuilding",
+  "description": "Make curved structures using commands and WorldEdit.",
+  "authors": [
+    "kous500"
+  ],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/CurveBuilding/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "me.kous500.curvebuilding.fabric.client.FabricCurveBuildingClient"
+    ],
+    "main": [
+      "me.kous500.curvebuilding.fabric.FabricCurveBuilding"
+    ]
+  },
+  "mixins": [
+    "curvebuilding-render.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.4.0",
+    "fabric": "*",
+    "worldedit": "*"
+  }
+}
