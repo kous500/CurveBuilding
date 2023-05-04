@@ -18,6 +18,7 @@ import static me.kous500.curvebuilding.fabric.commands.ResourceType.config;
 public class YamlConfig {
     private static MainInitializer mainInitializer;
     private static ClassLoader classLoader;
+    private static String log = "";
 
     public static YamlConfig loadConfiguration(File file, ResourceType resourceType, MainInitializer mainInitializer) {
         YamlConfig.mainInitializer = mainInitializer;
@@ -59,22 +60,30 @@ public class YamlConfig {
     }
 
     public int getInteger(String path, int minValue) {
+        int value = getInteger(path);
+
+        return value < minValue ? (int) getDefault(path) : value;
+    }
+
+    public int getInteger(String path) {
         Object value = get(path, getDefault(path));
 
-        return !(value instanceof Integer) || (int) value < minValue ? (int) getDefault(path) : (int) value;
+        if (value instanceof Integer) {
+            return (int) value;
+        } else if (value != null) {
+            try {
+                return (int) Long.parseLong(value.toString());
+            } catch (NumberFormatException ignored) {}
+        }
+
+        return (int) Long.parseLong(getDefault(path).toString());
     }
 
     public Boolean getBoolean(String path) {
         boolean def = Boolean.parseBoolean(getDefault(path).toString());
         Object value = get(path, def);
 
-        if (value != null && "true".equalsIgnoreCase(value.toString())) {
-            return true;
-        } else if (value != null && "false".equalsIgnoreCase(value.toString())) {
-            return false;
-        } else {
-            return def;
-        }
+        return value == null ? def : Boolean.parseBoolean(value.toString());
     }
 
     public Object get(String path, Object def) {
@@ -149,5 +158,19 @@ public class YamlConfig {
         Yaml yaml = new Yaml(options);
         yaml.dump(this.configMap, writer);
         writer.close();
+    }
+
+    public static Integer hexToInt(Object in) {
+        if (in == null) return null;
+        if (in instanceof Integer) return (int) in;
+        log += "\n" + in;
+
+        String hexString = in.toString();
+        if (hexString.startsWith("0x")) {
+            log += " 0x" + in;
+            return Integer.parseInt(hexString.substring(2), 16);
+        } else {
+            return null;
+        }
     }
 }

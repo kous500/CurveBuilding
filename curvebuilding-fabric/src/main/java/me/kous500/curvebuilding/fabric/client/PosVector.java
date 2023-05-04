@@ -5,6 +5,8 @@ import com.sk89q.worldedit.math.Vector3;
 import java.awt.*;
 import java.util.NavigableMap;
 
+import static me.kous500.curvebuilding.fabric.FabricCurveBuilding.fabricConfig;
+
 public class PosVector {
     public static PosVector getInstance(NavigableMap<Integer, Vector3[]> p, int n, int h) {
         if (p == null || n <= 0 || h < 0 || h > 2) return null;
@@ -31,32 +33,32 @@ public class PosVector {
 
     public Color getLineColor() {
         if (h == 1) {
-            return new Color(0xFFFF0077, true);
+            return new Color(fabricConfig.posFLineColor, true);
         } else if (h == 2) {
-            return new Color(0xFF7700FF, true);
+            return new Color(fabricConfig.posBLineColor, true);
         } else {
             if (isStartPos) {
-                return new Color(0xFFFF00FF, true);
+                return new Color(fabricConfig.posStartLineColor, true);
             } else if (isEndPos) {
-                return new Color(0xFFFFFF00, true);
+                return new Color(fabricConfig.posEndLineColor, true);
             } else {
-                return new Color(0xFF00FFFF, true);
+                return new Color(fabricConfig.posLineColor, true);
             }
         }
     }
 
     public Color getFillColor() {
         if (h == 1) {
-            return new Color(0x22FF0077, true);
+            return new Color(fabricConfig.posFFilledColor, true);
         } else if (h == 2) {
-            return new Color(0x227700FF, true);
+            return new Color(fabricConfig.posBFilledColor, true);
         } else {
             if (isStartPos) {
-                return new Color(0x33FF00FF, true);
+                return new Color(fabricConfig.posStartFilledColor, true);
             } else if (isEndPos) {
-                return new Color(0x33FFFF00, true);
+                return new Color(fabricConfig.posEndFilledColor, true);
             } else {
-                return new Color(0x3300FFFF, true);
+                return new Color(fabricConfig.posFilledColor, true);
             }
         }
     }
