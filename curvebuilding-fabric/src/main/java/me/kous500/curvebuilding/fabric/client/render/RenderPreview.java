@@ -9,14 +9,22 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 
 import java.awt.*;
+import java.util.ArrayDeque;
 
 import static me.kous500.curvebuilding.Util.*;
 
 public class RenderPreview {
+    static boolean isError = false;
     static final double INCREASE = 0.001;
     static final Vec3d increaseVec = new Vec3d(INCREASE, INCREASE, INCREASE);
     private static final ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
+    private static ArrayDeque<RenderFilledItem> filledQueue = new ArrayDeque<>();
 
+    /**
+     * クライアントのPosDataからプレビューを描画します
+     *
+     * @param matrix MatrixStack
+     */
     public static void RenderPosData(MatrixStack matrix) {
         if (clientPlayer == null) return;
 
@@ -24,44 +32,56 @@ public class RenderPreview {
 
         if (posData == null) return;
 
-        for (int n : posData.p.keySet()) {
-            Vector3[] posN = posData.p.get(n);
-            if (posN != null && posN[0] != null) {
-                Vector3[] posBeforeN = posData.p.get(n - 1);
-                if (posBeforeN != null && posBeforeN[0] != null) {
-                    Vector3[] bezierPos = new Vector3[] {copyVector(posBeforeN[0]), copyVector(posBeforeN[2]), copyVector(posN[1]), copyVector(posN[0])};
-                    if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
-                    if (bezierPos[2] == null) bezierPos[2] = bezierPos[3];
-                    renderBezier(matrix, bezierPos);
-                }
 
-                if (posN[1] != null) {
-                    Render.renderLine(
-                            matrix,
-                            new Color(0xFFFF0077, true),
-                            adaptVec(posN[0]).add(0.5, 0.5, 0.5),
-                            adaptVec(posN[1]).add(0.5, 0.5, 0.5)
-                    );
-                }
-                if (posN[2] != null) {
-                    Render.renderLine(
-                            matrix,
-                            new Color(0xFF7700FF, true),
-                            adaptVec(posN[0]).add(0.5, 0.5, 0.5),
-                            adaptVec(posN[2]).add(0.5, 0.5, 0.5)
-                    );
+        if (isError) return;
+        try {
+            for (int n : posData.p.keySet()) {
+                renderPreviewLine(matrix, posData.p.get(n), posData.p.get(n - 1));
+
+                for (int h : new int[]{0, 1, 2}) {
+                    PosVector pos = PosVector.getInstance(posData.p, n, h);
+                    if (pos != null) {
+                        renderPos(matrix, pos);
+                    }
                 }
             }
 
-            for (int h : new int[]{0, 1, 2}) {
-                PosVector pos = PosVector.getInstance(posData.p, n, h);
-                if (pos != null) {
-                    renderPos(matrix, pos);
-                }
+            for (RenderFilledItem render : filledQueue) {
+                Render.renderFilled(matrix, render.color, render.start, render.dimensions);
             }
+            filledQueue = new ArrayDeque<>();
+        } catch (NoSuchMethodError | NoSuchFieldError e) {
+            isError = true;
+            e.printStackTrace();
+        }
+    }
+
+    private static void renderPreviewLine(MatrixStack matrix, Vector3[] p, Vector3[] bp) {
+        if (p == null || p[0] == null) return;
+
+        if (bp != null && bp[0] != null) {
+            Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
+            if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
+            if (bezierPos[2] == null) bezierPos[2] = bezierPos[3];
+            renderBezier(matrix, bezierPos);
         }
 
-        Render.renderStackFilled(matrix);
+        if (p[1] != null) {
+            Render.renderLine(
+                    matrix,
+                    new Color(0xFFFF0077, true),
+                    adaptVec(p[0]).add(0.5, 0.5, 0.5),
+                    adaptVec(p[1]).add(0.5, 0.5, 0.5)
+            );
+        }
+        if (p[2] != null) {
+            Render.renderLine(
+                    matrix,
+                    new Color(0xFF7700FF, true),
+                    adaptVec(p[0]).add(0.5, 0.5, 0.5),
+                    adaptVec(p[2]).add(0.5, 0.5, 0.5)
+            );
+        }
     }
 
     private static void renderBezier(MatrixStack matrix, Vector3[] p) {
@@ -82,7 +102,7 @@ public class RenderPreview {
         Render.renderLine(matrix, Color.ORANGE, adaptVec(p[3]).add(0.5, 0.5, 0.5), adaptVec(bc));
     }
 
-    public static void renderPos(MatrixStack matrix, PosVector pos) {
+    private static void renderPos(MatrixStack matrix, PosVector pos) {
         Color colorLine = pos.getLineColor();
         Color colorFill = pos.getFillColor();
         Vec3d start = adaptVec(pos.vector).subtract(increaseVec);
@@ -91,10 +111,24 @@ public class RenderPreview {
         if (pos.h != 0) {
             Render.renderCrossing(matrix, colorLine, start, dimensions);
         }
-        Render.renderEdged(matrix, colorFill, colorLine, start, dimensions);
+
+        Render.renderOutline(matrix, colorLine, start, dimensions);
+        filledQueue.add(new RenderFilledItem(colorFill, start, dimensions));
     }
 
-    static Vec3d adaptVec(Vector3 vec) {
+    private static Vec3d adaptVec(Vector3 vec) {
         return new Vec3d(vec.getX(), vec.getY(), vec.getZ());
+    }
+
+    private static class RenderFilledItem {
+        Color color;
+        Vec3d start;
+        Vec3d dimensions;
+
+        RenderFilledItem(Color color, Vec3d start, Vec3d dimensions) {
+            this.color = color;
+            this.start = start;
+            this.dimensions = dimensions;
+        }
     }
 }

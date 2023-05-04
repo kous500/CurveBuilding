@@ -10,44 +10,21 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
-import java.util.ArrayDeque;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Render {
     public static boolean renderThroughWalls = false;
     private static final MinecraftClient client = MinecraftClient.getInstance();
-    private static ArrayDeque<RenderFilledItem> filledQueue = new ArrayDeque<>();
-
-    public static int getFilledQueueSize() {
-        return filledQueue.size();
-    }
 
     /**
-     * Renders both a filled and outlined block
+     * 直方体の中に交差した線を描画します
      *
-     * @param stack        The MatrixStack
-     * @param colorFill    The color of the filling
-     * @param colorOutline The color of the outline
-     * @param start        The start coordinate
-     * @param dimensions   The dimensions
+     * @param stack      MatrixStack
+     * @param color      線の色
+     * @param start      始点の座標
+     * @param dimensions 大きさ
      */
-    public static void renderEdged(MatrixStack stack, Color colorFill, Color colorOutline, Vec3d start, Vec3d dimensions) {
-        renderOutline(stack, colorOutline, start, dimensions);
-        stackFilled(colorFill, start, dimensions);
-    }
-
-    public static void stackFilled(Color color, Vec3d start, Vec3d dimensions) {
-        filledQueue.add(new RenderFilledItem(color, start, dimensions));
-    }
-
-    public static void renderStackFilled(MatrixStack stack) {
-        for (RenderFilledItem render : filledQueue) {
-            renderFilled(stack, render.color, render.start, render.dimensions);
-        }
-        filledQueue = new ArrayDeque<>();
-    }
-
     public static void renderCrossing(MatrixStack stack, Color color, Vec3d start, Vec3d dimensions) {
         Vec3d end = start.add(dimensions);
         double x1 = start.x;
@@ -63,6 +40,14 @@ public class Render {
         renderLine(stack, color, new Vec3d(x2, y1, z1), new Vec3d(x1, y2, z2));
     }
 
+    /**
+     * ブロックの輪郭を描画します
+     *
+     * @param stack      MatrixStack
+     * @param color      線の色
+     * @param start      始点の座標
+     * @param dimensions 大きさ
+     */
     public static void renderOutline(MatrixStack stack, Color color, Vec3d start, Vec3d dimensions) {
         Matrix4f m = stack.peek().getPositionMatrix();
         genericAABBRender(VertexFormat.DrawMode.DEBUG_LINES,
@@ -105,12 +90,12 @@ public class Render {
     }
 
     /**
-     * Renders a filled block
+     * 塗りつぶされたブロックを描画します
      *
-     * @param stack      The MatrixStack
-     * @param color      The color of the filling
-     * @param start      Start coordinates
-     * @param dimensions Dimensions
+     * @param stack      MatrixStack
+     * @param color      塗りつぶす色
+     * @param start      始点の座標
+     * @param dimensions 大きさ
      */
     public static void renderFilled(MatrixStack stack, Color color, Vec3d start, Vec3d dimensions) {
         Matrix4f s = stack.peek().getPositionMatrix();
@@ -154,12 +139,12 @@ public class Render {
     }
 
     /**
-     * Renders an AAABBB line
+     * AAABBBラインを描画します
      *
-     * @param matrices The MatrixStack
-     * @param color    The color of the line
-     * @param start    The start coordinate
-     * @param end      The end coordinate
+     * @param matrices MatrixStack
+     * @param color    線の色
+     * @param start    始点の座標
+     * @param end      終点の座標
      */
     public static void renderLine(MatrixStack matrices, Color color, Vec3d start, Vec3d end) {
         Matrix4f s = matrices.peek().getPositionMatrix();
@@ -207,6 +192,7 @@ public class Render {
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.enableDepthTest();
+        RenderSystem.lineWidth(10.0f);
         RenderSystem.depthFunc(renderThroughWalls ? GL11.GL_ALWAYS : GL11.GL_LEQUAL);
 
         RenderSystem.setShader(shader);
@@ -214,18 +200,7 @@ public class Render {
 
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
-    }
-
-    static class RenderFilledItem {
-        Color color;
-        Vec3d start;
-        Vec3d dimensions;
-
-        RenderFilledItem(Color color, Vec3d start, Vec3d dimensions) {
-            this.color = color;
-            this.start = start;
-            this.dimensions = dimensions;
-        }
+        RenderSystem.disableDepthTest();
     }
 
     interface RenderAction {
