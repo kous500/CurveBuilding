@@ -33,32 +33,32 @@ public class PosVector {
 
     public Color getLineColor() {
         if (h == 1) {
-            return new Color(fabricConfig.posFLineColor, true);
+            return fabricConfig.posFLineColor;
         } else if (h == 2) {
-            return new Color(fabricConfig.posBLineColor, true);
+            return fabricConfig.posBLineColor;
         } else {
             if (isStartPos) {
-                return new Color(fabricConfig.posStartLineColor, true);
+                return fabricConfig.posStartLineColor;
             } else if (isEndPos) {
-                return new Color(fabricConfig.posEndLineColor, true);
+                return fabricConfig.posEndLineColor;
             } else {
-                return new Color(fabricConfig.posLineColor, true);
+                return fabricConfig.posLineColor;
             }
         }
     }
 
     public Color getFillColor() {
         if (h == 1) {
-            return new Color(fabricConfig.posFFilledColor, true);
+            return fabricConfig.posFFilledColor;
         } else if (h == 2) {
-            return new Color(fabricConfig.posBFilledColor, true);
+            return fabricConfig.posBFilledColor;
         } else {
             if (isStartPos) {
-                return new Color(fabricConfig.posStartFilledColor, true);
+                return fabricConfig.posStartFilledColor;
             } else if (isEndPos) {
-                return new Color(fabricConfig.posEndFilledColor, true);
+                return fabricConfig.posEndFilledColor;
             } else {
-                return new Color(fabricConfig.posFilledColor, true);
+                return fabricConfig.posFilledColor;
             }
         }
     }
