@@ -28,6 +28,8 @@ public class FabricCurveBuilding implements ModInitializer, MainInitializer {
             setPosBuilder(dispatcher);
             setBcBuilder(dispatcher);
         });
+
+        SendPacketTimer.start();
     }
 
     @Override

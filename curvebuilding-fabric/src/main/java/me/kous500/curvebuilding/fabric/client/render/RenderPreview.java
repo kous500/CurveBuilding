@@ -3,8 +3,6 @@ package me.kous500.curvebuilding.fabric.client.render;
 import com.sk89q.worldedit.math.Vector3;
 import me.kous500.curvebuilding.PosData;
 import me.kous500.curvebuilding.fabric.client.PosVector;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 
@@ -16,11 +14,11 @@ import static me.kous500.curvebuilding.Util.*;
 import static me.kous500.curvebuilding.fabric.FabricCurveBuilding.fabricConfig;
 
 public class RenderPreview {
+    public static PosData posData;
     private static boolean isError = false;
     private static ArrayDeque<RenderFilledItem> filledQueue = new ArrayDeque<>();
     private static final double INCREASE = 0.001;
     private static final Vec3d INCREASE_VEC = new Vec3d(INCREASE, INCREASE, INCREASE);
-    private static final ClientPlayerEntity CLIENT_PLAYER = MinecraftClient.getInstance().player;
 
     /**
      * クライアントのPosDataからプレビューを描画します
@@ -28,10 +26,7 @@ public class RenderPreview {
      * @param matrix MatrixStack
      */
     public static void RenderPosData(MatrixStack matrix) {
-        if (isError || CLIENT_PLAYER == null) return;
-
-        PosData posData = PosData.getPosMap().get(CLIENT_PLAYER.getUuid());
-        if (posData == null) return;
+        if (isError || posData == null) return;
 
         try {
             Render.setRender(fabricConfig.lineRenderThroughWalls, LineRender.getInstance(), render -> {

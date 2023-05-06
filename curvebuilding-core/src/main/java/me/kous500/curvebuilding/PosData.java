@@ -15,10 +15,16 @@ import static me.kous500.curvebuilding.Util.*;
  */
 public final class PosData {
     public World world;
+    public String worldId;
     public NavigableMap<Integer, Vector3[]> p = new TreeMap<>();
+
+    public PosData(NavigableMap<Integer, Vector3[]> p) {
+        this.p = p;
+    }
 
     private PosData(World world, Vector3 location, int n, int h) {
         this.world = world;
+        this.worldId = world.getId();
         Vector3[] l = new Vector3[3];
         l[h] = location;
         this.p.put(n, l);
@@ -46,7 +52,7 @@ public final class PosData {
         PosData posData = POS_MAP.get(uuid);
 
         if (posData != null) {
-            if (posData.world != null && !posData.world.getName().equals(world.getName())) {
+            if (posData.worldId == null || !posData.worldId.equals(world.getId())) {
                 posData.p = new TreeMap<>();
             }
 
@@ -85,6 +91,7 @@ public final class PosData {
             }
 
             posData.world = world;
+            posData.worldId = world.getId();
             POS_MAP.replace(uuid, posData);
         } else {
             POS_MAP.put(uuid, new PosData(world, location, n, h));
@@ -117,6 +124,7 @@ public final class PosData {
         if (posData != null) {
             posData.p = new TreeMap<>();
             posData.world = null;
+            posData.worldId = null;
             POS_MAP.replace(uuid, posData);
             player.printInfo(TextComponent.of(getMessage("messages.pos-clear-all")));
         }

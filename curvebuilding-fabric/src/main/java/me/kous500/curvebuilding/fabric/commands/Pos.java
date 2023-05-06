@@ -4,10 +4,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import me.kous500.curvebuilding.PosData;
+import me.kous500.curvebuilding.fabric.PosDataPacket;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,14 +60,16 @@ public class Pos implements RunCommand{
 
     @Override
     public int run() {
-        if (context.getSource().getPlayer() == null) {
+        ServerPlayerEntity sender = context.getSource().getPlayer();
+        if (sender == null) {
             return 0;
         }
 
         String[] commandArg = posCommandArg.get(command)
                 ? new String[]{command, StringArgumentType.getString(context, posArgName)} : new String[]{command};
 
-        boolean result = posCommand(adaptPlayer(context.getSource().getPlayer()), posCommandName, commandArg);
+        boolean result = posCommand(adaptPlayer(sender), posCommandName, commandArg);
+        PosDataPacket.sendPosPacket(sender);
 
         return result ? 1 : 0;
     }
