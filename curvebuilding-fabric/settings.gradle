@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = "CurveBuilding"
+include ":curvebuilding-core"
+project(":curvebuilding-core").projectDir = new File(settingsDir, "../curvebuilding-core")
