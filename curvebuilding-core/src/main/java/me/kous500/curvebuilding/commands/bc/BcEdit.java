@@ -175,7 +175,7 @@ public final class BcEdit {
             yt1 = yt;
             zt1 = zt;
 
-            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l * Math.cos(-r), m,  l * Math.sin(-r)));
+            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l * Math.cos(-r), m, l * Math.sin(-r)));
 
             if (!posT.equals(beforePosT) && L >= L1) {
                 BaseBlock idT;

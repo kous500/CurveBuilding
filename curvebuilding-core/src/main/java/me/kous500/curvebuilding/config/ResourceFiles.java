@@ -1,7 +1,6 @@
-package me.kous500.curvebuilding.fabric.config;
+package me.kous500.curvebuilding.config;
 
-import me.kous500.curvebuilding.fabric.MainInitializer;
-import me.kous500.curvebuilding.fabric.commands.ResourceType;
+import me.kous500.curvebuilding.MainInitializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +27,7 @@ public class ResourceFiles {
     public ResourceFiles(MainInitializer mainInitializer) {
         this.mainInitializer = mainInitializer;
         this.DATA_FOLDER = mainInitializer.getDateFolder();
-        this.classLoader = mainInitializer.getClassLoader();
+        this.classLoader = mainInitializer.getMainClassLoader();
     }
 
     public void create(String file) {
@@ -48,13 +47,13 @@ public class ResourceFiles {
         } catch (final IOException ignored) {}
     }
 
-    public YamlConfig get(String file, ResourceType resourceType) {
-        file = file.replace("%datafolder%", DATA_FOLDER);
+    public YamlConfig get(String fileName, ResourceType resourceType) {
+        fileName = fileName.replace("%datafolder%", DATA_FOLDER);
 
-        final File messageFile = new File(file);
+        final File file = new File(fileName);
 
-        return messageFile.exists()
-                ? YamlConfig.loadConfiguration(messageFile, resourceType, mainInitializer)
-                : new YamlConfig();
+        return file.exists()
+                ? YamlConfig.loadConfiguration(file, resourceType, mainInitializer)
+                : new YamlConfig(resourceType);
     }
 }

@@ -1,6 +1,7 @@
 package me.kous500.curvebuilding.fabric.config;
 
-import me.kous500.curvebuilding.Config;
+import me.kous500.curvebuilding.config.Config;
+import me.kous500.curvebuilding.config.YamlConfig;
 
 import java.awt.*;
 
@@ -24,7 +25,7 @@ public class FabricConfig extends Config {
     public Color lineBColor;
     public Color lineCurveColor;
 
-    public FabricConfig (YamlConfig config) {
+    public FabricConfig(YamlConfig config) {
         messageFilePath = config.getString("message-file");
 
         fineness = config.getInteger("curve.fineness", 1);

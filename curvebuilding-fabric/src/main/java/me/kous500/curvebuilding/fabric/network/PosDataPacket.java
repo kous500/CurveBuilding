@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.fabric;
+package me.kous500.curvebuilding.fabric.network;
 
 import com.sk89q.worldedit.fabric.FabricAdapter;
 import com.sk89q.worldedit.math.Vector3;
@@ -12,7 +12,7 @@ import net.minecraft.util.Identifier;
 import java.util.*;
 
 public class PosDataPacket {
-    public static final Identifier PACKET_ID = new Identifier("curvebuilding", "pos-data");
+    public static final Identifier PACKET_ID = new Identifier("curvebuilding", "bezier-pos");
     private static final List<ServerPlayerEntity> playerList = new ArrayList<>();
 
     public static void SendPacketMembers() {

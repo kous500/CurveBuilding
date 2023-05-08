@@ -4,8 +4,11 @@ import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
 import com.github.fierioziy.particlenativeapi.api.particle.ParticleList_1_13;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
+import me.kous500.curvebuilding.MainInitializer;
 import me.kous500.curvebuilding.bukkit.commands.Bc;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
+import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
+import me.kous500.curvebuilding.bukkit.config.BukkitResources;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Timer;
@@ -14,8 +17,9 @@ import static java.util.Objects.requireNonNull;
 import static me.kous500.curvebuilding.CurveBuilding.*;
 
 
-public final class CurveBuildingPlugin extends JavaPlugin {
+public final class CurveBuildingPlugin extends JavaPlugin implements MainInitializer {
     public static ParticleList_1_13 particles_1_13;
+    private static final String PLUGIN_DATA_FOLDER = "plugins/CurveBuilding";
 
     @Override
     public void onEnable() {
@@ -24,8 +28,6 @@ public final class CurveBuildingPlugin extends JavaPlugin {
         }
 
         setResources(new BukkitResources(this));
-
-        new Message(this).load();
 
         try {
             ParticleNativeAPI api = ParticleNativeCore.loadAPI(this);
@@ -48,5 +50,15 @@ public final class CurveBuildingPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+    }
+
+    @Override
+    public ClassLoader getMainClassLoader() {
+        return this.getClass().getClassLoader();
+    }
+
+    @Override
+    public String getDateFolder() {
+        return PLUGIN_DATA_FOLDER;
     }
 }

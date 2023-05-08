@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.fabric.client;
 
 import me.kous500.curvebuilding.PosData;
-import me.kous500.curvebuilding.fabric.PosDataPacket;
+import me.kous500.curvebuilding.fabric.network.PosDataPacket;
 import me.kous500.curvebuilding.fabric.client.render.RenderPreview;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -9,9 +9,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 
-import static me.kous500.curvebuilding.fabric.PosDataPacket.PACKET_ID;
+import static me.kous500.curvebuilding.fabric.network.PosDataPacket.PACKET_ID;
 
-public class FabricCurveBuildingClient implements ClientModInitializer {
+public class CurveBuildingFabricClient implements ClientModInitializer {
     /**
      * Runs the mod initializer on the client environment.
      */

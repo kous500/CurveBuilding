@@ -4,12 +4,10 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import me.kous500.curvebuilding.PosData;
-import me.kous500.curvebuilding.fabric.PosDataPacket;
+import me.kous500.curvebuilding.fabric.network.PosDataPacket;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 import java.util.HashMap;
 import java.util.Map;

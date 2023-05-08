@@ -13,10 +13,10 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "me.kous500.curvebuilding.fabric.client.FabricCurveBuildingClient"
+      "me.kous500.curvebuilding.fabric.client.CurveBuildingFabricClient"
     ],
     "main": [
-      "me.kous500.curvebuilding.fabric.FabricCurveBuilding"
+      "me.kous500.curvebuilding.fabric.CurveBuildingFabric"
     ]
   },
   "mixins": [

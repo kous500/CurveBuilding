@@ -6,6 +6,7 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.PosData;
+import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

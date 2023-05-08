@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.fabric.commands;
+package me.kous500.curvebuilding.config;
 
 public enum ResourceType {
     config, message

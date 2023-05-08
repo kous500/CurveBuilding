@@ -1,9 +1,11 @@
 package me.kous500.curvebuilding.fabric.config;
 
-import me.kous500.curvebuilding.Config;
-import me.kous500.curvebuilding.Resources;
-import me.kous500.curvebuilding.fabric.MainInitializer;
-import me.kous500.curvebuilding.fabric.commands.ResourceType;
+import me.kous500.curvebuilding.config.Config;
+import me.kous500.curvebuilding.config.ResourceFiles;
+import me.kous500.curvebuilding.config.Resources;
+import me.kous500.curvebuilding.config.YamlConfig;
+import me.kous500.curvebuilding.MainInitializer;
+import me.kous500.curvebuilding.config.ResourceType;
 
 import static me.kous500.curvebuilding.Util.messageReplace;
 

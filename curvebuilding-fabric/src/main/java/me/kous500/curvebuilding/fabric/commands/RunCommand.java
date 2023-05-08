@@ -5,7 +5,7 @@ import net.minecraft.text.Text;
 
 import java.util.Arrays;
 
-import static me.kous500.curvebuilding.fabric.FabricCurveBuilding.debugMode;
+import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.debugMode;
 
 public interface RunCommand {
     int run();

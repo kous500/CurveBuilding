@@ -1,11 +1,11 @@
-package me.kous500.curvebuilding.fabric.client;
+package me.kous500.curvebuilding.fabric.client.render;
 
 import com.sk89q.worldedit.math.Vector3;
 
 import java.awt.*;
 import java.util.NavigableMap;
 
-import static me.kous500.curvebuilding.fabric.FabricCurveBuilding.fabricConfig;
+import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.fabricConfig;
 
 public class PosVector {
     public static PosVector getInstance(NavigableMap<Integer, Vector3[]> p, int n, int h) {

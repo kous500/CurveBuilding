@@ -1,9 +1,9 @@
-package me.kous500.curvebuilding.fabric;
+package me.kous500.curvebuilding.fabric.network;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static me.kous500.curvebuilding.fabric.PosDataPacket.SendPacketMembers;
+import static me.kous500.curvebuilding.fabric.network.PosDataPacket.SendPacketMembers;
 
 public class SendPacketTimer {
     private static Timer timer;

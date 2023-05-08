@@ -2,7 +2,6 @@ package me.kous500.curvebuilding.fabric.client.render;
 
 import com.sk89q.worldedit.math.Vector3;
 import me.kous500.curvebuilding.PosData;
-import me.kous500.curvebuilding.fabric.client.PosVector;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 
@@ -11,7 +10,7 @@ import java.util.ArrayDeque;
 import java.util.NavigableMap;
 
 import static me.kous500.curvebuilding.Util.*;
-import static me.kous500.curvebuilding.fabric.FabricCurveBuilding.fabricConfig;
+import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.fabricConfig;
 
 public class RenderPreview {
     public static PosData posData;

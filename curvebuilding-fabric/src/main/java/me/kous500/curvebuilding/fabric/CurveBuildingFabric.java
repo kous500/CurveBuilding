@@ -1,7 +1,9 @@
 package me.kous500.curvebuilding.fabric;
 
+import me.kous500.curvebuilding.MainInitializer;
 import me.kous500.curvebuilding.fabric.config.FabricConfig;
 import me.kous500.curvebuilding.fabric.config.FabricResources;
+import me.kous500.curvebuilding.fabric.network.SendPacketTimer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
@@ -10,7 +12,7 @@ import static me.kous500.curvebuilding.CurveBuilding.setResources;
 import static me.kous500.curvebuilding.fabric.commands.Bc.setBcBuilder;
 import static me.kous500.curvebuilding.fabric.commands.Pos.setPosBuilder;
 
-public class FabricCurveBuilding implements ModInitializer, MainInitializer {
+public class CurveBuildingFabric implements ModInitializer, MainInitializer {
     public static boolean debugMode = true;
     public static final String MOD_DATA_FOLDER = "config/CurveBuilding";
 
@@ -33,7 +35,7 @@ public class FabricCurveBuilding implements ModInitializer, MainInitializer {
     }
 
     @Override
-    public ClassLoader getClassLoader() {
+    public ClassLoader getMainClassLoader() {
         return this.getClass().getClassLoader();
     }
 

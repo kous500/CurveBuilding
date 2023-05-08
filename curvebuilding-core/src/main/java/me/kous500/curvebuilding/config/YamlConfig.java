@@ -1,7 +1,6 @@
-package me.kous500.curvebuilding.fabric.config;
+package me.kous500.curvebuilding.config;
 
-import me.kous500.curvebuilding.fabric.MainInitializer;
-import me.kous500.curvebuilding.fabric.commands.ResourceType;
+import me.kous500.curvebuilding.MainInitializer;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -13,21 +12,20 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static me.kous500.curvebuilding.fabric.commands.ResourceType.config;
+import static me.kous500.curvebuilding.config.ResourceType.config;
 
 public class YamlConfig {
     private static MainInitializer mainInitializer;
     private static ClassLoader classLoader;
-    private static String log = "";
 
     public static YamlConfig loadConfiguration(File file, ResourceType resourceType, MainInitializer mainInitializer) {
         YamlConfig.mainInitializer = mainInitializer;
-        YamlConfig.classLoader = mainInitializer.getClassLoader();
+        YamlConfig.classLoader = mainInitializer.getMainClassLoader();
 
         try {
             return new YamlConfig(file, resourceType);
         } catch (FileNotFoundException e) {
-            return new YamlConfig();
+            return new YamlConfig(resourceType);
         }
     }
 
@@ -35,9 +33,9 @@ public class YamlConfig {
     private File configFile;
     private ResourceType resourceType;
 
-    public YamlConfig() {
+    public YamlConfig(ResourceType resourceType) {
         this.configMap = new HashMap<>(){};
-
+        this.resourceType = resourceType;
     }
 
     public YamlConfig(File file, ResourceType resourceType) throws FileNotFoundException {
@@ -57,6 +55,12 @@ public class YamlConfig {
         Object value = get(path, getDefault(path));
 
         return value != null ? value.toString() : getDefault(path).toString();
+    }
+
+    public int getInteger(String path, int minValue, int maxValue) {
+        int value = getInteger(path);
+
+        return value < minValue  || value > maxValue ? (int) getDefault(path) : value;
     }
 
     public int getInteger(String path, int minValue) {
@@ -128,13 +132,20 @@ public class YamlConfig {
         if (resourceType == config) {
             return "config.yml";
         } else {
-            Path messageFilePass = Paths.get(configFile.getPath());
-            String fileName = "messages/" + messageFilePass.getFileName().toString();
+            final String defFile = "messages/en.yml";
+
+            String fileName;
+            if (configFile != null) {
+                Path messageFilePass = Paths.get(configFile.getPath());
+                fileName = "messages/" + messageFilePass.getFileName().toString();
+            } else {
+                fileName = defFile;
+            }
 
             if (classLoader.getResource(fileName) != null) {
                 return fileName;
             } else {
-                return "messages/en.yml";
+                return defFile;
             }
         }
     }
@@ -158,19 +169,5 @@ public class YamlConfig {
         Yaml yaml = new Yaml(options);
         yaml.dump(this.configMap, writer);
         writer.close();
-    }
-
-    public static Integer hexToInt(Object in) {
-        if (in == null) return null;
-        if (in instanceof Integer) return (int) in;
-        log += "\n" + in;
-
-        String hexString = in.toString();
-        if (hexString.startsWith("0x")) {
-            log += " 0x" + in;
-            return Integer.parseInt(hexString.substring(2), 16);
-        } else {
-            return null;
-        }
     }
 }

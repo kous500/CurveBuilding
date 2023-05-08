@@ -1,7 +1,9 @@
 package me.kous500.curvebuilding;
 
-public class CurveBuilding {
+import me.kous500.curvebuilding.config.Config;
+import me.kous500.curvebuilding.config.Resources;
 
+public class CurveBuilding {
     public static boolean fawe = false;
     public static Config config;
     private static Resources resources;

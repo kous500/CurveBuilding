@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     compileOnly "com.sk89q.worldedit:worldedit-core:7.2.14"
+    implementation 'org.yaml:snakeyaml:2.0'
 }
 
 tasks.withType(JavaCompile) {
