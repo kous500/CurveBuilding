@@ -101,6 +101,6 @@ public class PosCommand {
 
     public static void problemHere(Player player, String beforeArg, String arg) {
         player.printInfo(TextComponent.of(
-                "\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o" + getMessage("messages.problem-here")));
+                "§7..."+beforeArg+"§c §c§n"+arg+"§c§o" + getMessage("messages.problem-here")));
     }
 }

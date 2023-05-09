@@ -92,7 +92,7 @@ public final class PosData {
         if (hOUT == null) {
             return h0.add(-x, -y, -z);
         } else {
-            double[] newH = changeR(x, y, z, -lineLength(h0, hOUT));
+            double[] newH = changeR(x, y, z, -1 * h0.distance(hOUT));
             return h0.add(newH[0], newH[1], newH[2]);
         }
     }

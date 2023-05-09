@@ -34,46 +34,57 @@ public class SendParticles extends TimerTask {
 
     @Override
     public void run() {
+        send();
+    }
+
+    private void send() {
         for (Map.Entry<UUID, PosData> entry : getPosMap().entrySet()) {
-            UUID uuid = entry.getKey();
             PosData posData = entry.getValue();
-            Player player = getPlayer(uuid);
-            boolean endLine = false;
+            Player player = getPlayer(entry.getKey());
 
-            if (player != null && posData.world != null && posData.world.getName().equals(player.getWorld().getName())) {
-                for (int n = 1; n <= posData.p.lastEntry().getKey(); n++) {
-                    Vector3[] p = posData.p.get(n);
-                    if (p != null) {
-                        for (int h = 0; h <= 2; h++) {
-                            if (p[h] != null) {
-                                Color color;
-                                if (h == 1) color = config.fColor;
-                                else if (h == 2) color = config.bColor;
-                                else if (n == 1) color = config.startColor;
-                                else if (n == posData.p.lastEntry().getKey()) color = config.endColor;
-                                else color = config.posColor;
+            sendParticlePlayer(posData, player);
+        }
+    }
 
-                                if (h == 0) sendCube(p[h], posData.world, player, color);
-                                else sendCross(p[h], posData.world, player, color);
-                            }
-                        }
+    private void sendParticlePlayer(PosData posData, Player player) {
+        if (player == null || posData.world == null || !posData.world.getName().equals(player.getWorld().getName())) {
+            return;
+        }
 
-                        sendLine(p[0], p[1], posData.world, player, particles_1_13.SOUL_FIRE_FLAME);
-                        sendLine(p[0], p[2], posData.world, player, particles_1_13.SOUL_FIRE_FLAME);
+        boolean endLine = false;
+        double curveLength = 0;
 
-                        if (p[0] == null) endLine = true;
-                    } else {
-                        endLine = true;
-                    }
+        for (int n = 1; n <= posData.p.lastEntry().getKey(); n++) {
+            Vector3[] p = posData.p.get(n);
+            if (p != null) {
+                for (int h = 0; h <= 2; h++) {
+                    if (p[h] != null) {
+                        Color color;
+                        if (h == 1) color = config.fColor;
+                        else if (h == 2) color = config.bColor;
+                        else if (n == 1) color = config.startColor;
+                        else if (n == posData.p.lastEntry().getKey()) color = config.endColor;
+                        else color = config.posColor;
 
-                    if (!endLine && n != 1) {
-                        Vector3[] bp = posData.p.get(n - 1);
-                        Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
-                        if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
-                        if (bezierPos[2] == null) bezierPos[2] = bezierPos[3];
-                        sendBezier(bezierPos, posData.world, player, particles_1_13.FLAME);
+                        if (h == 0) sendCube(p[h], posData.world, player, color);
+                        else sendCross(p[h], posData.world, player, color);
                     }
                 }
+
+                sendLine(p[0], p[1], posData.world, player, particles_1_13.SOUL_FIRE_FLAME);
+                sendLine(p[0], p[2], posData.world, player, particles_1_13.SOUL_FIRE_FLAME);
+
+                if (p[0] == null) endLine = true;
+            } else {
+                endLine = true;
+            }
+
+            if (!endLine && n != 1) {
+                Vector3[] bp = posData.p.get(n - 1);
+                Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
+                if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
+                if (bezierPos[2] == null) bezierPos[2] = bezierPos[3];
+                curveLength = sendBezier(bezierPos, posData.world, player, particles_1_13.FLAME, curveLength);
             }
         }
     }
@@ -146,47 +157,51 @@ public class SendParticles extends TimerTask {
     }
 
     private void sendLine(Vector3 pos1, Vector3 pos2, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType) {
-        if (pos1 != null && pos2 != null) {
-            int distance = (int) lineLength(pos1, pos2);
+        if (pos1 == null || pos2 == null) return;
 
-            if (distance <= config.lineMaxLength) {
-                for (double i = 0; i <= 1; i += 1.0 / (distance * config.lineDensity)) {
-                    double x = (1 - i) * pos1.getX() + i * pos2.getX() + 0.5;
-                    double y = (1 - i) * pos1.getY() + i * pos2.getY() + 0.5;
-                    double z = (1 - i) * pos1.getZ() + i * pos2.getZ() + 0.5;
-                    Location location = adapt(adapt(world), Vector3.at(x, y, z));
-                    try {
-                        particleType
-                                .packet(true, location)
-                                .sendTo(player);
-                    } catch (ParticleException e) {
-                        particles_1_13.HAPPY_VILLAGER
-                                .packet(true, location)
-                                .sendTo(player);
-                    }
-                }
+        int distance = (int) pos1.distance(pos2);
+        if (distance > config.lineMaxLength) return;
+
+        for (double i = 0; i <= 1; i += 1.0 / (distance * config.lineDensity)) {
+            double x = (1 - i) * pos1.getX() + i * pos2.getX() + 0.5;
+            double y = (1 - i) * pos1.getY() + i * pos2.getY() + 0.5;
+            double z = (1 - i) * pos1.getZ() + i * pos2.getZ() + 0.5;
+            Location location = adapt(adapt(world), Vector3.at(x, y, z));
+            try {
+                particleType
+                        .packet(true, location)
+                        .sendTo(player);
+            } catch (ParticleException e) {
+                particles_1_13.HAPPY_VILLAGER
+                        .packet(true, location)
+                        .sendTo(player);
             }
         }
     }
 
-    private void sendBezier(Vector3[] p, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType) {
-        if (p[0] != null && p[1] != null && p[2] != null && p[3] != null) {
-            double length = bezierLength(p, p[0].distance(p[3]) * 20);
+    private double sendBezier(Vector3[] p, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType, double totalLength) {
+        if (p[0] == null || p[1] == null || p[2] == null || p[3] == null) return totalLength;
 
-            if (length <= config.lineMaxLength) {
-                for (double i = 0; i <= 1; i += 1.0 / (length * 4)) {
-                    Location location = BukkitAdapter.adapt(adapt(world), bezierCoordinate(p, i));
-                    try {
-                        particleType
-                                .packet(true, location)
-                                .sendTo(player);
-                    } catch (ParticleException e) {
-                        particles_1_13.HAPPY_VILLAGER
-                                .packet(true, location)
-                                .sendTo(player);
-                    }
-                }
+        if (p[0].distance(p[3]) > config.lineMaxLength) return totalLength;
+        if (p[0].distance(p[1]) > config.lineMaxLength) return totalLength;
+        if (p[3].distance(p[2]) > config.lineMaxLength) return totalLength;
+
+        double length = totalLength + bezierLength(p, p[0].distance(p[3]) * 20);
+        if (length > config.lineMaxLength) return length;
+
+        for (double i = 0; i <= 1; i += 1.0 / (length * 4)) {
+            Location location = BukkitAdapter.adapt(adapt(world), bezierCoordinate(p, i));
+            try {
+                particleType
+                        .packet(true, location)
+                        .sendTo(player);
+            } catch (ParticleException e) {
+                particles_1_13.HAPPY_VILLAGER
+                        .packet(true, location)
+                        .sendTo(player);
             }
         }
+
+        return length;
     }
 }

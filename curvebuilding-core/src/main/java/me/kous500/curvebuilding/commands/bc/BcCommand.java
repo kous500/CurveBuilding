@@ -78,7 +78,7 @@ public final class BcCommand {
             }
 
             if (beforeArg.equals("")) beforeArg = "bc";
-            player.printInfo(TextComponent.of("\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o" + getMessage("messages.problem-here")));
+            player.printInfo(TextComponent.of("§7..."+beforeArg+"§c §c§n"+arg+"§c§o" + getMessage("messages.problem-here")));
 
             success = false;
             return false;
