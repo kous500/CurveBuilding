@@ -5,7 +5,7 @@ curve:
   # Fineness of the curve
   fineness: 10
   # Maximum length a curve can be built
-  max-set-length: 1024
+  max-set-length: 512
   # If this value is true, the center will be thicker
   thicken-center: false
   # Default maximum block change limit for CurveBuilding
@@ -37,7 +37,7 @@ render-preview:
   line:
     render-through-walls: true
     accuracy: 5
-    maxLength: 1000
+    maxLength: 512
 
     format:
       line-f-color: 0xFFFF0033

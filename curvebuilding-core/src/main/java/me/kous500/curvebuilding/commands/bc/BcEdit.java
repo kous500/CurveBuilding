@@ -93,29 +93,38 @@ public final class BcEdit {
             }
 
             player.printInfo(TextComponent.of(getMessage("messages.bc-changed", editSession.size())));
-            player.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round(nowLength * 100) / 100)));
+            player.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round((float) nowLength * 100) / 100)));
         } catch (IncompleteRegionException e) {
             player.printError(TextComponent.of(getMessage("messages.incomplete-region")));
         } catch (IncompletePosException e) {
             player.printError(TextComponent.of(getMessage("messages.incomplete-pos")));
         } catch (MaxChangedBlocksException e) {
             player.printError(TextComponent.of(getMessage("messages.max-changed-blocks", session.getBlockChangeLimit())));
+        } catch (MaxSetLengthException e) {
+            player.printError(TextComponent.of(getMessage("messages.max-set-length", config.maxSetLength)));
         } finally {
             session.remember(editSession);
         }
     }
 
-    private void editBC(Vector3[] selectionPos) throws MaxChangedBlocksException {
+    private void editBC(Vector3[] selectionPos) throws MaxChangedBlocksException, MaxSetLengthException {
+        if (selectionPos[0].distance(selectionPos[3]) > config.maxSetLength) throw new MaxSetLengthException();
+        if (selectionPos[0].distance(selectionPos[1]) > config.maxSetLength) throw new MaxSetLengthException();
+        if (selectionPos[3].distance(selectionPos[2]) > config.maxSetLength) throw new MaxSetLengthException();
+
         double selectionLength = bezierLength(selectionPos, selectionPos[0].distance(selectionPos[3]) * 20);
         double fineness = config.fineness * selectionLength;
+        int length = nowLength + (int) bezierLength(selectionPos, fineness);
         double h = Math.floor(height / 2.0 - 0.5);
+
+        if (length > config.maxSetLength) throw new MaxSetLengthException();
 
         for (int m = 0; m <= height - 1; m++) {
             Vector3 vec = center.add(0, m - h, 0);
             xz(selectionPos, m, fineness, vec);
         }
 
-        nowLength += (int) bezierLength(selectionPos, fineness);
+        nowLength = length;
     }
 	
     private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
@@ -263,4 +272,14 @@ public final class BcEdit {
             this.r = r;
         }
     }
+
+    /**
+     * Posが完全に定義されていない場合に発生します。
+     */
+    static class IncompletePosException extends Throwable {}
+
+    /**
+     * 曲線の長さがmax-set-lengthを超えた場合に発生します。
+     */
+    static class MaxSetLengthException extends Throwable {}
 }

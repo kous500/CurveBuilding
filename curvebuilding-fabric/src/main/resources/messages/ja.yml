@@ -16,3 +16,4 @@ messages:
   incomplete-region: "領域を選択してください。"
   incomplete-pos: "始点を選択してください。"
   max-changed-blocks: "変更できるブロックの最大値は ({0}) に設定されています。"
+  max-set-length: "設定できる曲線の最大長は ({0}) に設定されています。"
