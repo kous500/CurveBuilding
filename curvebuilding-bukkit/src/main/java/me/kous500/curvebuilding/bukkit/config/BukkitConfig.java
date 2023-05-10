@@ -26,7 +26,7 @@ public final class BukkitConfig extends Config {
         fineness = config.getInteger("curve.fineness", 1);
         maxSetLength = config.getInteger("curve.max-set-length", 0);
         tCenter = config.getBoolean("curve.thicken-center");
-        defaultMaxChangeLimit = config.getInteger("curve.default-max-change-limit", 0);
+        defaultMaxChangeLimit = config.getInteger("curve.default-max-change-limit", -1);
 
         posColor = fromRGB(config.getInteger("particles.pos.color.pos", 0x000000, 0xFFFFFF));
         startColor = fromRGB(config.getInteger("particles.pos.color.start_pos", 0x000000, 0xFFFFFF));

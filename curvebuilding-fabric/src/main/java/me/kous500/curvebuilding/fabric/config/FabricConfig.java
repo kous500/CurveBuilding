@@ -31,7 +31,7 @@ public class FabricConfig extends Config {
         fineness = config.getInteger("curve.fineness", 1);
         maxSetLength = config.getInteger("curve.max-set-length", 0);
         tCenter = config.getBoolean("curve.thicken-center");
-        defaultMaxChangeLimit = config.getInteger("curve.default-max-change-limit", 0);
+        defaultMaxChangeLimit = config.getInteger("curve.default-max-change-limit", -1);
 
         posRenderThroughWalls = config.getBoolean("render-preview.pos.render-through-walls");
         posLineColor = new Color(config.getInteger("render-preview.pos.format.pos.line-color"), true);
@@ -46,8 +46,8 @@ public class FabricConfig extends Config {
         posBFilledColor = new Color(config.getInteger("render-preview.pos.format.b.filled-color"), true);
 
         lineRenderThroughWalls = config.getBoolean("render-preview.line.render-through-walls");
-        lineRenderAccuracy = config.getInteger("render-preview.line.accuracy");
-        lineRenderLength = config.getInteger("render-preview.line.maxLength");
+        lineRenderAccuracy = config.getInteger("render-preview.line.accuracy", 1);
+        lineRenderLength = config.getInteger("render-preview.line.maxLength", 0);
         lineFColor = new Color(config.getInteger("render-preview.line.format.line-f-color"), true);
         lineBColor = new Color(config.getInteger("render-preview.line.format.line-b-color"), true);
         lineCurveColor = new Color(config.getInteger("render-preview.line.format.curve-color"), true);
