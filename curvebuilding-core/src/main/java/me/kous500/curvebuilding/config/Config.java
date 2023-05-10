@@ -5,6 +5,7 @@ public class Config {
 
     public int fineness;
     public int maxSetLength;
+    public int maxPosValue;
     public boolean tCenter;
     public int defaultMaxChangeLimit;
 }

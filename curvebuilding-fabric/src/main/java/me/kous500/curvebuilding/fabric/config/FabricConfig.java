@@ -30,6 +30,7 @@ public class FabricConfig extends Config {
 
         fineness = config.getInteger("curve.fineness", 1);
         maxSetLength = config.getInteger("curve.max-set-length", 0);
+        maxPosValue = config.getInteger("curve.max-pos-value", 1);
         tCenter = config.getBoolean("curve.thicken-center");
         defaultMaxChangeLimit = config.getInteger("curve.default-max-change-limit", -1);
 

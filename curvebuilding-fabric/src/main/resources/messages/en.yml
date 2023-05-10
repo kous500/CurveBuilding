@@ -17,3 +17,4 @@ messages:
   incomplete-pos: "Select a starting position first."
   max-changed-blocks: "Max blocks changed in an operation reached ({0})."
   max-set-length: "Max curve length in an operation reached ({0})."
+  max-pos-value: "Max pos value in an operation reached ({0})."

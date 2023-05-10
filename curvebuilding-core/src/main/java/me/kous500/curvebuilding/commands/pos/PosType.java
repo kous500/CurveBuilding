@@ -1,5 +1,7 @@
 package me.kous500.curvebuilding.commands.pos;
 
+import static me.kous500.curvebuilding.CurveBuilding.config;
+
 public class PosType {
     public static PosType get(String posStr) {
         StringBuilder builderN = new StringBuilder();
@@ -19,6 +21,8 @@ public class PosType {
 
                 if (posN.equals("") || IntegerN <= 0) {
                     return new PosType(ErrorType.integerLess);
+                } else if (IntegerN > config.maxPosValue) {
+                    return new PosType(ErrorType.maxPosValue);
                 }
 
                 if (s.equals("f")) {
@@ -41,10 +45,12 @@ public class PosType {
             return new PosType(ErrorType.invalidInteger);
         }
 
-        if(!posN.equals("") && IntegerN > 0) {
-            return new PosType(IntegerN, 0);
-        } else {
+        if (posN.equals("") || IntegerN <= 0) {
             return new PosType(ErrorType.integerLess);
+        } else if (IntegerN > config.maxPosValue) {
+            return new PosType(ErrorType.maxPosValue);
+        } else {
+            return new PosType(IntegerN, 0);
         }
     }
 
@@ -64,6 +70,7 @@ public class PosType {
     public enum ErrorType {
         integerLess,
         incorrectArgument,
-        invalidInteger
+        invalidInteger,
+        maxPosValue
     }
 }

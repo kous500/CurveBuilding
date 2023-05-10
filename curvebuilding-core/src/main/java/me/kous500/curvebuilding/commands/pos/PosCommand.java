@@ -3,6 +3,7 @@ package me.kous500.curvebuilding.commands.pos;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 
+import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.PosData.addPos;
 import static me.kous500.curvebuilding.PosData.clearPos;
@@ -55,6 +56,10 @@ public class PosCommand {
             } case invalidInteger -> {
                 player.printError(TextComponent.of(getMessage("messages.invalid-integer", args[1])));
                 problemHere(player, args[0], args[1]);
+            } case maxPosValue -> {
+                player.printError(TextComponent.of(getMessage("messages.max-pos-value", config.maxPosValue)));
+                problemHere(player, args[0], args[1]);
+                return true;
             }
         }
 

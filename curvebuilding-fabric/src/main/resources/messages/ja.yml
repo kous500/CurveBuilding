@@ -17,3 +17,4 @@ messages:
   incomplete-pos: "始点を選択してください。"
   max-changed-blocks: "変更できるブロックの最大値は ({0}) に設定されています。"
   max-set-length: "設定できる曲線の最大長は ({0}) に設定されています。"
+  max-pos-value: "設定できるposの最大値は ({0}) に設定されています。"
