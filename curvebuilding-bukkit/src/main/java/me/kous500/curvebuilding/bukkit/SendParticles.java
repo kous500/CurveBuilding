@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
@@ -26,6 +27,21 @@ import static org.bukkit.Bukkit.getPlayer;
  * posの状態を各プレイヤーに送信し続ける。
  */
 public class SendParticles extends TimerTask {
+    private static Timer timer;
+
+    public static void start(BukkitConfig config) {
+        if (timer != null) stop();
+        timer = new Timer(true);
+        timer.schedule(new SendParticles(config), 0, 200);
+    }
+
+    public static void stop() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
     private final BukkitConfig config;
 
     public SendParticles(BukkitConfig bukkitConfig) {

@@ -6,12 +6,11 @@ import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
 import me.kous500.curvebuilding.MainInitializer;
 import me.kous500.curvebuilding.bukkit.commands.Bc;
+import me.kous500.curvebuilding.bukkit.commands.CurveBuildingCommand;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.bukkit.config.BukkitResources;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.Timer;
 
 import static java.util.Objects.requireNonNull;
 import static me.kous500.curvebuilding.CurveBuilding.*;
@@ -44,7 +43,11 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
         requireNonNull(this.getCommand("/pos")).setExecutor(pos);
         requireNonNull(this.getCommand("/pos")).setTabCompleter(pos);
 
-        new Timer(true).schedule(new SendParticles((BukkitConfig) config), 0, 200);
+        CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this);
+        requireNonNull(this.getCommand("curvebuilding")).setExecutor(curveBuildingCommand);
+        requireNonNull(this.getCommand("curvebuilding")).setTabCompleter(curveBuildingCommand);
+
+        SendParticles.start((BukkitConfig) config);
     }
 
     @Override

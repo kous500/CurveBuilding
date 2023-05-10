@@ -59,7 +59,6 @@ public class PosCommand {
             } case maxPosValue -> {
                 player.printError(TextComponent.of(getMessage("messages.max-pos-value", config.maxPosValue)));
                 problemHere(player, args[0], args[1]);
-                return true;
             }
         }
 

@@ -29,6 +29,12 @@ commands:
       Example: /<command> clear <posType> - Delete the specified connection or control point.
       Example: /<command> Delete all connection and control points.
       Example: /<command> set <posType> - Sets a connection point at your current position.
+  curvebuilding:
+    description: CurveBuilding management commands.
+    permission: CurveBuilding.admin
+    permission-message: You do not have <permission>.
+    usage: |
+      Example: /<command> reload - Reload configuration files.
 
 permissions:
   CurveBuilding.*:
@@ -37,7 +43,13 @@ permissions:
     children:
       CurveBuilding.bc: true
       CurveBuilding.pos: true
+      CurveBuilding.admin: true
   CurveBuilding.bc:
     description: Gives access to bc commands.
   CurveBuilding.pos:
     description: Gives access to pos commands.
+  CurveBuilding.admin:
+    description: Gives access to curvebuilding commands.
+    children:
+      CurveBuilding.bc: true
+      CurveBuilding.pos: true
