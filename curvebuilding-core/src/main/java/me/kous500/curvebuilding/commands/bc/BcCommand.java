@@ -11,9 +11,7 @@ public final class BcCommand {
     public boolean air = false;
     public boolean isDirectionX = false;
     public boolean isDirectionZ = false;
-
     public boolean success = true;
-
     private final Player player;
 
     /**
@@ -66,23 +64,27 @@ public final class BcCommand {
     }
 
     private boolean incorrectArgument(String arg, String beforeArg, int NumberCount) {
-        if (!arg.matches("^[0-9]+$") || NumberCount > 1) {
-            if (NumberCount > 1) {
-                player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-            } else if (arg.matches("^-[0-9]+$")) {
-                player.printError(TextComponent.of(getMessage("messages.integer-less", 0, arg)));
-            } else if (arg.matches("[+-]?\\d*(\\.\\d+)?")) {
+        if (arg.matches("^[0-9]+$") && NumberCount <= 1) {
+            try {
+                Integer.parseInt(arg);
+                return true;
+            } catch (NumberFormatException e) {
                 player.printError(TextComponent.of(getMessage("messages.invalid-integer", arg)));
-            } else {
-                player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
             }
-
-            if (beforeArg.equals("")) beforeArg = "bc";
-            player.printInfo(TextComponent.of("§7..."+beforeArg+"§c §c§n"+arg+"§c§o" + getMessage("messages.problem-here")));
-
-            success = false;
-            return false;
+        } else if (NumberCount > 1) {
+            player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
+        } else if (arg.matches("^-[0-9]+$")) {
+            player.printError(TextComponent.of(getMessage("messages.integer-less", 0, arg)));
+        } else if (arg.matches("[+-]?\\d*(\\.\\d+)?")) {
+            player.printError(TextComponent.of(getMessage("messages.invalid-integer", arg)));
+        } else {
+            player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
         }
-        else return true;
+
+        if (beforeArg.equals("")) beforeArg = "bc";
+        player.printInfo(TextComponent.of("§7..."+beforeArg+"§c §c§n"+arg+"§c§o" + getMessage("messages.problem-here")));
+
+        success = false;
+        return false;
     }
 }

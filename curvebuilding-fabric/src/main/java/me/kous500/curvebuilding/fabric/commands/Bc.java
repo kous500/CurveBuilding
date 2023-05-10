@@ -43,7 +43,7 @@ public class Bc implements RunCommand {
         RequiredArgumentBuilder<ServerCommandSource, Integer> builderN = CommandManager
                 .argument(n, integer())
                 .then(builderM)
-                .executes(context -> debugRun(new Bc(context, options, m)));
+                .executes(context -> debugRun(new Bc(context, options, n)));
 
         RequiredArgumentBuilder<ServerCommandSource, String> builderOption = CommandManager
                 .argument(options, string())
