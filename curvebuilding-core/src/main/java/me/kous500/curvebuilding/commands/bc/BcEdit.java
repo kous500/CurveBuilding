@@ -26,8 +26,8 @@ public final class BcEdit {
     private Vector3 center;
     private Direction direction;
     private EditSession editSession;
+    private RegionBlocks regionBlocks;
     private final BcCommand argument;
-    private final Map<BlockVector3, BaseBlock> regionBlocks = new HashMap<>();
 
     private enum Direction {x, z}
 
@@ -76,16 +76,7 @@ public final class BcEdit {
                 throw new MaxChangedBlocksException (maxChangeLimit);
             }
 
-            BlockVector3 maxRegion = region.getMaximumPoint();
-            BlockVector3 minRegion = region.getMinimumPoint();
-            for (int x = minRegion.getX(); x <= maxRegion.getX(); x++) {
-                for (int y = minRegion.getY(); y <= maxRegion.getY(); y++) {
-                    for (int z = minRegion.getZ(); z <= maxRegion.getZ(); z++) {
-                        BlockVector3 pos = BlockVector3.at(x, y, z);
-                        regionBlocks.put(pos, editSession.getFullBlock(pos));
-                    }
-                }
-            }
+            regionBlocks = new RegionBlocks(editSession, region);
 
             for (int n = 1; n <= posMap.lastEntry().getKey(); n++) {
                 Vector3[] p = posMap.get(n);
@@ -102,29 +93,38 @@ public final class BcEdit {
             }
 
             player.printInfo(TextComponent.of(getMessage("messages.bc-changed", editSession.size())));
-            player.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round(nowLength * 100) / 100)));
+            player.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round((float) nowLength * 100) / 100)));
         } catch (IncompleteRegionException e) {
             player.printError(TextComponent.of(getMessage("messages.incomplete-region")));
         } catch (IncompletePosException e) {
             player.printError(TextComponent.of(getMessage("messages.incomplete-pos")));
         } catch (MaxChangedBlocksException e) {
             player.printError(TextComponent.of(getMessage("messages.max-changed-blocks", session.getBlockChangeLimit())));
+        } catch (MaxSetLengthException e) {
+            player.printError(TextComponent.of(getMessage("messages.max-set-length", config.maxSetLength)));
         } finally {
             session.remember(editSession);
         }
     }
 
-    private void editBC(Vector3[] selectionPos) throws MaxChangedBlocksException {
+    private void editBC(Vector3[] selectionPos) throws MaxChangedBlocksException, MaxSetLengthException {
+        if (selectionPos[0].distance(selectionPos[3]) > config.maxSetLength) throw new MaxSetLengthException();
+        if (selectionPos[0].distance(selectionPos[1]) > config.maxSetLength) throw new MaxSetLengthException();
+        if (selectionPos[3].distance(selectionPos[2]) > config.maxSetLength) throw new MaxSetLengthException();
+
         double selectionLength = bezierLength(selectionPos, selectionPos[0].distance(selectionPos[3]) * 20);
         double fineness = config.fineness * selectionLength;
+        int length = nowLength + (int) bezierLength(selectionPos, fineness);
         double h = Math.floor(height / 2.0 - 0.5);
+
+        if (length > config.maxSetLength) throw new MaxSetLengthException();
 
         for (int m = 0; m <= height - 1; m++) {
             Vector3 vec = center.add(0, m - h, 0);
             xz(selectionPos, m, fineness, vec);
         }
 
-        nowLength += (int) bezierLength(selectionPos, fineness);
+        nowLength = length;
     }
 	
     private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
@@ -184,9 +184,9 @@ public final class BcEdit {
             yt1 = yt;
             zt1 = zt;
 
-            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l*Math.cos(-r), m, l*Math.sin(-r)));
+            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l * Math.cos(-r), m, l * Math.sin(-r)));
 
-            if (!posT.equals(beforePosT) && L >= L1 && !Double.isNaN(r)) {
+            if (!posT.equals(beforePosT) && L >= L1) {
                 BaseBlock idT;
                 if (direction == Direction.x) {
                     double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
@@ -222,6 +222,8 @@ public final class BcEdit {
     }
 
     private PosCoordinates pos(Vector3[] selectionPos, double t) {
+        if (t == 0) t = 0.00001;
+
         double x0 = selectionPos[0].getX();
         double y0 = selectionPos[0].getY();
         double z0 = selectionPos[0].getZ();
@@ -246,9 +248,13 @@ public final class BcEdit {
         double dzt = 3 * t * t * (-z0 + 3 * z1 - 3 * z2 + z3) + 6 * t * (z0 - 2 * z1 + z2) + 3 * (-z0 + z1);
         double r = Math.atan(dxt / dzt);
 
-        if (argument.rtm) {
-            yt = (1-t)*y0 + t*y3 - 0.3;
+        if (Double.isNaN(r)) {
+            if (dxt > 0) r = Math.PI / 2;
+            else if (dxt < 0) r = -Math.PI / 2;
+            else r = 0;
         }
+
+        if (dzt < 0) r += Math.PI;
 
         return new PosCoordinates(xt, yt, zt, r);
     }
@@ -266,4 +272,14 @@ public final class BcEdit {
             this.r = r;
         }
     }
+
+    /**
+     * Posが完全に定義されていない場合に発生します。
+     */
+    static class IncompletePosException extends Throwable {}
+
+    /**
+     * 曲線の長さがmax-set-lengthを超えた場合に発生します。
+     */
+    static class MaxSetLengthException extends Throwable {}
 }

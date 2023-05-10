@@ -31,22 +31,19 @@ public class Bc implements TabExecutor {
     @Override
     public boolean onCommand(
             @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        //コマンドの名前がtestであるかを確かめる
         if (command.getName().equalsIgnoreCase("/bc")) {
             if (sender instanceof Player) {
-                // プレイヤーが実行した場合の処理
                 BcCommand argument = new BcCommand(args, adapt((Player) sender));
                 if (argument.success) {
                     new BcEdit(adapt((Player) sender), argument);
                     return true;
                 }
             } else {
-                // サーバーが実行した場合の処理
                 plugin.getLogger().info(getMessage("messages.non-player-execution"));
                 return true;
             }
         }
-        //コマンドが存在しない場合はfalseを返す
+
         return false;
     }
 

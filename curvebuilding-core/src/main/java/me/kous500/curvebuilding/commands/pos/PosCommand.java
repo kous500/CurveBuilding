@@ -3,96 +3,62 @@ package me.kous500.curvebuilding.commands.pos;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 
+import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.PosData.addPos;
 import static me.kous500.curvebuilding.PosData.clearPos;
 
 public class PosCommand {
     public static boolean posCommand(Player player, String command, String[] args) {
-        if (command.equalsIgnoreCase("/pos")) {
-            if (args.length >= 2 && args[0].equals("clear")) {
-                StringBuilder n = new StringBuilder();
+        if (!command.equalsIgnoreCase("/pos")) return false;
 
-                for(String s : args[1].split("")) {
-                    if (s.matches("^[0-9]$")) {
-                        n.append(s);
-                    } else if (s.matches("[fb]")) {
-                        String posN = n.toString();
-                        if(!posN.equals("") && Integer.parseInt(posN) > 0) {
-                            if (s.equals("f")) {
-                                clearPos(player, Integer.parseInt(posN), 1);
-                            } else if (s.equals("b")) {
-                                clearPos(player, Integer.parseInt(posN), 2);
-                            }
-
-                            return true;
-                        } else {
-                            player.printError(TextComponent.of(getMessage("messages.integer-less", 1, posN)));
-                            problemHere(player, args[0], args[1]);
-                            return false;
-                        }
-                    } else {
-                        player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-                        problemHere(player, args[0], args[1]);
-                        return false;
-                    }
-                }
-
-                String posN = n.toString();
-                if(!posN.equals("") && Integer.parseInt(posN) > 0) {
-                    clearPos(player, Integer.parseInt(posN), 0);
-                    return true;
-                } else {
-                    player.printError(TextComponent.of(getMessage("messages.integer-less", 1, posN)));
-                    problemHere(player, args[0], args[1]);
-                    return false;
-                }
-            } else if (args.length >= 1 && args[0].equals("clearall")) {
-                clearPos(player);
+        if (args.length >= 2 && args[0].equals("clear")) {
+            PosType posType = PosType.get(args[1]);
+            if (argIsError(player, args, posType)) {
+                clearPos(player, posType.n, posType.h);
                 return true;
-            } else if (args.length >= 1 && args[0].equals("insert")) {
-                player.printInfo(TextComponent.of("'insert' is not yet implemented."));
-                return true;
-            } else if (args.length >= 2 && args[0].equals("set")) {
-                StringBuilder n = new StringBuilder();
-                for(String s : args[1].split("")) {
-                    if (s.matches("^[0-9]$")) {
-                        n.append(s);
-                    } else if (s.matches("[fb]")) {
-                        String posN = n.toString();
-                        if(!posN.equals("") && Integer.parseInt(posN) > 0) {
-                            if (s.equals("f")) {
-                                addPos(player, Integer.parseInt(posN), 1);
-                            } else if (s.equals("b")) {
-                                addPos(player, Integer.parseInt(posN), 2);
-                            }
-                            return true;
-                        } else {
-                            player.printError(TextComponent.of(getMessage("messages.integer-less", 1, posN)));
-                            problemHere(player, args[0], args[1]);
-                            return false;
-                        }
-                    } else {
-                        player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-                        problemHere(player, args[0], args[1]);
-                        return false;
-                    }
-                }
-
-                String posN = n.toString();
-                if(!posN.equals("") && Integer.parseInt(posN) > 0) {
-                    addPos(player, Integer.parseInt(posN), 0);
-                    return true;
-                } else {
-                    player.printError(TextComponent.of(getMessage("messages.integer-less", 1, posN)));
-                    problemHere(player, args[0], args[1]);
-                    return false;
-                }
             } else {
-                player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-                if (args.length >= 1) problemHere(player, "pos", args[0]);
-                else problemHere(player, "pos", "");
                 return false;
+            }
+        } else if (args.length >= 1 && args[0].equals("clearall")) {
+            clearPos(player);
+            return true;
+        } else if (args.length >= 1 && args[0].equals("insert")) {
+            player.printInfo(TextComponent.of("'insert' is not yet implemented."));
+            return true;
+        } else if (args.length >= 2 && args[0].equals("set")) {
+            PosType posType = PosType.get(args[1]);
+            if (argIsError(player, args, posType)) {
+                addPos(player, posType.n, posType.h);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
+            if (args.length >= 1) problemHere(player, "pos", args[0]);
+            else problemHere(player, "pos", "");
+            return false;
+        }
+    }
+
+    public static boolean argIsError(Player player, String[] args, PosType posType) {
+        PosType.ErrorType errorType = posType.errorType;
+        if (errorType == null) return true;
+
+        switch (errorType) {
+            case integerLess -> {
+                player.printError(TextComponent.of(getMessage("messages.integer-less", 1, args[1])));
+                problemHere(player, args[0], args[1]);
+            } case incorrectArgument -> {
+                player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
+                problemHere(player, args[0], args[1]);
+            } case invalidInteger -> {
+                player.printError(TextComponent.of(getMessage("messages.invalid-integer", args[1])));
+                problemHere(player, args[0], args[1]);
+            } case maxPosValue -> {
+                player.printError(TextComponent.of(getMessage("messages.max-pos-value", config.maxPosValue)));
+                problemHere(player, args[0], args[1]);
             }
         }
 
@@ -101,6 +67,6 @@ public class PosCommand {
 
     public static void problemHere(Player player, String beforeArg, String arg) {
         player.printInfo(TextComponent.of(
-                "\u00a77..."+beforeArg+"\u00a7c \u00a7c\u00a7n"+arg+"\u00a7c\u00a7o" + getMessage("messages.problem-here")));
+                "§7..."+beforeArg+"§c §c§n"+arg+"§c§o" + getMessage("messages.problem-here")));
     }
 }

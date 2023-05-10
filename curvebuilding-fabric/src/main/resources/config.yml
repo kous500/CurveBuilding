@@ -1,0 +1,47 @@
+# ResourceFiles file path
+message-file: "%datafolder%/messages/en.yml"
+
+curve:
+  # Fineness of the curve
+  fineness: 10
+  # Maximum length a curve can be built
+  max-set-length: 512
+  # Maximum value of pos that can be set with the pos command
+  max-pos-value: 100
+  # If this value is true, the center will be thicker
+  thicken-center: false
+  # Default maximum block change limit for CurveBuilding
+  # If this value is -1, it means unlimited
+  default-max-change-limit: 1000000
+
+# Client options
+render-preview:
+  pos:
+    render-through-walls: true
+
+    format:
+      pos:
+        line-color: 0xFF00FFFF
+        filled-color: 0x3300FFFF
+      start-pos:
+        line-color: 0xFFFF00FF
+        filled-color: 0x33FF00FF
+      end-pos:
+        line-color: 0xFFFFFF00
+        filled-color: 0x33FFFF00
+      f:
+        line-color: 0xFFFF0033
+        filled-color: 0x33FF0033
+      b:
+        line-color: 0xFF3300FF
+        filled-color: 0x333300FF
+
+  line:
+    render-through-walls: true
+    accuracy: 5
+    maxLength: 512
+
+    format:
+      line-f-color: 0xFFFF0033
+      line-b-color: 0xFF3300FF
+      curve-color: 0xFFFFC800

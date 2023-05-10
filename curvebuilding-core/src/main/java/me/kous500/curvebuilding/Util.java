@@ -73,20 +73,6 @@ public final class Util {
     }
 
     /**
-     * 始点と終点を直線で結んだときの長さを求める。
-     *
-     * @param pos1 始点
-     * @param pos2 終点
-     * @return 直線の長さ
-     */
-    public static double lineLength(Vector3 pos1, Vector3 pos2) {
-        return Math.sqrt(
-                pow(pos1.getX() - pos2.getX(), 2)
-                        + pow(pos1.getY() - pos2.getY(), 2)
-                        + pow(pos1.getZ() - pos2.getZ(), 2));
-    }
-
-    /**
      * pos1からpos4の値から生成されるベジエ曲線の曲線上の位置iの座標を求める。
      *
      * @param pos pos1からpos4までの値
