@@ -65,24 +65,30 @@ public class RenderPreview {
 
         double totalLen = 0;
         for (int n : pos.keySet()) {
-            totalLen = bezierBuild(
-                    matrices,
-                    pos.get(n),
-                    pos.get(n - 1),
-                    color,
-                    totalLen,
-                    render
-            );
+            if (n > 1) {
+                totalLen = bezierBuild(
+                        matrices,
+                        pos.get(n),
+                        pos.get(n - 1),
+                        color,
+                        totalLen,
+                        render
+                );
+            }
             if (totalLen > fabricConfig.lineRenderLength) return;
         }
     }
 
     private static double bezierBuild(MatrixStack matrices, Vector3[] p, Vector3[] bp, Color color, double totalLen, LineRender render) {
-        if (p == null || p[0] == null || bp == null || bp[0] == null) return 0;
+        if (p == null || p[0] == null || bp == null || bp[0] == null) return fabricConfig.lineRenderLength + 1;
 
         Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
         if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
         if (bezierPos[2] == null) bezierPos[2] = bezierPos[3];
+
+        if (bezierPos[0].distance(bezierPos[3]) > fabricConfig.lineRenderLength) return fabricConfig.lineRenderLength + 1;
+        if (bezierPos[0].distance(bezierPos[1]) > fabricConfig.lineRenderLength) return fabricConfig.lineRenderLength + 1;
+        if (bezierPos[3].distance(bezierPos[2]) > fabricConfig.lineRenderLength) return fabricConfig.lineRenderLength + 1;
 
         double length = bezierLength(bezierPos, bezierPos[0].distance(bezierPos[3]) * 5);
         totalLen += length;
