@@ -180,11 +180,11 @@ public class SendParticles extends TimerTask {
     }
 
     private double sendBezier(Vector3[] p, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType, double totalLength) {
-        if (p[0] == null || p[1] == null || p[2] == null || p[3] == null) return totalLength;
+        if (p[0] == null || p[1] == null || p[2] == null || p[3] == null) return config.lineMaxLength + 1;
 
-        if (p[0].distance(p[3]) > config.lineMaxLength) return totalLength;
-        if (p[0].distance(p[1]) > config.lineMaxLength) return totalLength;
-        if (p[3].distance(p[2]) > config.lineMaxLength) return totalLength;
+        if (p[0].distance(p[3]) > config.lineMaxLength) return config.lineMaxLength + 1;
+        if (p[0].distance(p[1]) > config.lineMaxLength) return config.lineMaxLength + 1;
+        if (p[3].distance(p[2]) > config.lineMaxLength) return config.lineMaxLength + 1;
 
         double length = totalLength + bezierLength(p, p[0].distance(p[3]) * 20);
         if (length > config.lineMaxLength) return length;
