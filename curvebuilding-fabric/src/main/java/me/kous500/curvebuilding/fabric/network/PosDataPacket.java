@@ -27,7 +27,7 @@ public class PosDataPacket {
 
         if (!playerList.contains(player)) playerList.add(player);
         NavigableMap<Integer, Vector3[]> sendPosData = new TreeMap<>();
-        if (posData.worldId != null && posData.worldId.equals(FabricAdapter.adapt(player.world).getId())) sendPosData = posData.p;
+        if (posData.worldId != null && posData.worldId.equals(FabricAdapter.adapt(player.getWorld()).getId())) sendPosData = posData.p;
         PacketByteBuf posBuf = new PacketByteBuf(Unpooled.buffer());
 
         posBuf.writeMap(
