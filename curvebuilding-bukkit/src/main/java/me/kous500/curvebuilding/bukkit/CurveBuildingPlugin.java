@@ -18,7 +18,7 @@ import static me.kous500.curvebuilding.CurveBuilding.*;
 
 public final class CurveBuildingPlugin extends JavaPlugin implements MainInitializer {
     public static ParticleList_1_13 particles_1_13;
-    private static final String PLUGIN_DATA_FOLDER = "plugins/CurveBuilding";
+    private static final String PLUGIN_CONFIG_PASS = "plugins/CurveBuilding";
 
     @Override
     public void onEnable() {
@@ -61,7 +61,7 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
     }
 
     @Override
-    public String getDateFolder() {
-        return PLUGIN_DATA_FOLDER;
+    public String getConfigPass() {
+        return PLUGIN_CONFIG_PASS;
     }
 }

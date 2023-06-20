@@ -26,7 +26,7 @@ public class ResourceFiles {
 
     public ResourceFiles(MainInitializer mainInitializer) {
         this.mainInitializer = mainInitializer;
-        this.DATA_FOLDER = mainInitializer.getDateFolder();
+        this.DATA_FOLDER = mainInitializer.getConfigPass();
         this.classLoader = mainInitializer.getMainClassLoader();
     }
 
