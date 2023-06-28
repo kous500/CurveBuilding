@@ -5,8 +5,7 @@ import com.sk89q.worldedit.util.formatting.text.TextComponent;
 
 import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
-import static me.kous500.curvebuilding.PosData.addPos;
-import static me.kous500.curvebuilding.PosData.clearPos;
+import static me.kous500.curvebuilding.PosData.*;
 
 public class PosCommand {
     public static boolean posCommand(Player player, String command, String[] args) {
@@ -23,9 +22,22 @@ public class PosCommand {
         } else if (args.length >= 1 && args[0].equals("clearall")) {
             clearPos(player);
             return true;
-        } else if (args.length >= 1 && args[0].equals("insert")) {
-            player.printInfo(TextComponent.of("'insert' is not yet implemented."));
-            return true;
+        } else if (args.length >= 2 && args[0].equals("insert")) {
+            PosType posType = PosType.get(args[1]);
+            if (argIsError(player, args, posType)) {
+                insert(player, posType.n);
+                return true;
+            } else {
+                return false;
+            }
+        } else if (args.length >= 2 && args[0].equals("remove")) {
+            PosType posType = PosType.get(args[1]);
+            if (argIsError(player, args, posType)) {
+                remove(player, posType.n);
+                return true;
+            } else {
+                return false;
+            }
         } else if (args.length >= 2 && args[0].equals("set")) {
             PosType posType = PosType.get(args[1]);
             if (argIsError(player, args, posType)) {

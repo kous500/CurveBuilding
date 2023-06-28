@@ -7,6 +7,7 @@ import com.sk89q.worldedit.world.World;
 
 import java.util.*;
 
+import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.Util.*;
 
@@ -142,6 +143,45 @@ public final class PosData {
         POS_MAP.replace(uuid, posData);
 
         player.printInfo(TextComponent.of(getMessage("messages.pos-clear", posToString(n, h))));
+    }
+
+    //TODO 言語ファイルに新しいサブコマンド用のメッセージの追加
+    public static void insert(Player player, int n) {
+        PosData posData = POS_MAP.get(player.getUniqueId());
+        if (posData == null || posData.p.get(n) == null) {
+            player.printError(TextComponent.of("pos " + n + " は存在しません"));
+            return;
+        }
+
+        NavigableMap<Integer, Vector3[]> newMap = new TreeMap<>();
+        for (int key : posData.p.keySet()) {
+            if (key < n) {
+                newMap.put(key, posData.p.get(key));
+            } else {
+                newMap.put(key + 1, posData.p.get(key));
+            }
+        }
+        posData.p = newMap;
+        addPos(player, n, 0);
+    }
+
+    public static void remove(Player player, int n) {
+        PosData posData = POS_MAP.get(player.getUniqueId());
+        if (posData == null || posData.p.get(n) == null) {
+            player.printError(TextComponent.of("pos " + n + " は存在しません"));
+            return;
+        }
+
+        posData.p.remove(n);
+        NavigableMap<Integer, Vector3[]> newMap = new TreeMap<>();
+        for (int key : posData.p.keySet()) {
+            if (key < n) {
+                newMap.put(key, posData.p.get(key));
+            } else if (key > n) {
+                newMap.put(key - 1, posData.p.get(key));
+            }
+        }
+        posData.p = newMap;
     }
 
     /**

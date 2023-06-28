@@ -26,6 +26,9 @@ public class Pos implements RunCommand{
             put("set", true);
             put("clear", true);
             put("clearall", false);
+            put("insert", true);
+            put("remove", true);
+            put("shift", true);
         }
     };
 

@@ -47,12 +47,14 @@ public class Pos implements TabExecutor {
                 if (i == 0) {
                     commands.add("clear");
                     commands.add("clearall");
-                    //commands.add("insert");
+                    commands.add("insert");
+                    commands.add("remove");
                     commands.add("set");
+                    commands.add("shift");
                 } else if (i == 1) {
                     if (args[0].equals("clear") || args[0].equals("set")) {
                         posComplete(args[i], commands, types);
-                    } else if (args[0].equals("insert")) {
+                    } else if (args[0].equals("insert") || args[0].equals("remove") || args[0].equals("shift")) {
                         posComplete(args[i], commands, new String[]{});
                     }
                 }
