@@ -7,7 +7,6 @@ import com.sk89q.worldedit.world.World;
 
 import java.util.*;
 
-import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.Util.*;
 
@@ -15,6 +14,19 @@ import static me.kous500.curvebuilding.Util.*;
  * posのデータの保存方法とデータを操作するメゾットを定義する。
  */
 public final class PosData {
+    public static final String[] directionOptions = new String[] {
+            "back",
+            "down",
+            "east",
+            "forward",
+            "left",
+            "me",
+            "north",
+            "right",
+            "south",
+            "up"
+    };
+
     /**
      * プレイヤーごとのposのデータを保存する。
      */
@@ -182,6 +194,43 @@ public final class PosData {
             }
         }
         posData.p = newMap;
+    }
+
+    public static void shift(Player player, int n, char direction) {
+        if ('A' <= direction && direction <= 'Z') direction += 32;
+
+        PosData posData = POS_MAP.get(player.getUniqueId());
+        if (posData == null) return;
+
+        double pitch = player.getLocation().getPitch();
+        double yaw = player.getLocation().getYaw();
+        switch (direction) {
+            case 'r' -> yaw += 90;
+            case 'l' -> yaw -= 90;
+            case 'b' -> yaw += 180;
+        }
+
+        if (yaw < -180) yaw += 360;
+        else if (yaw > 180) yaw -= 360;
+
+        boolean notPitch = String.valueOf(direction).matches("[frlb]");
+        boolean notYaw = String.valueOf(direction).matches("[snew]");
+        Vector3 shiftVec = Vector3.at(0, 0, 0);
+        if (pitch > 67.5 && !notPitch && direction == 'm' || direction == 'd') shiftVec = Vector3.at(0, -n, 0);
+        else if (pitch < -67.5 && !notPitch && direction == 'm' || direction == 'u') shiftVec = Vector3.at(0, n, 0);
+        else {
+            if (Math.abs(yaw) < 67.5 && !notYaw || direction == 's') shiftVec = shiftVec.add(0, 0, n);
+            if (-Math.abs(yaw) + 180 < 67.5 && !notYaw || direction == 'n') shiftVec = shiftVec.add(0, 0, -n);
+            if (Math.abs(yaw + 90) < 67.5 && !notYaw || direction == 'e') shiftVec = shiftVec.add(n, 0, 0);
+            if (Math.abs(yaw - 90) < 67.5 && !notYaw || direction == 'w') shiftVec = shiftVec.add(-n, 0, 0);
+        }
+
+        for (int i : posData.p.keySet()) {
+            Vector3[] vec = posData.p.get(i);
+            for (int j = 0; j < 3; j++) {
+                if (vec != null && vec[j] != null) vec[j] = vec[j].add(shiftVec);
+            }
+        }
     }
 
     /**

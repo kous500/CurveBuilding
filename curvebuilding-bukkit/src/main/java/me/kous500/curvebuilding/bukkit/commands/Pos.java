@@ -15,6 +15,7 @@ import java.util.List;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
+import static me.kous500.curvebuilding.PosData.directionOptions;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
 
 public class Pos implements TabExecutor {
@@ -54,8 +55,12 @@ public class Pos implements TabExecutor {
                 } else if (i == 1) {
                     if (args[0].equals("clear") || args[0].equals("set")) {
                         posComplete(args[i], commands, types);
-                    } else if (args[0].equals("insert") || args[0].equals("remove") || args[0].equals("shift")) {
+                    } else if (args[0].equals("insert") || args[0].equals("remove")) {
                         posComplete(args[i], commands, new String[]{});
+                    } else if (args[0].equals("shift") && args[1].length() > 0 && args[1].matches("^[0-9]*")) {
+                        for (String option : directionOptions) {
+                            commands.add(args[1] + " " + option);
+                        }
                     }
                 }
 
