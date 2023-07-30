@@ -57,7 +57,7 @@ public class Pos implements TabExecutor {
                         posComplete(args[i], commands, types);
                     } else if (args[0].equals("insert") || args[0].equals("remove")) {
                         posComplete(args[i], commands, new String[]{});
-                    } else if (args[0].equals("shift") && args[1].length() > 0 && args[1].matches("^[0-9]*")) {
+                    } else if (args[0].equals("shift") && !args[1].isEmpty() && args[1].matches("^[0-9]*")) {
                         for (String option : directionOptions) {
                             commands.add(args[1] + " " + option);
                         }
@@ -75,7 +75,7 @@ public class Pos implements TabExecutor {
     private void posComplete(String arg, List<String> commands, String[] types) {
         if (arg.matches("^[1-9][0-9]*$")) {
             for (String t : types) {
-                commands.add(arg + t);
+                if (!(arg + t).equals("1f")) commands.add(arg + t);
             }
 
             if (types.length == 0) {
@@ -83,7 +83,7 @@ public class Pos implements TabExecutor {
                     commands.add(arg + i);
                 }
             }
-        } else if (arg.equals("")) {
+        } else if (arg.isEmpty()) {
             for (int i = 1; i <= 9; i++) {
                 commands.add(arg + i);
             }

@@ -19,13 +19,14 @@ public class PosType {
                     return new PosType(ErrorType.invalidInteger);
                 }
 
-                if (posN.equals("") || IntegerN <= 0) {
+                if (posN.isEmpty() || IntegerN <= 0) {
                     return new PosType(ErrorType.integerLess);
                 } else if (IntegerN > config.maxPosValue) {
                     return new PosType(ErrorType.maxPosValue);
                 }
 
                 if (s.equals("f")) {
+                    if (IntegerN == 1) return new PosType(ErrorType.incorrectArgument);
                     return new PosType(IntegerN, 1);
                 } else if (s.equals("b")) {
                     return new PosType(IntegerN, 2);
@@ -45,7 +46,7 @@ public class PosType {
             return new PosType(ErrorType.invalidInteger);
         }
 
-        if (posN.equals("") || IntegerN <= 0) {
+        if (posN.isEmpty() || IntegerN <= 0) {
             return new PosType(ErrorType.integerLess);
         } else if (IntegerN > config.maxPosValue) {
             return new PosType(ErrorType.maxPosValue);
