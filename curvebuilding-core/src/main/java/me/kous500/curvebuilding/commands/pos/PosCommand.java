@@ -3,7 +3,6 @@ package me.kous500.curvebuilding.commands.pos;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static me.kous500.curvebuilding.CurveBuilding.config;
@@ -11,8 +10,11 @@ import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.PosData.*;
 
 public class PosCommand {
+    public static StringBuilder log = new StringBuilder();
+
     public static boolean posCommand(Player player, String command, String[] args) {
         if (!command.equalsIgnoreCase("/pos")) return false;
+        if (!log.isEmpty()) player.printInfo(TextComponent.of(log.toString()));
 
         if (args.length >= 2 && args[0].equals("clear")) {
             PosType posType = PosType.get(args[1]);
