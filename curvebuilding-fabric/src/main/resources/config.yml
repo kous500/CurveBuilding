@@ -5,7 +5,7 @@ curve:
   # Fineness of the curve
   fineness: 10
   # Maximum length a curve can be built
-  max-set-length: 512
+  max-set-length: 1000
   # Maximum value of pos that can be set with the pos command
   max-pos-value: 100
   # If this value is true, the center will be thicker
