@@ -39,7 +39,7 @@ render-preview:
   line:
     render-through-walls: true
     accuracy: 5
-    maxLength: 512
+    maxLength: 1000
 
     format:
       line-f-color: 0xFFFF0033
