@@ -157,11 +157,10 @@ public final class PosData {
         player.printInfo(TextComponent.of(getMessage("messages.pos-clear", posToString(n, h))));
     }
 
-    //TODO 言語ファイルに新しいサブコマンド用のメッセージの追加
     public static void insert(Player player, int n) {
         PosData posData = POS_MAP.get(player.getUniqueId());
         if (posData == null || posData.p.get(n) == null) {
-            player.printError(TextComponent.of("pos " + n + " は存在しません"));
+            player.printError(TextComponent.of(getMessage("messages.pos-not-exist", n)));
             return;
         }
 
@@ -180,7 +179,7 @@ public final class PosData {
     public static void remove(Player player, int n) {
         PosData posData = POS_MAP.get(player.getUniqueId());
         if (posData == null || posData.p.get(n) == null) {
-            player.printError(TextComponent.of("pos " + n + " は存在しません"));
+            player.printError(TextComponent.of(getMessage("messages.pos-not-exist", n)));
             return;
         }
 
@@ -194,6 +193,7 @@ public final class PosData {
             }
         }
         posData.p = newMap;
+        player.printInfo(TextComponent.of(getMessage("messages.pos-remove", n)));
     }
 
     public static void shift(Player player, int n, char direction) {
@@ -231,6 +231,7 @@ public final class PosData {
                 if (vec != null && vec[j] != null) vec[j] = vec[j].add(shiftVec);
             }
         }
+        player.printInfo(TextComponent.of(getMessage("messages.pos-shift")));
     }
 
     /**
