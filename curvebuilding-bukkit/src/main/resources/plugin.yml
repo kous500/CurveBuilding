@@ -27,8 +27,11 @@ commands:
     permission-message: You do not have <permission>.
     usage: |
       Example: /<command> clear <posType> - Delete the specified connection or control point.
-      Example: /<command> Delete all connection and control points.
+      Example: /<command> clearall - Delete all connection and control points.
+      Example: /<command> insert <posType> - Insert a connection point at your current position.
+      Example: /<command> remove <posType> - Remove a connection point.
       Example: /<command> set <posType> - Sets a connection point at your current position.
+      Example: /<command> shift <Length> [Direction] - Shift all your pos.
   curvebuilding:
     description: CurveBuilding management commands.
     permission: CurveBuilding.admin
