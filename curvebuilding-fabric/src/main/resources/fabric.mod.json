@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "curvebuilding",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "name": "CurveBuilding",
   "description": "Make curved structures using commands and WorldEdit.",
   "authors": [

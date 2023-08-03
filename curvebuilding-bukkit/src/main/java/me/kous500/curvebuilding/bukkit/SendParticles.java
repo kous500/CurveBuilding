@@ -28,6 +28,7 @@ import static org.bukkit.Bukkit.getPlayer;
  */
 public class SendParticles extends TimerTask {
     private static Timer timer;
+    private static final int INTERVAL = 3;
 
     public static void start(BukkitConfig config) {
         if (timer != null) stop();
@@ -43,6 +44,7 @@ public class SendParticles extends TimerTask {
     }
 
     private final BukkitConfig config;
+    private int r = 0;
 
     public SendParticles(BukkitConfig bukkitConfig) {
         this.config = bukkitConfig;
@@ -60,6 +62,8 @@ public class SendParticles extends TimerTask {
 
             sendParticlePlayer(posData, player);
         }
+
+        r = (r + 1) % INTERVAL;
     }
 
     private void sendParticlePlayer(PosData posData, Player player) {
@@ -178,19 +182,29 @@ public class SendParticles extends TimerTask {
         int distance = (int) pos1.distance(pos2);
         if (distance > config.lineMaxLength) return;
 
+        int cnt = 0;
+        Vector3 PlayerVec = adapt(player).getLocation().toVector();
+        Vector3 bVec = pos1;
         for (double i = 0; i <= 1; i += 1.0 / (distance * config.lineDensity)) {
             double x = (1 - i) * pos1.getX() + i * pos2.getX() + 0.5;
             double y = (1 - i) * pos1.getY() + i * pos2.getY() + 0.5;
             double z = (1 - i) * pos1.getZ() + i * pos2.getZ() + 0.5;
-            Location location = adapt(adapt(world), Vector3.at(x, y, z));
-            try {
-                particleType
-                        .packet(true, location)
-                        .sendTo(player);
-            } catch (ParticleException e) {
-                particles_1_13.HAPPY_VILLAGER
-                        .packet(true, location)
-                        .sendTo(player);
+            Vector3 vec = Vector3.at(x, y, z);
+            if ((PlayerVec.distance(vec) / 3000 * config.lineDensity) + (0.8 / config.lineDensity) < vec.distance(bVec)) {
+                Location location = adapt(adapt(world), vec);
+                if (cnt % INTERVAL == r) {
+                    try {
+                        particleType
+                                .packet(true, location)
+                                .sendTo(player);
+                    } catch (ParticleException e) {
+                        particles_1_13.HAPPY_VILLAGER
+                                .packet(true, location)
+                                .sendTo(player);
+                    }
+                }
+                bVec = vec;
+                cnt++;
             }
         }
     }
@@ -205,16 +219,26 @@ public class SendParticles extends TimerTask {
         double length = totalLength + bezierLength(p, p[0].distance(p[3]) * 20);
         if (length > config.lineMaxLength) return length;
 
-        for (double i = 0; i <= 1; i += 1.0 / (length * 4)) {
-            Location location = BukkitAdapter.adapt(adapt(world), bezierCoordinate(p, i));
-            try {
-                particleType
-                        .packet(true, location)
-                        .sendTo(player);
-            } catch (ParticleException e) {
-                particles_1_13.HAPPY_VILLAGER
-                        .packet(true, location)
-                        .sendTo(player);
+        int cnt = 0;
+        Vector3 PlayerVec = adapt(player).getLocation().toVector();
+        Vector3 bVec = bezierCoordinate(p, 0);
+        for (double i = 0; i <= 1; i += 1.0 / (length * config.lineDensity)) {
+            Vector3 vec = bezierCoordinate(p, i);
+            if ((PlayerVec.distance(vec) / 3000 * config.lineDensity) + (0.8 / config.lineDensity) < vec.distance(bVec)) {
+                Location location = BukkitAdapter.adapt(adapt(world), vec);
+                if (cnt % INTERVAL == r) {
+                    try {
+                        particleType
+                                .packet(true, location)
+                                .sendTo(player);
+                    } catch (ParticleException e) {
+                        particles_1_13.HAPPY_VILLAGER
+                                .packet(true, location)
+                                .sendTo(player);
+                    }
+                }
+                bVec = vec;
+                cnt++;
             }
         }
 

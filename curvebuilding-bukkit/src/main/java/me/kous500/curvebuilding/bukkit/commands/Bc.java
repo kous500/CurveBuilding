@@ -21,7 +21,7 @@ import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 public class Bc implements TabExecutor {
     private final CurveBuildingPlugin plugin;
 
-    private final String[] option = {"l", "a", "r"};
+    private final String[] option = {"a"};
     private final String[] directionOption = {"x", "z"};
 
     public Bc(CurveBuildingPlugin plugin) {

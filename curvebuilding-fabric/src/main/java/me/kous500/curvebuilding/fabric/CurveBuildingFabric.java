@@ -13,8 +13,8 @@ import static me.kous500.curvebuilding.fabric.commands.Bc.setBcBuilder;
 import static me.kous500.curvebuilding.fabric.commands.Pos.setPosBuilder;
 
 public class CurveBuildingFabric implements ModInitializer, MainInitializer {
-    public static boolean debugMode = false;
-    public static final String MOD_DATA_FOLDER = "config/CurveBuilding";
+    public static boolean debugMode = true;
+    public static final String MOD_CONFIG_PASS = "config/CurveBuilding";
 
     public static FabricConfig fabricConfig;
 
@@ -40,7 +40,7 @@ public class CurveBuildingFabric implements ModInitializer, MainInitializer {
     }
 
     @Override
-    public String getDateFolder() {
-        return MOD_DATA_FOLDER;
+    public String getConfigPass() {
+        return MOD_CONFIG_PASS;
     }
 }

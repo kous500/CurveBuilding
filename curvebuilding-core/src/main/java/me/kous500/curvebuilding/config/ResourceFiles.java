@@ -11,7 +11,7 @@ public class ResourceFiles {
     public static ResourceFiles load(MainInitializer mainInitializer) {
         ResourceFiles resourceFiles = new ResourceFiles(mainInitializer);
 
-        for (String language : new String[]{"en", "ja"}) {
+        for (String language : new String[]{"en", "ja", "zh-Hant"}) {
             resourceFiles.create("messages/" + language + ".yml");
         }
 
@@ -26,7 +26,7 @@ public class ResourceFiles {
 
     public ResourceFiles(MainInitializer mainInitializer) {
         this.mainInitializer = mainInitializer;
-        this.DATA_FOLDER = mainInitializer.getDateFolder();
+        this.DATA_FOLDER = mainInitializer.getConfigPass();
         this.classLoader = mainInitializer.getMainClassLoader();
     }
 
