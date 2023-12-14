@@ -25,7 +25,7 @@ dependencies {
     compileOnly "org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT"
     compileOnly "com.sk89q.worldedit:worldedit-bukkit:7.2.15"
     compileOnly "org.jetbrains:annotations:24.0.1"
-    api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.0.0"
+    api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.1.0"
     api project(':curvebuilding-core')
 }
 
