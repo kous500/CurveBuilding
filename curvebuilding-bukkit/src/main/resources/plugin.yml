@@ -21,7 +21,7 @@ commands:
       Set the plane every n blocks the curve goes.
       m: Input a integral number or 0.
       Set the plane after m blocks the curve goes.
-  /pos:
+  /bcpos:
     description: Set your pos.
     permission: CurveBuilding.pos
     permission-message: You do not have <permission>.
