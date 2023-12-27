@@ -13,7 +13,7 @@ public class PosCommand {
     public static StringBuilder log = new StringBuilder();
 
     public static boolean posCommand(Player player, String command, String[] args) {
-        if (!command.equalsIgnoreCase("/pos")) return false;
+        if (!command.equalsIgnoreCase("/bcpos")) return false;
         if (!log.isEmpty()) player.printInfo(TextComponent.of(log.toString()));
 
         if (args.length >= 2 && args[0].equals("clear")) {
@@ -71,7 +71,7 @@ public class PosCommand {
             }
         } else {
             player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-            if (args.length >= 1) problemHere(player, "pos", args[0]);
+            if (args.length >= 1) problemHere(player, "bcpos", args[0]);
             else problemHere(player, "pos", "");
             return false;
         }

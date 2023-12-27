@@ -40,8 +40,8 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
         requireNonNull(this.getCommand("/bc")).setTabCompleter(bc);
 
         Pos pos = new Pos(this);
-        requireNonNull(this.getCommand("/pos")).setExecutor(pos);
-        requireNonNull(this.getCommand("/pos")).setTabCompleter(pos);
+        requireNonNull(this.getCommand("/bcpos")).setExecutor(pos);
+        requireNonNull(this.getCommand("/bcpos")).setTabCompleter(pos);
 
         CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this);
         requireNonNull(this.getCommand("curvebuilding")).setExecutor(curveBuildingCommand);

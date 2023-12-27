@@ -40,7 +40,7 @@ public class Pos implements TabExecutor {
         String[] types = new String[] {"f", "b"};
         List<String> completions = new ArrayList<>();
 
-        if (command.getName().equalsIgnoreCase("/pos")) {
+        if (command.getName().equalsIgnoreCase("/bcpos")) {
             for (int i = 0; i < args.length; i++) {
                 completions = new ArrayList<>();
                 List<String> commands = new ArrayList<>();

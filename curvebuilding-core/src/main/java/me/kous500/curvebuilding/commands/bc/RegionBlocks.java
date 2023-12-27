@@ -5,6 +5,9 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.block.BaseBlock;
 
+/**
+ * 選択範囲内にあるブロックの情報を３次元配列として保存する
+ */
 public class RegionBlocks {
     private final int minX;
     private final int minY;
@@ -30,6 +33,11 @@ public class RegionBlocks {
         }
     }
 
+    /**
+     * 選択範囲の指定した座標のブロックを取得する
+     * @param vec ブロックの座標
+     * @return ブロックの情報
+     */
     public BaseBlock get(BlockVector3 vec) {
         try {
             return regionBlocks[vec.getX() - minX][vec.getY() - minY][vec.getZ() - minZ];

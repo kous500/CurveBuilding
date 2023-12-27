@@ -67,9 +67,8 @@ public class SendParticles extends TimerTask {
     }
 
     private void sendParticlePlayer(PosData posData, Player player) {
-        if (player == null || posData.world == null || !posData.world.getName().equals(player.getWorld().getName())) {
-            return;
-        }
+        if (player == null || posData.world == null || posData.p == null) return;
+        if (!posData.world.getName().equals(player.getWorld().getName())) return;
 
         boolean endLine = false;
         double curveLength = 0;

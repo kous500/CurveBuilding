@@ -109,6 +109,15 @@ public final class Util {
         else return null;
     }
 
+    /**
+     * ３次元の直交座標を極座標に変換したときの動径rを任意の大きさに変更する
+     *
+     * @param x x座標
+     * @param y y座標
+     * @param z z座標
+     * @param newR 変更する動径rの大きさ
+     * @return 動径rを変更した直交座標[ x, y, z ]
+     */
     public static double[] changeR(double x, double y, double z, double newR) {
         double[] polar = toPolar(x, y, z);
         double theta = polar[1];
@@ -119,6 +128,14 @@ public final class Util {
         return new double[]{ x1, y1, z1 };
     }
 
+    /**
+     * ３次元の直交座標を極座標（球座標）に変換する
+     *
+     * @param x x座標
+     * @param y y座標
+     * @param z z座標
+     * @return 球座標[ r, θ, φ ]
+     */
     public static double[] toPolar(double x, double y, double z) {
         double r = sqrt(x * x + y * y + z * z);
         double theta = atan2(y, x);
@@ -126,6 +143,13 @@ public final class Util {
         return new double[]{ r, theta, phi };
     }
 
+    /**
+     * 文字列内の{番号}を0から順に引数の単語に置き換える
+     *
+     * @param message 元の文字列
+     * @param args 置き換える単語
+     * @return 置き換え後の文字列
+     */
     public static String messageReplace(String message, Object... args) {
         int i = 0;
         for (Object arg: args) {

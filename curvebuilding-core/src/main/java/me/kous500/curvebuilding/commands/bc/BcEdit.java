@@ -32,7 +32,7 @@ public final class BcEdit {
     private enum Direction {x, z}
 
     /**
-     * 設定したposからベジエ曲線または直線をブロックで生成する。
+     * 設定したposからベジエ曲線をブロックで生成する。
      *
      * @param player コマンドを実行したプレイヤー
      * @param argument bcコマンドの引数

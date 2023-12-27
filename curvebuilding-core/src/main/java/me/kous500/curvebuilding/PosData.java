@@ -11,7 +11,7 @@ import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.Util.*;
 
 /**
- * posのデータの保存方法とデータを操作するメゾットを定義する。
+ * posのデータの保存方法とデータを操作するメソッドを定義する。
  */
 public final class PosData {
     public static final String[] directionOptions = new String[] {
@@ -157,6 +157,12 @@ public final class PosData {
         player.printInfo(TextComponent.of(getMessage("messages.pos-clear", posToString(n, h))));
     }
 
+    /**
+     * 指定されたposListの番号に新しいposを挿入する。
+     *
+     * @param  player posを削除するプレイヤー
+     * @param  n posの番号
+     */
     public static void insert(Player player, int n) {
         PosData posData = POS_MAP.get(player.getUniqueId());
         if (posData == null || posData.p.get(n) == null) {
@@ -176,6 +182,12 @@ public final class PosData {
         addPos(player, n, 0);
     }
 
+    /**
+     * 指定されたposListの番号のposを取り除く。
+     *
+     * @param  player posを削除するプレイヤー
+     * @param  n posの番号
+     */
     public static void remove(Player player, int n) {
         PosData posData = POS_MAP.get(player.getUniqueId());
         if (posData == null || posData.p.get(n) == null) {
@@ -196,6 +208,13 @@ public final class PosData {
         player.printInfo(TextComponent.of(getMessage("messages.pos-remove", n)));
     }
 
+    /**
+     * 指定されたプレイヤーのposListのすべてのposを任意の方向へ移動させる。
+     *
+     * @param  player posを削除するプレイヤー
+     * @param  n 移動距離
+     * @param direction 方向
+     */
     public static void shift(Player player, int n, char direction) {
         if ('A' <= direction && direction <= 'Z') direction += 32;
 
