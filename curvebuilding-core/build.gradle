@@ -7,11 +7,12 @@ repositories {
         name = "enginehub-maven"
         url = uri("https://maven.enginehub.org/repo/")
     }
+    mavenCentral()
 }
 
 dependencies {
-    compileOnly "com.sk89q.worldedit:worldedit-core:7.2.15"
-    implementation 'org.yaml:snakeyaml:2.0'
+    compileOnly "com.sk89q.worldedit:worldedit-core:7.3.1"
+    implementation 'org.yaml:snakeyaml:2.2'
 }
 
 tasks.withType(JavaCompile) {

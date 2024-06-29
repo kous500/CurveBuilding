@@ -22,15 +22,15 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT"
-    compileOnly "com.sk89q.worldedit:worldedit-bukkit:7.2.18"
+    compileOnly "org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT"
+    compileOnly "com.sk89q.worldedit:worldedit-bukkit:7.3.1"
     compileOnly "org.jetbrains:annotations:24.0.1"
-    api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.1.0"
+    api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.3.0"
     api project(':curvebuilding-core')
 }
 
 shadowJar {
-    classifier = ""
+    archiveClassifier = ""
 }
 
 jar {
@@ -40,7 +40,7 @@ jar {
     from sourceSets.main.output
 }
 
-def targetJavaVersion = 17
+def targetJavaVersion = 21
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
