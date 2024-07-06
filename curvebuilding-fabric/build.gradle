@@ -20,7 +20,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "com.sk89q.worldedit:worldedit-fabric-mc1.20:7.2.15"
+    modImplementation "com.sk89q.worldedit:worldedit-fabric-mc1.20.6:7.3.1"
     compileOnly "org.jetbrains:annotations:24.0.1"
     include "org.yaml:snakeyaml:1.29"
 
@@ -28,7 +28,7 @@ dependencies {
     include project(":curvebuilding-core")
 }
 
-def targetJavaVersion = 17
+def targetJavaVersion = 21
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
     // this fixes some edge cases with special characters not displaying correctly
