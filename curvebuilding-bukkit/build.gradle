@@ -24,7 +24,7 @@ repositories {
 dependencies {
     compileOnly "org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT"
     compileOnly "com.sk89q.worldedit:worldedit-bukkit:7.3.1"
-    compileOnly "org.jetbrains:annotations:24.0.1"
+    compileOnly 'org.jetbrains:annotations:24.1.0'
     api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.3.0"
     api project(':curvebuilding-core')
 }
@@ -65,10 +65,10 @@ processResources {
     }
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
-tasks.withType(Javadoc) {
+tasks.withType(Javadoc).configureEach {
     options.encoding = "UTF-8"
 }
