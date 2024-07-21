@@ -1,9 +1,9 @@
 package me.kous500.curvebuilding.fabric.network;
 
 import com.sk89q.worldedit.fabric.FabricAdapter;
-import com.sk89q.worldedit.math.Vector3;
 import io.netty.buffer.Unpooled;
-import me.kous500.curvebuilding.PosData;
+import me.kous500.curvebuilding.math.PosData;
+import me.kous500.curvebuilding.math.Vector3;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -39,9 +39,9 @@ public class PosDataPacket {
                     for (int i : new int[]{0, 1, 2}) {
                         if (value[i] != null) {
                             buf.writeBoolean(true);
-                            buf.writeDouble(value[i].getX());
-                            buf.writeDouble(value[i].getY());
-                            buf.writeDouble(value[i].getZ());
+                            buf.writeDouble(value[i].x());
+                            buf.writeDouble(value[i].y());
+                            buf.writeDouble(value[i].z());
                         } else {
                             buf.writeBoolean(false);
                         }

@@ -27,6 +27,7 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
         }
 
         setResources(new BukkitResources(this));
+        setConsole((new BukkitConsole(this)));
 
         try {
             ParticleNativeAPI api = ParticleNativeCore.loadAPI(this);

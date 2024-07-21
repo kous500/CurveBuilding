@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.bukkit.commands;
 
-import me.kous500.curvebuilding.PosData;
+import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
 import me.kous500.curvebuilding.bukkit.SendParticles;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;

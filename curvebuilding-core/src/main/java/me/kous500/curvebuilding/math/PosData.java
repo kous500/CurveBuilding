@@ -1,7 +1,6 @@
-package me.kous500.curvebuilding;
+package me.kous500.curvebuilding.math;
 
 import com.sk89q.worldedit.entity.Player;
-import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
 
@@ -9,6 +8,8 @@ import java.util.*;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.Util.*;
+import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
+import static me.kous500.curvebuilding.WorldeditAdapter.getWorldId;
 
 /**
  * posのデータの保存方法とデータを操作するメソッドを定義する。
@@ -43,13 +44,13 @@ public final class PosData {
     public static void addPos(Player player, int n, int h) {
         assert (h >= 0) && (h <= 2) : "The value of h must be in the range 0 to 2.";
 
-        Vector3 location = floorVector(player.getLocation().toVector()).toVector3();
+        Vector3 location = adapt(player.getLocation().toVector()).floor();
         World world = player.getWorld();
         UUID uuid = player.getUniqueId();
         PosData posData = POS_MAP.get(uuid);
 
         if (posData != null) {
-            if (posData.worldId == null || !posData.worldId.equals(world.getId())) {
+            if (posData.worldId == null || !posData.worldId.equals(getWorldId(world))) {
                 posData.p = new TreeMap<>();
             }
 
@@ -63,9 +64,9 @@ public final class PosData {
                 posData.p.put(n, l);
             } else {
                 if (h == 0 && l[h] != null) {
-                    double x = location.getX() - l[h].getX();
-                    double y = location.getY() - l[h].getY();
-                    double z = location.getZ() - l[h].getZ();
+                    double x = location.x() - l[h].x();
+                    double y = location.x() - l[h].x();
+                    double z = location.x() - l[h].x();
 
                     if (l[1] != null) l[1] = l[1].add(x, y, z);
                     if (l[2] != null) l[2] = l[2].add(x, y, z);
@@ -88,7 +89,7 @@ public final class PosData {
             }
 
             posData.world = world;
-            posData.worldId = world.getId();
+            posData.worldId = getWorldId(world);
             POS_MAP.replace(uuid, posData);
         } else {
             POS_MAP.put(uuid, new PosData(world, location, n, h));
@@ -98,9 +99,9 @@ public final class PosData {
     }
 
     private static Vector3 posAutocompletion(Vector3 h0, Vector3 hIN, Vector3 hOUT){
-        double x = hIN.getX() - h0.getX();
-        double y = hIN.getY() - h0.getY();
-        double z = hIN.getZ() - h0.getZ();
+        double x = hIN.x() - h0.x();
+        double y = hIN.y() - h0.y();
+        double z = hIN.z() - h0.z();
 
         if (hOUT == null) {
             return h0.add(-x, -y, -z);
@@ -310,7 +311,7 @@ public final class PosData {
 
     private PosData(World world, Vector3 location, int n, int h) {
         this.world = world;
-        this.worldId = world.getId();
+        this.worldId = getWorldId(world);
         Vector3[] l = new Vector3[3];
         l[h] = location;
         this.p.put(n, l);

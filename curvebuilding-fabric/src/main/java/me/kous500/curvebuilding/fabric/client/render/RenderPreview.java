@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
 import com.sk89q.worldedit.math.Vector3;
-import me.kous500.curvebuilding.PosData;
+import me.kous500.curvebuilding.math.PosData;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 

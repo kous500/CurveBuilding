@@ -2,18 +2,19 @@ package me.kous500.curvebuilding.commands.bc;
 
 import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.entity.Player;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.SessionManager;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BaseBlock;
+import me.kous500.curvebuilding.math.BlockVector3;
+import me.kous500.curvebuilding.math.Vector3;
 
 import java.util.*;
 
 import static me.kous500.curvebuilding.CurveBuilding.*;
-import static me.kous500.curvebuilding.PosData.*;
+import static me.kous500.curvebuilding.WorldeditAdapter.*;
+import static me.kous500.curvebuilding.math.PosData.*;
 import static me.kous500.curvebuilding.Util.*;
 
 public final class BcEdit {
@@ -52,7 +53,7 @@ public final class BcEdit {
             width = region.getWidth();
             length = region.getLength();
             height = region.getHeight();
-            center = region.getCenter();
+            center = adapt(region.getCenter());
 
             if (argument.isDirectionX) direction = Direction.x;
             else if (argument.isDirectionZ) direction = Direction.z;
@@ -85,9 +86,12 @@ public final class BcEdit {
 
                 if (n > 1) {
                     Vector3[] bp = posMap.get(n - 1);
-                    Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
-                    if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
-                    if (bezierPos[2] == null)  bezierPos[2] = bezierPos[3];
+                    Vector3[] bezierPos = new Vector3[] {
+                            bp[0],
+                            bp[2] != null ? bp[2] : bp[0],
+                            p[1] != null ? p[1] : p[0],
+                            p[0]
+                    };
                     editBC(bezierPos);
                 }
             }
@@ -160,9 +164,9 @@ public final class BcEdit {
     }
 	
     private void set(Vector3[] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
-        double xt1 = selectionPos[0].getX();
-        double yt1 = selectionPos[0].getY();
-        double zt1 = selectionPos[0].getZ();
+        double xt1 = selectionPos[0].x();
+        double yt1 = selectionPos[0].y();
+        double zt1 = selectionPos[0].z();
 
         int L1 = argument.m;
         if (nowLength != 0 && n != 0) L1 += nowLength % n;
@@ -184,27 +188,27 @@ public final class BcEdit {
             yt1 = yt;
             zt1 = zt;
 
-            BlockVector3 posT = roundVector(Vector3.at(xt, yt, zt).add(l * Math.cos(-r), m, l * Math.sin(-r)));
+            BlockVector3 posT = BlockVector3.round(Vector3.at(xt, yt, zt).add(l * Math.cos(-r), m, l * Math.sin(-r)));
 
             if (!posT.equals(beforePosT) && L >= L1) {
                 BaseBlock idT;
                 if (direction == Direction.x) {
                     double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
-                    idT = regionBlocks.get(floorVector(searchT.add(a, 0, 0)));
+                    idT = regionBlocks.get(BlockVector3.floor(searchT.add(a, 0, 0)));
                 } else {
                     double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
-                    idT = regionBlocks.get(floorVector(searchT.add(0 , 0, a)));
+                    idT = regionBlocks.get(BlockVector3.floor(searchT.add(0 , 0, a)));
                 }
 
                 if (idT != null) {
                     if (argument.air) {
-                        String selectionBlock = editSession.getBlock(posT).toString();
+                        String selectionBlock = editSession.getBlock(adapt(posT)).toString();
                         if (selectionBlock.equals("minecraft:air")) {
-                            editSession.setBlock(posT, idT);
+                            editSession.setBlock(adapt(posT), idT);
                             changedBlocks++;
                         }
                     } else {
-                        editSession.setBlock(posT, idT);
+                        editSession.setBlock(adapt(posT), idT);
                         changedBlocks++;
                     }
 
@@ -224,21 +228,21 @@ public final class BcEdit {
     private PosCoordinates pos(Vector3[] selectionPos, double t) {
         if (t == 0) t = 0.00001;
 
-        double x0 = selectionPos[0].getX();
-        double y0 = selectionPos[0].getY();
-        double z0 = selectionPos[0].getZ();
+        double x0 = selectionPos[0].x();
+        double y0 = selectionPos[0].y();
+        double z0 = selectionPos[0].z();
 
-        double x1 = selectionPos[1].getX();
-        double y1 = selectionPos[1].getY();
-        double z1 = selectionPos[1].getZ();
+        double x1 = selectionPos[1].x();
+        double y1 = selectionPos[1].y();
+        double z1 = selectionPos[1].z();
 
-        double x2 = selectionPos[2].getX();
-        double y2 = selectionPos[2].getY();
-        double z2 = selectionPos[2].getZ();
+        double x2 = selectionPos[2].x();
+        double y2 = selectionPos[2].y();
+        double z2 = selectionPos[2].z();
 
-        double x3 = selectionPos[3].getX();
-        double y3 = selectionPos[3].getY();
-        double z3 = selectionPos[3].getZ();
+        double x3 = selectionPos[3].x();
+        double y3 = selectionPos[3].y();
+        double z3 = selectionPos[3].z();
 
         double xt = (1-t)*(1-t)*(1-t)*x0 + 3*(1-t)*(1-t)*t*x1 + 3*(1-t)*t*t*x2 + t*t*t*x3;
         double yt = (1-t)*(1-t)*(1-t)*y0 + 3*(1-t)*(1-t)*t*y1 + 3*(1-t)*t*t*y2 + t*t*t*y3;

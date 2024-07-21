@@ -1,10 +1,9 @@
-api-version: 1.21
-
 name: CurveBuilding
 version: '${version}'
 description: A plugin to build curves.
 author: kous500
 main: me.kous500.curvebuilding.bukkit.CurveBuildingPlugin
+api-version: 1.20
 depend: [WorldEdit]
 
 commands:

@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.fabric.client;
 
-import me.kous500.curvebuilding.PosData;
+import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.fabric.network.PosDataPacket;
 import me.kous500.curvebuilding.fabric.client.render.RenderPreview;
 import net.fabricmc.api.ClientModInitializer;
