@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 
 public abstract class Render {
     static final MinecraftClient CLIENT = MinecraftClient.getInstance();
-    static final BufferBuilder BUFFER = Tessellator.getInstance().getBuffer();
 
     /**
      * actionのレンダリング処理を実行します
@@ -21,8 +20,8 @@ public abstract class Render {
      * @param render 使用するレンダー
      * @param action レンダリング処理の内容
      */
-    public static <T extends Render> void setRender(boolean renderThroughWalls, T render, RenderSetAction<T> action) {
-        render.setThroughWalls(renderThroughWalls);
+    public static <T extends Render> void setRender(Matrix4f matrix, boolean renderThroughWalls, T render, RenderSetAction<T> action) {
+        render.setRender(matrix, renderThroughWalls);
         action.run(render);
         render.rendering();
     }
@@ -33,10 +32,12 @@ public abstract class Render {
         return in.subtract(camPos);
     }
 
-    boolean renderThroughWalls;
+    boolean isThroughWalls;
     boolean currentIsBuilding = false;
+    BufferBuilder buffer;
+    Matrix4f matrix;
 
-    abstract void setThroughWalls(boolean renderThroughWalls);
+    abstract void setRender(Matrix4f matrix, boolean isThroughWalls);
 
     void rendering() {
         if (!currentIsBuilding) return;
@@ -45,10 +46,14 @@ public abstract class Render {
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.enableDepthTest();
         RenderSystem.lineWidth(10.0f);
-        RenderSystem.depthFunc(renderThroughWalls ? GL11.GL_ALWAYS : GL11.GL_LEQUAL);
+        RenderSystem.depthFunc(isThroughWalls ? GL11.GL_ALWAYS : GL11.GL_LEQUAL);
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferRenderer.drawWithGlobalProgram(BUFFER.end());
+        try (BuiltBuffer builtBuffer = buffer.endNullable()) {
+            if (builtBuffer != null) {
+                BufferRenderer.drawWithGlobalProgram(builtBuffer);
+            }
+        }
 
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
@@ -57,7 +62,7 @@ public abstract class Render {
         currentIsBuilding = false;
     }
 
-    void genericAABBRender(Matrix4f stack, Vec3d start, Vec3d dimensions, Color color, RenderAction action) {
+    void genericAABBRender(Vec3d start, Vec3d dimensions, Color color, BufferBuilder buffer, RenderAction action) {
         if (!currentIsBuilding) return;
 
         float red = color.getRed() / 255f;
@@ -73,8 +78,8 @@ public abstract class Render {
         float y2 = (float) end.y;
         float z2 = (float) end.z;
 
-        Consumer<BufferBuilder> runner = bufferBuilder -> action.run(bufferBuilder, x1, y1, z1, x2, y2, z2, red, green, blue, alpha, stack);
-        runner.accept(BUFFER);
+        Consumer<BufferBuilder> runner = bufferBuilder -> action.run(bufferBuilder, x1, y1, z1, x2, y2, z2, red, green, blue, alpha);
+        runner.accept(buffer);
     }
 
     public interface RenderSetAction<T extends Render> {
@@ -82,6 +87,6 @@ public abstract class Render {
     }
 
     interface RenderAction {
-        void run(BufferBuilder buffer, float x, float y, float z, float x1, float y1, float z1, float red, float green, float blue, float alpha, Matrix4f matrix);
+        void run(BufferBuilder buffer, float x, float y, float z, float x1, float y1, float z1, float red, float green, float blue, float alpha);
     }
 }

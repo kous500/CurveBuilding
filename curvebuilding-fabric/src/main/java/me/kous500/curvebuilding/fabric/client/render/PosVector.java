@@ -1,6 +1,7 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
-import com.sk89q.worldedit.math.Vector3;
+
+import me.kous500.curvebuilding.math.Vector3;
 
 import java.awt.*;
 import java.util.NavigableMap;

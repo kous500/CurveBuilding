@@ -1,9 +1,9 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
-import com.sk89q.worldedit.math.Vector3;
 import me.kous500.curvebuilding.math.PosData;
-import net.minecraft.client.util.math.MatrixStack;
+import me.kous500.curvebuilding.math.Vector3;
 import net.minecraft.util.math.Vec3d;
+import org.joml.Matrix4f;
 
 import java.awt.*;
 import java.util.ArrayDeque;
@@ -24,32 +24,32 @@ public class RenderPreview {
      *
      * @param matrix MatrixStack
      */
-    public static void RenderPosData(MatrixStack matrix) {
+    public static void RenderPosData(Matrix4f matrix) {
         if (isError || posData == null) return;
 
         try {
-            Render.setRender(fabricConfig.lineRenderThroughWalls, LineRender.getInstance(), render -> {
-                renderBezier(matrix, posData.p, fabricConfig.lineCurveColor, render);
+            Render.setRender(matrix, fabricConfig.lineRenderThroughWalls, LineRender.getInstance(), render -> {
+                renderBezier(posData.p, fabricConfig.lineCurveColor, render);
 
                 for (int n : posData.p.keySet()) {
-                    renderControlLine(matrix, posData.p.get(n), render);
+                    renderControlLine(posData.p.get(n), render);
                 }
             });
 
-            Render.setRender(fabricConfig.posRenderThroughWalls, LineRender.getInstance(), render -> {
+            Render.setRender(matrix, fabricConfig.posRenderThroughWalls, LineRender.getInstance(), render -> {
                 for (int n : posData.p.keySet()) {
                     for (int h : new int[]{0, 1, 2}) {
                         PosVector pos = PosVector.getInstance(posData.p, n, h);
                         if (pos != null) {
-                            renderPos(matrix, pos, render);
+                            renderPos(pos, render);
                         }
                     }
                 }
             });
 
-            Render.setRender(fabricConfig.posRenderThroughWalls, FilledRender.getInstance(), render -> {
+            Render.setRender(matrix, fabricConfig.posRenderThroughWalls, FilledRender.getInstance(), render -> {
                 for (RenderFilledItem renderItem : filledQueue) {
-                    render.renderFilled(matrix, renderItem.color, renderItem.start, renderItem.dimensions);
+                    render.renderFilled(renderItem.color, renderItem.start, renderItem.dimensions);
                 }
 
                 filledQueue = new ArrayDeque<>();
@@ -60,14 +60,13 @@ public class RenderPreview {
         }
     }
 
-    private static void renderBezier(MatrixStack matrices, NavigableMap<Integer, Vector3[]> pos, Color color, LineRender render) {
+    private static void renderBezier(NavigableMap<Integer, Vector3[]> pos, Color color, LineRender render) {
         if (pos == null) return;
 
         double totalLen = 0;
         for (int n : pos.keySet()) {
             if (n > 1) {
                 totalLen = bezierBuild(
-                        matrices,
                         pos.get(n),
                         pos.get(n - 1),
                         color,
@@ -79,12 +78,15 @@ public class RenderPreview {
         }
     }
 
-    private static double bezierBuild(MatrixStack matrices, Vector3[] p, Vector3[] bp, Color color, double totalLen, LineRender render) {
+    private static double bezierBuild(Vector3[] p, Vector3[] bp, Color color, double totalLen, LineRender render) {
         if (p == null || p[0] == null || bp == null || bp[0] == null) return fabricConfig.lineRenderLength + 1;
 
-        Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
-        if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
-        if (bezierPos[2] == null) bezierPos[2] = bezierPos[3];
+        Vector3[] bezierPos = new Vector3[] {
+                bp[0],
+                bp[2] != null ? bp[2] : bp[0],
+                p[1] != null ? p[1] : p[0],
+                p[0]
+        };
 
         if (bezierPos[0].distance(bezierPos[3]) > fabricConfig.lineRenderLength) return fabricConfig.lineRenderLength + 1;
         if (bezierPos[0].distance(bezierPos[1]) > fabricConfig.lineRenderLength) return fabricConfig.lineRenderLength + 1;
@@ -97,21 +99,20 @@ public class RenderPreview {
         Vec3d bc = null;
         for (double i = 0; i <= 1; i += 1.0 / (length * fabricConfig.lineRenderAccuracy)) {
             Vec3d c = adaptVec(bezierCoordinate(bezierPos, i));
-            if (bc != null) render.addLine(matrices, color, c, bc);
+            if (bc != null) render.addLine(color, c, bc);
             bc = c;
         }
 
-        render.addLine(matrices, color, bc, adaptVec(bezierPos[3].add(0.5, 0.5, 0.5)));
+        render.addLine(color, bc, adaptVec(bezierPos[3].add(0.5, 0.5, 0.5)));
 
         return totalLen;
     }
 
-    private static void renderControlLine(MatrixStack matrix, Vector3[] p, LineRender render) {
+    private static void renderControlLine(Vector3[] p, LineRender render) {
         if (p == null || p[0] == null) return;
 
         if (p[1] != null && p[0].distance(p[1]) <= fabricConfig.lineRenderLength) {
             render.addLine(
-                    matrix,
                     fabricConfig.lineFColor,
                     adaptVec(p[0]).add(0.5, 0.5, 0.5),
                     adaptVec(p[1]).add(0.5, 0.5, 0.5)
@@ -120,7 +121,6 @@ public class RenderPreview {
 
         if (p[2] != null && p[0].distance(p[2]) <= fabricConfig.lineRenderLength) {
             render.addLine(
-                    matrix,
                     fabricConfig.lineBColor,
                     adaptVec(p[0]).add(0.5, 0.5, 0.5),
                     adaptVec(p[2]).add(0.5, 0.5, 0.5)
@@ -128,22 +128,22 @@ public class RenderPreview {
         }
     }
 
-    private static void renderPos(MatrixStack matrix, PosVector pos, LineRender render) {
+    private static void renderPos(PosVector pos, LineRender render) {
         Color colorLine = pos.getLineColor();
         Color colorFill = pos.getFillColor();
         Vec3d start = adaptVec(pos.vector).subtract(INCREASE_VEC);
         Vec3d dimensions = new Vec3d(1, 1, 1).add(INCREASE_VEC).add(INCREASE_VEC);
 
         if (pos.h != 0) {
-            render.addCrossing(matrix, colorLine, start, dimensions);
+            render.addCrossing(colorLine, start, dimensions);
         }
 
-        render.addOutline(matrix, colorLine, start, dimensions);
+        render.addOutline(colorLine, start, dimensions);
         filledQueue.add(new RenderFilledItem(colorFill, start, dimensions));
     }
 
     private static Vec3d adaptVec(Vector3 vec) {
-        return new Vec3d(vec.getX(), vec.getY(), vec.getZ());
+        return new Vec3d(vec.x(), vec.y(), vec.z());
     }
 
     private static class RenderFilledItem {

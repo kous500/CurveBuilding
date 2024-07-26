@@ -6,7 +6,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import me.kous500.curvebuilding.fabric.network.PosDataPacket;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,10 +17,11 @@ import java.util.Map;
 import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.debugRun;
+import static me.kous500.curvebuilding.fabric.network.PacketSender.sendPosPacket;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class Pos implements RunCommand{
-    private static final String posCommandName = "/pos";
+    private static final String posCommandName = "/bcpos";
     private static final String S = "SubCommand";
     private static final String T = "PosType";
     private static final String L = "Length";
@@ -97,7 +97,7 @@ public class Pos implements RunCommand{
         }
 
         boolean result = posCommand(adaptPlayer(sender), posCommandName, arg);
-        PosDataPacket.sendPosPacket(sender);
+        sendPosPacket(sender);
 
         return result ? 1 : 0;
     }

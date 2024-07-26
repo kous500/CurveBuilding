@@ -3,9 +3,11 @@ package me.kous500.curvebuilding.fabric;
 import me.kous500.curvebuilding.MainInitializer;
 import me.kous500.curvebuilding.fabric.config.FabricConfig;
 import me.kous500.curvebuilding.fabric.config.FabricResources;
-import me.kous500.curvebuilding.fabric.network.SendPacketTimer;
+import me.kous500.curvebuilding.fabric.network.PacketSender;
+import me.kous500.curvebuilding.fabric.network.PosDataPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.CurveBuilding.setResources;
@@ -31,7 +33,9 @@ public class CurveBuildingFabric implements ModInitializer, MainInitializer {
             setBcBuilder(dispatcher);
         });
 
-        SendPacketTimer.start();
+        PayloadTypeRegistry.playS2C().register(PosDataPayload.ID, PosDataPayload.CODEC);
+
+        PacketSender.start();
     }
 
     @Override
