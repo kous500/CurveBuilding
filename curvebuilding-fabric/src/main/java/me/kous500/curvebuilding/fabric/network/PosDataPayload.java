@@ -11,13 +11,10 @@ import java.util.TreeMap;
 
 public record PosDataPayload(NavigableMap<Integer, Vector3[]> sendPosData) implements CustomPayload {
     public static final CustomPayload.Id<PosDataPayload> ID = new CustomPayload.Id<>(Identifier.of("curvebuilding", "bezier-pos"));
-    public static final PacketCodec<PacketByteBuf, PosDataPayload> CODEC = PacketCodec.ofStatic(
-            PosDataPayload::encoder,
-            PosDataPayload::decoder
-    );
+    public static final PacketCodec<PacketByteBuf, PosDataPayload> CODEC = PacketCodec.ofStatic(PosDataPayload::encoder, PosDataPayload::decoder);
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Id<PosDataPayload> getId() {
         return ID;
     }
 
