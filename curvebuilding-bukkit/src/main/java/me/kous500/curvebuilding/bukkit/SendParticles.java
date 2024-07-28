@@ -2,11 +2,10 @@ package me.kous500.curvebuilding.bukkit;
 
 import com.github.fierioziy.particlenativeapi.api.particle.type.ParticleTypeMotion;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.world.World;
-import me.kous500.curvebuilding.PosData;
+import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
+import me.kous500.curvebuilding.math.Vector3;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -16,10 +15,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import static me.kous500.curvebuilding.WorldeditAdapter.*;
 import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.particles_1_13;
-import static me.kous500.curvebuilding.PosData.getPosMap;
+import static me.kous500.curvebuilding.math.PosData.getPosMap;
 import static me.kous500.curvebuilding.Util.*;
-import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static java.lang.Math.sqrt;
 import static org.bukkit.Bukkit.getPlayer;
 
@@ -100,9 +99,12 @@ public class SendParticles extends TimerTask {
 
             if (!endLine && n != 1) {
                 Vector3[] bp = posData.p.get(n - 1);
-                Vector3[] bezierPos = new Vector3[] {copyVector(bp[0]), copyVector(bp[2]), copyVector(p[1]), copyVector(p[0])};
-                if (bezierPos[1] == null) bezierPos[1] = bezierPos[0];
-                if (bezierPos[2] == null) bezierPos[2] = bezierPos[3];
+                Vector3[] bezierPos = new Vector3[] {
+                        bp[0],
+                        bp[2] != null ? bp[2] : bp[0],
+                        p[1] != null ? p[1] : p[0],
+                        p[0]
+                };
                 curveLength = sendBezier(bezierPos, posData.world, player, particles_1_13.FLAME, curveLength);
             }
         }
@@ -121,7 +123,7 @@ public class SendParticles extends TimerTask {
                     double ax = x * (1.0 / density);
                     double ay = y * (1.0 / density);
                     double az = z * (1.0 / density);
-                    Location location = adapt(adapt(world), pos.add(ax, ay, az));
+                    Location location = getLocation(world, pos.add(ax, ay, az));
 
                     if ((isXEdge && isYEdge) || (isYEdge && isZEdge) || (isZEdge && isXEdge)) {
                         particles_1_13.DUST
@@ -130,7 +132,7 @@ public class SendParticles extends TimerTask {
                                 .sendTo(player);
                     }
                 }
-                Location location = adapt(adapt(world), pos.add(0.5, 0.5, 0.5));
+                Location location = getLocation(world, pos.add(0.5, 0.5, 0.5));
                 try {
                     particles_1_13.SOUL_FIRE_FLAME
                             .packet(true, location)
@@ -154,14 +156,14 @@ public class SendParticles extends TimerTask {
                         double ax = 0.5 * x + (double) (density * x + (-x * 2 + 1) * i) / density * 0.5;
                         double ay = 0.5 * y + (double) (density * y + (-y * 2 + 1) * i) / density * 0.5;
                         double az = 0.5 * z + (double) (density * z + (-z * 2 + 1) * i) / density * 0.5;
-                        Location location = adapt(adapt(world), pos.add(ax, ay, az));
+                        Location location = getLocation(world, pos.add(ax, ay, az));
                         particles_1_13.DUST
                                 .color(color, 1D)
                                 .packet(true, location)
                                 .sendTo(player);
                     }
                 }
-                Location location = adapt(adapt(world), pos.add(0.5, 0.5, 0.5));
+                Location location = getLocation(world, pos.add(0.5, 0.5, 0.5));
                 try {
                     particles_1_13.SOUL_FIRE_FLAME
                             .packet(true, location)
@@ -182,15 +184,15 @@ public class SendParticles extends TimerTask {
         if (distance > config.lineMaxLength) return;
 
         int cnt = 0;
-        Vector3 PlayerVec = adapt(player).getLocation().toVector();
+        Vector3 PlayerVec = adapt(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(player).getLocation().toVector());
         Vector3 bVec = pos1;
         for (double i = 0; i <= 1; i += 1.0 / (distance * config.lineDensity)) {
-            double x = (1 - i) * pos1.getX() + i * pos2.getX() + 0.5;
-            double y = (1 - i) * pos1.getY() + i * pos2.getY() + 0.5;
-            double z = (1 - i) * pos1.getZ() + i * pos2.getZ() + 0.5;
+            double x = (1 - i) * pos1.x() + i * pos2.x() + 0.5;
+            double y = (1 - i) * pos1.y() + i * pos2.y() + 0.5;
+            double z = (1 - i) * pos1.z() + i * pos2.z() + 0.5;
             Vector3 vec = Vector3.at(x, y, z);
             if ((PlayerVec.distance(vec) / 3000 * config.lineDensity) + (0.8 / config.lineDensity) < vec.distance(bVec)) {
-                Location location = adapt(adapt(world), vec);
+                Location location = getLocation(world, vec);
                 if (cnt % INTERVAL == r) {
                     try {
                         particleType
@@ -219,12 +221,12 @@ public class SendParticles extends TimerTask {
         if (length > config.lineMaxLength) return length;
 
         int cnt = 0;
-        Vector3 PlayerVec = adapt(player).getLocation().toVector();
+        Vector3 PlayerVec = adapt(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(player).getLocation().toVector());
         Vector3 bVec = bezierCoordinate(p, 0);
         for (double i = 0; i <= 1; i += 1.0 / (length * config.lineDensity)) {
             Vector3 vec = bezierCoordinate(p, i);
             if ((PlayerVec.distance(vec) / 3000 * config.lineDensity) + (0.8 / config.lineDensity) < vec.distance(bVec)) {
-                Location location = BukkitAdapter.adapt(adapt(world), vec);
+                Location location = getLocation(world, vec);
                 if (cnt % INTERVAL == r) {
                     try {
                         particleType
@@ -242,5 +244,9 @@ public class SendParticles extends TimerTask {
         }
 
         return length;
+    }
+
+    private static Location getLocation(World world, Vector3 position) {
+        return com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world), adapt(position));
     }
 }

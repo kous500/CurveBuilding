@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
-import static me.kous500.curvebuilding.PosData.*;
+import static me.kous500.curvebuilding.math.PosData.*;
 
 public class PosCommand {
     public static StringBuilder log = new StringBuilder();

@@ -4,5 +4,5 @@ plugins {
 
 allprojects {
     group = "me.kous500.curvebuilding"
-    version = "0.6.1"
+    version = "0.6.2"
 }

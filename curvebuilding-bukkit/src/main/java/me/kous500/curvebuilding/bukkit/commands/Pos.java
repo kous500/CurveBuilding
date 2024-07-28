@@ -15,7 +15,7 @@ import java.util.List;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
-import static me.kous500.curvebuilding.PosData.directionOptions;
+import static me.kous500.curvebuilding.math.PosData.directionOptions;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
 
 public class Pos implements TabExecutor {

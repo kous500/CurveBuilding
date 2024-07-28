@@ -6,11 +6,16 @@ import me.kous500.curvebuilding.config.Resources;
 public class CurveBuilding {
     public static boolean fawe = false;
     public static Config config;
+    public static Console console;
     private static Resources resources;
 
     public static void setResources(Resources resources) {
         CurveBuilding.resources = resources;
         config = resources.getConfig();
+    }
+
+    public static void setConsole(Console console) {
+        CurveBuilding.console = console;
     }
 
     /**
