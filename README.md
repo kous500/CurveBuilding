@@ -1,53 +1,57 @@
 # CurveBuilding
-The best plugin for building curves.
+
+### The best Minecraft mod and plugin for building curves.
+
 Make curved structures using commands and WorldEdit.
 
-## Current project status
-The project is currently only minimally maintained. No new features are currently planned. Only work will be carried out to support the latest version.  
-This includes support for legacy versions and for the latest versions.
+- Freely place the selected structure along a Bézier Curve.
+- Preview a simplified drawing of the curve.
+- Make the curve with continuously connected curves.
+- Great for building infrastructure such as roads.
+- WorldEdit undo available.
 
-If you are a developer and would like to add new features to this project, fix bugs, or support other versions, please submit a PR.
+WorldEdit or FastAsyncWorldEdit required. CurveBuilding is compatible with Bukkit and Fabric.
 
-
-## Download
-Please visit [here](https://github.com/kous500/CurveBuilding/releases), select your desired version and download.
-
+To request other versions or features, please comment on the [Discussions](https://github.com/kous500/CurveBuilding/discussions). Consider [donating](https://github.com/sponsors/kous500) for prioritized requests.
 
 ## Detailed description and downloads
-- Plugin (Bukkit) : https://legacy.curseforge.com/minecraft/bukkit-plugins/curvebuilding
-- Mod (Fabric) : https://legacy.curseforge.com/minecraft/mc-mods/curvebuilding
+- For the plugin (Bukkit): https://legacy.curseforge.com/minecraft/bukkit-plugins/curvebuilding
+- For the mod (Fabric): https://legacy.curseforge.com/minecraft/mc-mods/curvebuilding
 
 
 ## Edit the Code
-To add new features or bug fixes to CurveBuilding, follow these steps:
+If you want to contribute to the CurveBuilding project by adding features, fixing bugs, or supporting other versions, you can do so by following the methods below.
 
+### Setting up the Development Environment
 1. Download CurveBuilding's source code using Git.
-2. Install any version of Java greater than or equal to 21.
-3. Download and install [IntelliJ IDEA Community Edition](https://www.jetbrains.com/idea/download/).
+2. Download and install [IntelliJ IDEA Community Edition](https://www.jetbrains.com/idea/download/).
+3. Install the **Minecraft Development** plugin in IDEA.
 4. In the IDE, open the folder where you saved CurveBuilding's code. This will create a new project in IntelliJ IDEA.
+5. Set the project SDK version to 21.
+6. If the analysis for curvebuilding-fabric isn't performed, add a link to curvebuilding-fabric from the Gradle tool window.
 
-
-##### If you want to run CurveBuilding's source code, follow these instructions:
-- To build as a Bukkit plugin
+### Running the Project
+- To build CurveBuilding Bukkit:
   1. Select "Run `curvebuilding-bukkit [build]`" from Run/Debug Configurations.
-  2. The build process will compile the source code and create a jar file in `curvebuilding-bukkit/build/libs`.
-- To build as a Fabric mod
+  2. The project will be built and a jar file will be created in `curvebuilding-bukkit/build/libs`.
+- To build CurveBuilding Fabric:
   1. Select "Run `curvebuilding-fabric [build]`" from Run/Debug Configurations.
-  2. The build process will compile the source code and create a jar file in `curvebuilding-fabric/build/libs`.
-- To start the game client as a Fabric mod
+  2. The project will be built and a jar file will be created in `curvebuilding-fabric/build/libs`.
+- To run CurveBuilding Fabric as a game client:
   1. Select "Run `curvebuilding-fabric [runClient]`" from Run/Debug Configurations.
-  2. The game client with the mod applied will launch.
-- To start the game server as a Fabric mod
+  2. The game client will start with the mod applied.
+- To run CurveBuilding Fabric as a game server:
   1. Select "Run `curvebuilding-fabric [runServer]`" from Run/Debug Configurations.
-  2. The game server with the mod applied will launch on localhost.
+  2. The game server will start on localhost with the mod applied.
+
+Once you have completed testing, please submit a pull request.
 
 
 ## About other language support
-If you would like to translate the language files for this plugin into your language and merge them into this plugin, please store the language files under `\src\main\resources\messages` and open a PullRequest.
+If you would like to translate the language files for this plugin into your language and merge them into this plugin, please store the language files under `\src\main\resources\messages` and open a pull request.
 File names should conform to BCP 47 (Language-Region).
 
-
-#### Currently supported languages are;
+### Currently supported languages are;
 | Language    | File Name                         |
 |-------------|-----------------------------------|
 | English(US) | en.yml (Will be fixed to "en-US") |
