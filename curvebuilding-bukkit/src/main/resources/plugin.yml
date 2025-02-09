@@ -3,7 +3,7 @@ version: '${version}'
 description: A plugin to build curves.
 author: kous500
 main: me.kous500.curvebuilding.bukkit.CurveBuildingPlugin
-api-version: 1.20
+api-version: 1.21.4
 depend: [WorldEdit]
 
 commands:
