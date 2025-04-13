@@ -1,5 +1,5 @@
 messages:
-  plugin-load-error: "Ha ocurrido un error durante la carga de {0}: "
+  plugin-load-error: "Ocurrió un error durante la carga de {0}: "
   non-player-execution: "No se puede ejecutar este comando desde la consola."
   incorrect-argument: "Argumento inválido para el comando."
   integer-less: "El entero debe ser mayor o igual que {0}, se encontró {1}."
