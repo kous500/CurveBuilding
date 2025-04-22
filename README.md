@@ -1,6 +1,6 @@
 # CurveBuilding
 
-### The best Minecraft mod and plugin for building curves.
+### The best Minecraft mod and plugin for building curves
 
 Make curved structures using commands and WorldEdit.
 
@@ -15,14 +15,16 @@ WorldEdit or FastAsyncWorldEdit required. CurveBuilding is compatible with Bukki
 To request other versions or features, please comment on the [Discussions](https://github.com/kous500/CurveBuilding/discussions). Consider [donating](https://github.com/sponsors/kous500) for prioritized requests.
 
 ## Detailed description and downloads
-- For the plugin (Bukkit): https://legacy.curseforge.com/minecraft/bukkit-plugins/curvebuilding
-- For the mod (Fabric): https://legacy.curseforge.com/minecraft/mc-mods/curvebuilding
 
+- For the plugin (Bukkit): <https://legacy.curseforge.com/minecraft/bukkit-plugins/curvebuilding>
+- For the mod (Fabric): <https://legacy.curseforge.com/minecraft/mc-mods/curvebuilding>
 
 ## Edit the Code
+
 If you want to contribute to the CurveBuilding project by adding features, fixing bugs, or supporting other versions, you can do so by following the methods below.
 
 ### Setting up the Development Environment
+
 1. Download CurveBuilding's source code using Git.
 2. Download and install [IntelliJ IDEA Community Edition](https://www.jetbrains.com/idea/download/).
 3. Install the **Minecraft Development** plugin in IDEA.
@@ -31,6 +33,7 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
 6. If the analysis for curvebuilding-fabric isn't performed, add a link to curvebuilding-fabric from the Gradle tool window.
 
 ### Running the Project
+
 - To build CurveBuilding Bukkit:
   1. Select "Run `curvebuilding-bukkit [build]`" from Run/Debug Configurations.
   2. The project will be built and a jar file will be created in `curvebuilding-bukkit/build/libs`.
@@ -46,15 +49,18 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
 
 Once you have completed testing, please submit a pull request.
 
-
 ## About other language support
+
 If you would like to translate the language files for this plugin into your language and merge them into this plugin, please store the language files under `\src\main\resources\messages` and open a pull request.
 File names should conform to BCP 47 (Language-Region).
 
-### Currently supported languages are;
-| Language    | File Name                         |
-|-------------|-----------------------------------|
-| English(US) | en.yml (Will be fixed to "en-US") |
-| 日本語         | jp.yml (Will be fixed to "ja-JP") |
+### Currently supported languages are
+
+| Language       | File Name                         |
+|----------------|-----------------------------------|
+| English(US)    | en.yml (Will be fixed to "en-US") |
+| Spanish(ES)    | es-ES.yml                         |
+| Spanish        | es.yml                            |
+| 日本語          | jp.yml (Will be fixed to "ja-JP") |
 | 繁體中文        | zh-Hant.yml                       |
 | 简体中文        | zh-CN.yml                         |
