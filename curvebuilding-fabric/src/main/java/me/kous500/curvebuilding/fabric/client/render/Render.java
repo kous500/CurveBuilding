@@ -48,10 +48,9 @@ public abstract class Render {
         RenderSystem.lineWidth(10.0f);
         RenderSystem.depthFunc(isThroughWalls ? GL11.GL_ALWAYS : GL11.GL_LEQUAL);
 
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         try (BuiltBuffer builtBuffer = buffer.endNullable()) {
             if (builtBuffer != null) {
-                BufferRenderer.drawWithGlobalProgram(builtBuffer);
+                BufferRenderer.draw(builtBuffer);
             }
         }
 
