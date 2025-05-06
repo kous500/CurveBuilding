@@ -11,7 +11,7 @@ public class ResourceFiles {
     public static ResourceFiles load(MainInitializer mainInitializer) {
         ResourceFiles resourceFiles = new ResourceFiles(mainInitializer);
 
-        for (String language : new String[]{"en-US", "ja-JP", "zh-Hant", "zh-CN"}) {
+        for (String language : new String[]{"en-US", "es-ES", "es-419", "ja-JP", "zh-Hant", "zh-CN"}) {
             resourceFiles.create("messages/" + language + ".yml");
         }
 

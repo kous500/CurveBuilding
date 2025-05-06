@@ -56,11 +56,11 @@ File names should conform to BCP 47 (Language-Region).
 
 ### Currently supported languages are
 
-| Language       | File Name                         |
-|----------------|-----------------------------------|
-| English(US)    | en-US                             |
-| Spanish(ES)    | es-ES.yml                         |
-| Spanish        | es.yml                            |
-| 日本語          | ja-JP                             |
-| 繁體中文        | zh-Hant.yml                       |
-| 简体中文        | zh-CN.yml                         |
+| Language | File Name |
+|-|-|
+| English(US) | en-US.yml |
+| Spanish(ES) | es-ES.yml |
+| Spanish | es-416.yml |
+| 日本語 | ja-JP.yml |
+| 繁體中文 | zh-Hant.yml |
+| 简体中文 | zh-CN.yml |
