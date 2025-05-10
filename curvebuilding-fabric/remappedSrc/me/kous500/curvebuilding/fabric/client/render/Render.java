@@ -2,20 +2,16 @@ package me.kous500.curvebuilding.fabric.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.*;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.function.Consumer;
 
 public abstract class Render {
     static final MinecraftClient CLIENT = MinecraftClient.getInstance();
-    private static final Logger log = LoggerFactory.getLogger(Render.class);
 
     /**
      * actionのレンダリング処理を実行します
@@ -38,7 +34,6 @@ public abstract class Render {
 
     boolean isThroughWalls;
     boolean currentIsBuilding = false;
-    boolean said = false;
     BufferBuilder buffer;
     Matrix4f matrix;
 
@@ -53,17 +48,7 @@ public abstract class Render {
         RenderSystem.lineWidth(10.0f);
         RenderSystem.depthFunc(isThroughWalls ? GL11.GL_ALWAYS : GL11.GL_LEQUAL);
 
-        if(!said){
-            said = true;
-            if (RenderSystem.getShader() != null){
-                log.info("the RenderSystem has a shader");
-                log.info(RenderSystem.getShader().toString());
-            }else{
-                log.warn("There is no shader in the RenderSystem");
-            }
-        }
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         try (BuiltBuffer builtBuffer = buffer.endNullable()) {
             if (builtBuffer != null) {
                 BufferRenderer.drawWithGlobalProgram(builtBuffer);
