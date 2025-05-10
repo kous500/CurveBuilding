@@ -26,9 +26,9 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
 ### Setting up the Development Environment
 
 1. Download CurveBuilding's source code using Git.
-2. Download and install [IntelliJ IDEA Community Edition](https://www.jetbrains.com/idea/download/).
+2. Download and install [IntelliJ IDEA](https://www.jetbrains.com/idea/download/).
 3. Install the **Minecraft Development** plugin in IDEA.
-4. In the IDE, open the folder where you saved CurveBuilding's code. This will create a new project in IntelliJ IDEA.
+4. In the IDEA, open the folder where you saved CurveBuilding's code. This will create a new project in IDEA.
 5. Set the project SDK version to 21.
 6. If the analysis for curvebuilding-fabric isn't performed, add a link to curvebuilding-fabric from the Gradle tool window.
 
@@ -58,9 +58,9 @@ File names should conform to BCP 47 (Language-Region).
 
 | Language       | File Name                         |
 |----------------|-----------------------------------|
-| English(US)    | en.yml (Will be fixed to "en-US") |
+| English(US)    | en-US                             |
 | Spanish(ES)    | es-ES.yml                         |
 | Spanish        | es.yml                            |
-| 日本語          | jp.yml (Will be fixed to "ja-JP") |
+| 日本語          | ja-JP                             |
 | 繁體中文        | zh-Hant.yml                       |
 | 简体中文        | zh-CN.yml                         |
