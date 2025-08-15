@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "curvebuilding",
-  "version": "0.6.4",
+  "version": "0.6.2",
   "name": "CurveBuilding",
   "description": "Make curved structures using commands and WorldEdit.",
   "authors": [
@@ -23,7 +23,7 @@
     "curvebuilding-render.mixins.json"
   ],
   "depends": {
-    "minecraft": "1.21.4",
+    "minecraft": "1.21",
     "fabricloader": ">=0.14.0",
     "fabric-command-api-v2": "*",
     "fabric-networking-api-v1": "*",

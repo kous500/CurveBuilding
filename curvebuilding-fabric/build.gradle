@@ -1,7 +1,7 @@
 plugins {
     id "java-library"
     id "com.github.johnrengelman.shadow" version "7.0.0"
-    id 'fabric-loom' version '1.10-SNAPSHOT'
+    id 'fabric-loom' version '1.6-SNAPSHOT'
 }
 
 version = project.mod_version
@@ -20,7 +20,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "com.sk89q.worldedit:worldedit-fabric-mc1.21.4:7.3.11"
+    modImplementation "com.sk89q.worldedit:worldedit-fabric-mc1.21:7.3.4"
     compileOnly "org.jetbrains:annotations:24.1.0"
     include "org.yaml:snakeyaml:2.2"
 

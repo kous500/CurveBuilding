@@ -1,3 +1,2 @@
-//TODO: Bind Fabric to Root Gradle
 rootProject.name = "CurveBuilding"
 include ":curvebuilding-core", ":curvebuilding-bukkit"
