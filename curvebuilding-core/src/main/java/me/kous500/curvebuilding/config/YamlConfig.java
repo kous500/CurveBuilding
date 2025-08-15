@@ -8,166 +8,157 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static me.kous500.curvebuilding.config.ResourceType.config;
+import java.util.Optional;
 
 public class YamlConfig {
-    private static MainInitializer mainInitializer;
-    private static ClassLoader classLoader;
+    private final File configFile;
+    private final Map<String, Object> configMap;
+    private final YamlConfig defaultConfig;
 
     public static YamlConfig loadConfiguration(File file, ResourceType resourceType, MainInitializer mainInitializer) {
-        YamlConfig.mainInitializer = mainInitializer;
-        YamlConfig.classLoader = mainInitializer.getMainClassLoader();
+        ClassLoader classLoader = mainInitializer.getMainClassLoader();
+        YamlConfig defaultConfig = loadDefaultConfig(resourceType, file, classLoader);
 
-        try {
-            return new YamlConfig(file, resourceType);
-        } catch (FileNotFoundException e) {
-            return new YamlConfig(resourceType);
+        if (file.exists()) {
+            try (InputStream inputStream = new FileInputStream(file)) {
+                return new YamlConfig(file, inputStream, defaultConfig);
+            } catch (IOException e) {
+                e.fillInStackTrace();
+                return new YamlConfig(file, new LinkedHashMap<>(), defaultConfig);
+            }
+        } else {
+            return new YamlConfig(file, new LinkedHashMap<>(), defaultConfig);
         }
     }
 
-    private final Map<String, Object> configMap;
-    private File configFile;
-    private ResourceType resourceType;
-
-    public YamlConfig(ResourceType resourceType) {
-        this.configMap = new HashMap<>(){};
-        this.resourceType = resourceType;
+    private YamlConfig(File file, InputStream inputStream, YamlConfig defaultConfig) {
+        this(file, loadMapFromStream(inputStream), defaultConfig);
     }
 
-    public YamlConfig(File file, ResourceType resourceType) throws FileNotFoundException {
-        Yaml yaml = new Yaml();
-        FileInputStream inputStream = new FileInputStream(file);
-        this.configMap = yaml.load(inputStream);
+    private YamlConfig(File file, Map<String, Object> map, YamlConfig defaultConfig) {
         this.configFile = file;
-        this.resourceType = resourceType;
+        this.defaultConfig = defaultConfig;
+        this.configMap = Optional.ofNullable(map).orElse(new LinkedHashMap<>());
     }
 
-    private YamlConfig(InputStream inputStream) {
-        Yaml yaml = new Yaml();
-        this.configMap = yaml.load(inputStream);
+    private YamlConfig(InputStream resourceStream) {
+        this.configFile = null;
+        this.defaultConfig = null;
+        this.configMap = loadMapFromStream(resourceStream);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> loadMapFromStream(InputStream stream) {
+        if (stream == null) {
+            return new LinkedHashMap<>();
+        }
+        Object loaded = new Yaml().load(stream);
+        if (loaded instanceof Map) {
+            return (Map<String, Object>) loaded;
+        }
+        return new LinkedHashMap<>();
+    }
+
+    private static YamlConfig loadDefaultConfig(ResourceType resourceType, File configFile, ClassLoader classLoader) {
+        String resourceName = getResourceFileName(resourceType, configFile, classLoader);
+        try (InputStream stream = classLoader.getResourceAsStream(resourceName)) {
+            return new YamlConfig(stream);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to load default resource: " + resourceName, e);
+        }
     }
 
     public String getString(String path) {
-        Object value = get(path, getDefault(path));
-
-        return value != null ? value.toString() : getDefault(path).toString();
-    }
-
-    public int getInteger(String path, int minValue, int maxValue) {
-        int value = getInteger(path);
-
-        return value < minValue  || value > maxValue ? (int) getDefault(path) : value;
-    }
-
-    public int getInteger(String path, int minValue) {
-        int value = getInteger(path);
-
-        return value < minValue ? (int) getDefault(path) : value;
+        return get(path).map(Object::toString).orElseGet(() ->
+                defaultConfig.get(path).map(Object::toString).orElse(null)
+        );
     }
 
     public int getInteger(String path) {
-        Object value = get(path, getDefault(path));
-
-        if (value instanceof Integer) {
-            return (int) value;
-        } else if (value != null) {
-            try {
-                return (int) Long.parseLong(value.toString());
-            } catch (NumberFormatException ignored) {}
+        Object value = get(path).orElseGet(() -> defaultConfig.get(path).orElse(0));
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
         }
-
-        return (int) Long.parseLong(getDefault(path).toString());
-    }
-
-    public Boolean getBoolean(String path) {
-        boolean def = Boolean.parseBoolean(getDefault(path).toString());
-        Object value = get(path, def);
-
-        return value == null ? def : Boolean.parseBoolean(value.toString());
-    }
-
-    public Object get(String path, Object def) {
-        Object value = get(path);
-
-        if (value == null) {
-            try {
-                set(path, def);
-            } catch (IOException e) {
-                new ResourceFiles(mainInitializer).create(getResourceFileName());
-            }
-
-            return def;
-        } else {
-            return value;
+        try {
+            return Integer.parseInt(value.toString());
+        } catch (NumberFormatException e) {
+            return defaultConfig.get(path).map(v -> Integer.parseInt(v.toString())).orElse(0);
         }
     }
 
-    public Object get(String path) {
-        Object value = this.configMap;
+    public boolean getBoolean(String path) {
+        Object value = get(path).orElseGet(() -> defaultConfig.get(path).orElse(false));
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        return "true".equalsIgnoreCase(value.toString());
+    }
+
+    public Optional<Object> get(String path) {
+        Object currentValue = this.configMap;
         String[] segments = path.split("\\.");
-
         for (String segment : segments) {
-            if (value instanceof Map) {
-                value = ((Map<?, ?>) value).get(segment);
+            if (currentValue instanceof Map) {
+                currentValue = ((Map<?, ?>) currentValue).get(segment);
             } else {
-                value = null;
+                return Optional.empty();
             }
         }
-
-        return value;
+        return Optional.ofNullable(currentValue);
     }
 
-    private Object getDefault(String path) {
-        String resourceFile = getResourceFileName();
-
-        YamlConfig defaultFile = new YamlConfig(classLoader.getResourceAsStream(resourceFile));
-        return defaultFile.get(path);
-    }
-
-    private String getResourceFileName() {
-        if (resourceType == config) {
-            return "config.yml";
-        } else {
-            final String defFile = "messages/en.yml";
-
-            String fileName;
-            if (configFile != null) {
-                Path messageFilePass = Paths.get(configFile.getPath());
-                fileName = "messages/" + messageFilePass.getFileName().toString();
-            } else {
-                fileName = defFile;
-            }
-
-            if (classLoader.getResource(fileName) != null) {
-                return fileName;
-            } else {
-                return defFile;
-            }
-        }
-    }
-
-    private void set(String path, Object value) throws IOException {
+    @SuppressWarnings("unchecked")
+    public void set(String path, Object value) {
         String[] segments = path.split("\\.");
         Map<String, Object> current = this.configMap;
+
         for (int i = 0; i < segments.length - 1; i++) {
-            if (!current.containsKey(segments[i])) {
-                current.put(segments[i], new LinkedHashMap<String, Object>());
+            String segment = segments[i];
+            Object next = current.get(segment);
+
+            Map<String, Object> nextMap;
+            if (next instanceof Map) {
+                nextMap = (Map<String, Object>) next;
+            } else {
+                nextMap = new LinkedHashMap<>();
+                current.put(segment, nextMap);
             }
-            current = (Map<String, Object>) current.get(segments[i]);
+            current = nextMap;
         }
+
         current.put(segments[segments.length - 1], value);
+    }
 
-        if (this.configFile == null) return;
-
-        FileWriter writer = new FileWriter(this.configFile, StandardCharsets.UTF_8);
+    public void save() {
+        if (this.configFile == null) {
+            return;
+        }
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setPrettyFlow(true);
         Yaml yaml = new Yaml(options);
-        yaml.dump(this.configMap, writer);
-        writer.close();
+        try (Writer writer = new FileWriter(this.configFile, StandardCharsets.UTF_8)) {
+            yaml.dump(this.configMap, writer);
+        } catch (IOException e) {
+            e.fillInStackTrace();
+        }
+    }
+
+    private static String getResourceFileName(ResourceType resourceType, File configFile, ClassLoader classLoader) {
+        if (resourceType == ResourceType.config) {
+            return "config.yml";
+        } else {
+            String fileName = "messages/en-US.yml";
+            if (configFile != null) {
+                Path messageFilePath = Paths.get(configFile.getPath());
+                String prospectiveFileName = "messages/" + messageFilePath.getFileName().toString();
+                if (classLoader.getResource(prospectiveFileName) != null) {
+                    fileName = prospectiveFileName;
+                }
+            }
+            return fileName;
+        }
     }
 }

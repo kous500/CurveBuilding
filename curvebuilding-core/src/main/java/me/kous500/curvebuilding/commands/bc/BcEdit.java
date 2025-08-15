@@ -6,7 +6,6 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.SessionManager;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
-import com.sk89q.worldedit.world.block.BaseBlock;
 import me.kous500.curvebuilding.math.BlockVector3;
 import me.kous500.curvebuilding.math.Vector3;
 
@@ -27,8 +26,8 @@ public final class BcEdit {
     private Vector3 center;
     private Direction direction;
     private EditSession editSession;
-    private RegionBlocks regionBlocks;
     private final BcCommand argument;
+    private final  NavigableMap<BlockVector3, NavigableMap<BlockVector3, Integer>> blockMap;
 
     private enum Direction {x, z}
 
@@ -40,6 +39,7 @@ public final class BcEdit {
      */
     public BcEdit(Player player, BcCommand argument) {
         this.argument = argument;
+        blockMap = new TreeMap<>();
 
         SessionManager manager = WorldEdit.getInstance().getSessionManager();
         LocalSession session = manager.get(player);
@@ -77,7 +77,7 @@ public final class BcEdit {
                 throw new MaxChangedBlocksException (maxChangeLimit);
             }
 
-            regionBlocks = new RegionBlocks(editSession, region);
+            RegionBlocks regionBlocks = new RegionBlocks(editSession, region);
 
             for (int n = 1; n <= posMap.lastEntry().getKey(); n++) {
                 Vector3[] p = posMap.get(n);
@@ -96,6 +96,11 @@ public final class BcEdit {
                 }
             }
 
+            for (Map.Entry<BlockVector3, NavigableMap<BlockVector3, Integer>> entry : blockMap.entrySet()) {
+                BlockVector3 maxBlockVec = Collections.max(entry.getValue().entrySet(), Map.Entry.comparingByValue()).getKey();
+                editSession.setBlock(adapt(entry.getKey()), regionBlocks.get(maxBlockVec));
+            }
+
             player.printInfo(TextComponent.of(getMessage("messages.bc-changed", editSession.size())));
             player.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round((float) nowLength * 100) / 100)));
         } catch (IncompleteRegionException e) {
@@ -103,7 +108,7 @@ public final class BcEdit {
         } catch (IncompletePosException e) {
             player.printError(TextComponent.of(getMessage("messages.incomplete-pos")));
         } catch (MaxChangedBlocksException e) {
-            player.printError(TextComponent.of(getMessage("messages.max-changed-blocks", session.getBlockChangeLimit())));
+            player.printError(TextComponent.of(getMessage("messages.max-changed-blocks", maxChangeLimit)));
         } catch (MaxSetLengthException e) {
             player.printError(TextComponent.of(getMessage("messages.max-set-length", config.maxSetLength)));
         } finally {
@@ -157,10 +162,6 @@ public final class BcEdit {
                 }
             }
         }
-
-        //中心を再設置
-        if (argument.n == 0 && !config.tCenter) n = 1;
-        set(selectionPos, 0, m, n, fineness, vec);
     }
 	
     private void set(Vector3[] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
@@ -183,7 +184,7 @@ public final class BcEdit {
             double r = pos.r;
 
             //通過距離近似計算
-            L += Math.sqrt((xt - xt1)*(xt - xt1) + (yt - yt1)*(yt - yt1) + (zt - zt1)*(zt - zt1));
+            L += Math.sqrt((xt - xt1) * (xt - xt1) + (yt - yt1) * (yt - yt1) + (zt - zt1) * (zt - zt1));
             xt1 = xt;
             yt1 = yt;
             zt1 = zt;
@@ -191,30 +192,26 @@ public final class BcEdit {
             BlockVector3 posT = BlockVector3.round(Vector3.at(xt, yt, zt).add(l * Math.cos(-r), m, l * Math.sin(-r)));
 
             if (!posT.equals(beforePosT) && L >= L1) {
-                BaseBlock idT;
+                BlockVector3 blockCoordinate;
                 if (direction == Direction.x) {
                     double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
-                    idT = regionBlocks.get(BlockVector3.floor(searchT.add(a, 0, 0)));
+                    blockCoordinate = BlockVector3.floor(searchT.add(a, 0, 0));
                 } else {
                     double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
-                    idT = regionBlocks.get(BlockVector3.floor(searchT.add(0 , 0, a)));
+                    blockCoordinate = BlockVector3.floor(searchT.add(0 , 0, a));
                 }
 
-                if (idT != null) {
-                    if (argument.air) {
-                        String selectionBlock = editSession.getBlock(adapt(posT)).toString();
-                        if (selectionBlock.equals("minecraft:air")) {
-                            editSession.setBlock(adapt(posT), idT);
-                            changedBlocks++;
-                        }
-                    } else {
-                        editSession.setBlock(adapt(posT), idT);
-                        changedBlocks++;
-                    }
+                if (!argument.air || editSession.getBlock(adapt(posT)).toString().equals("minecraft:air")) {
+                    blockMap.computeIfAbsent(posT, k -> new TreeMap<>());
+                    var nowBlock = blockMap.get(posT);
+                    nowBlock.putIfAbsent(blockCoordinate, 0);
+                    nowBlock.put(blockCoordinate, nowBlock.get(blockCoordinate) + 1);
 
-                    if (0 < maxChangeLimit && maxChangeLimit < changedBlocks) {
-                        throw new MaxChangedBlocksException(maxChangeLimit);
-                    }
+                    changedBlocks++;
+                }
+
+                if (0 < maxChangeLimit && maxChangeLimit < changedBlocks) {
+                    throw new MaxChangedBlocksException(maxChangeLimit);
                 }
 
                 L1 += n;
@@ -244,11 +241,17 @@ public final class BcEdit {
         double y3 = selectionPos[3].y();
         double z3 = selectionPos[3].z();
 
-        double xt = (1-t)*(1-t)*(1-t)*x0 + 3*(1-t)*(1-t)*t*x1 + 3*(1-t)*t*t*x2 + t*t*t*x3;
-        double yt = (1-t)*(1-t)*(1-t)*y0 + 3*(1-t)*(1-t)*t*y1 + 3*(1-t)*t*t*y2 + t*t*t*y3;
-        double zt = (1-t)*(1-t)*(1-t)*z0 + 3*(1-t)*(1-t)*t*z1 + 3*(1-t)*t*t*z2 + t*t*t*z3;
+        double nt = 1 - t;
+        double bernstein3_0 = nt * nt * nt;
+        double bernstein3_1 = 3 * nt * nt * t;
+        double bernstein3_2 = 3 * nt * t * t;
+        double bernstein3_3 = t * t * t;
+
+        double xt = bernstein3_0 * x0 + bernstein3_1 * x1 + bernstein3_2 * x2 + bernstein3_3 * x3;
+        double yt = bernstein3_0 * y0 + bernstein3_1 * y1 + bernstein3_2 * y2 + bernstein3_3 * y3;
+        double zt = bernstein3_0 * z0 + bernstein3_1 * z1 + bernstein3_2 * z2 + bernstein3_3 * z3;
+
         double dxt = 3 * t * t * (-x0 + 3 * x1 - 3 * x2 + x3) + 6 * t * (x0 - 2 * x1 + x2) + 3 * (-x0 + x1);
-        //double dyt = 3*t*t*(-y0+3*y1-3*y2+y3) + 6*t*(y0-2*y1+y2) + 3*(-y0+y1);
         double dzt = 3 * t * t * (-z0 + 3 * z1 - 3 * z2 + z3) + 6 * t * (z0 - 2 * z1 + z2) + 3 * (-z0 + z1);
         double r = Math.atan(dxt / dzt);
 

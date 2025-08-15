@@ -1,18 +1,18 @@
 package me.kous500.curvebuilding.bukkit.config;
 
-import me.kous500.curvebuilding.MainInitializer;
-import me.kous500.curvebuilding.config.*;
+import me.kous500.curvebuilding.config.Config;
+import me.kous500.curvebuilding.config.Resources;
+import me.kous500.curvebuilding.config.YamlConfig;
 
 import static me.kous500.curvebuilding.Util.messageReplace;
 
 public class BukkitResources implements Resources {
-    static YamlConfig messages;
-    private static Config config;
+    private final YamlConfig messages;
+    private final Config config;
 
-    public BukkitResources(MainInitializer mainInitializer) {
-        ResourceFiles resourceFiles = ResourceFiles.load(mainInitializer);
-        config = new BukkitConfig(resourceFiles.get("%datafolder%/config.yml", ResourceType.config));
-        messages = resourceFiles.get(config.messageFilePath, ResourceType.message);
+    public BukkitResources(Config config, YamlConfig messages) {
+        this.config = config;
+        this.messages = messages;
     }
 
     @Override
