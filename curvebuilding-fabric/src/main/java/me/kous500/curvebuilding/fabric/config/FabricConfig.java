@@ -3,36 +3,36 @@ package me.kous500.curvebuilding.fabric.config;
 import me.kous500.curvebuilding.config.Config;
 import me.kous500.curvebuilding.config.YamlConfig;
 
-import java.awt.*;
+import java.awt.Color;
 
-public class FabricConfig extends Config {
-    public boolean posRenderThroughWalls;
-    public Color posLineColor;
-    public Color posFilledColor;
-    public Color posStartLineColor;
-    public Color posStartFilledColor;
-    public Color posEndLineColor;
-    public Color posEndFilledColor;
-    public Color posFLineColor;
-    public Color posFFilledColor;
-    public Color posBLineColor;
-    public Color posBFilledColor;
+public final class FabricConfig extends Config {
+    public final boolean posRenderThroughWalls;
+    public final Color posLineColor;
+    public final Color posFilledColor;
+    public final Color posStartLineColor;
+    public final Color posStartFilledColor;
+    public final Color posEndLineColor;
+    public final Color posEndFilledColor;
+    public final Color posFLineColor;
+    public final Color posFFilledColor;
+    public final Color posBLineColor;
+    public final Color posBFilledColor;
 
-    public boolean lineRenderThroughWalls;
-    public int lineRenderAccuracy;
-    public int lineRenderLength;
-    public Color lineFColor;
-    public Color lineBColor;
-    public Color lineCurveColor;
+    public final boolean lineRenderThroughWalls;
+    public final int lineRenderAccuracy;
+    public final int lineRenderLength;
+    public final Color lineFColor;
+    public final Color lineBColor;
+    public final Color lineCurveColor;
 
     public FabricConfig(YamlConfig config) {
         messageFilePath = config.getString("message-file");
 
-        fineness = config.getInteger("curve.fineness", 1);
-        maxSetLength = config.getInteger("curve.max-set-length", 0);
-        maxPosValue = config.getInteger("curve.max-pos-value", 1);
+        fineness = Math.max(1, config.getInteger("curve.fineness"));
+        maxSetLength = Math.max(0, config.getInteger("curve.max-set-length"));
+        maxPosValue = Math.max(1, config.getInteger("curve.max-pos-value"));
         tCenter = config.getBoolean("curve.thicken-center");
-        defaultMaxChangeLimit = config.getInteger("curve.default-max-change-limit", -1);
+        defaultMaxChangeLimit = Math.max(-1, config.getInteger("curve.default-max-change-limit"));
 
         posRenderThroughWalls = config.getBoolean("render-preview.pos.render-through-walls");
         posLineColor = new Color(config.getInteger("render-preview.pos.format.pos.line-color"), true);
@@ -47,8 +47,8 @@ public class FabricConfig extends Config {
         posBFilledColor = new Color(config.getInteger("render-preview.pos.format.b.filled-color"), true);
 
         lineRenderThroughWalls = config.getBoolean("render-preview.line.render-through-walls");
-        lineRenderAccuracy = config.getInteger("render-preview.line.accuracy", 1);
-        lineRenderLength = config.getInteger("render-preview.line.maxLength", 0);
+        lineRenderAccuracy = Math.max(1, config.getInteger("render-preview.line.accuracy"));
+        lineRenderLength = Math.max(0, config.getInteger("render-preview.line.maxLength"));
         lineFColor = new Color(config.getInteger("render-preview.line.format.line-f-color"), true);
         lineBColor = new Color(config.getInteger("render-preview.line.format.line-b-color"), true);
         lineCurveColor = new Color(config.getInteger("render-preview.line.format.curve-color"), true);

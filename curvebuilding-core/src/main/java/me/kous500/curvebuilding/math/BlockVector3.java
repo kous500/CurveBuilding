@@ -4,7 +4,7 @@ package me.kous500.curvebuilding.math;
  * This class is compatible with com.sk89q.worldedit.math.BlockVector3.
  * An immutable 3-dimensional vector.
  */
-public record BlockVector3(int x, int y, int z) {
+public record BlockVector3(int x, int y, int z) implements Comparable<BlockVector3> {
     public static BlockVector3 at(double x, double y, double z) {
         return at((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
     }
@@ -494,5 +494,12 @@ public record BlockVector3(int x, int y, int z) {
      */
     public String toParserString() {
         return x + "," + y + "," + z;
+    }
+
+    @Override
+    public int compareTo(BlockVector3 o) {
+        return x != o.x() ? Integer.compare(x, o.x)
+                : y != o.y() ? Integer.compare(y, o.y)
+                : Integer.compare(z, o.z);
     }
 }

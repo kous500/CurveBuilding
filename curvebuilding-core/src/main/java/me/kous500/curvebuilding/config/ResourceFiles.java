@@ -5,55 +5,78 @@ import me.kous500.curvebuilding.MainInitializer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.*;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class ResourceFiles {
-    public static ResourceFiles load(MainInitializer mainInitializer) {
+    public static void setup(MainInitializer mainInitializer) {
         ResourceFiles resourceFiles = new ResourceFiles(mainInitializer);
-
-        for (String language : new String[]{"en-US", "es-ES", "es-419", "ja-JP", "zh-Hant", "zh-CN"}) {
-            resourceFiles.create("messages/" + language + ".yml");
-        }
-
+        resourceFiles.copyResourceDirectory("messages");
         resourceFiles.create("config.yml");
-
-        return resourceFiles;
     }
 
-    private final MainInitializer mainInitializer;
     private final String DATA_FOLDER;
     private final ClassLoader classLoader;
 
-    public ResourceFiles(MainInitializer mainInitializer) {
-        this.mainInitializer = mainInitializer;
+    private ResourceFiles(MainInitializer mainInitializer) {
         this.DATA_FOLDER = mainInitializer.getConfigPass();
         this.classLoader = mainInitializer.getMainClassLoader();
     }
 
-    public void create(String file) {
+    private void copyResourceDirectory(String resourceDir) {
         try {
-            final File configFile = new File(DATA_FOLDER + "/" + file);
+            URI uri = Objects.requireNonNull(classLoader.getResource(resourceDir), "Resource directory not found: " + resourceDir).toURI();
+            Path resourcePath;
 
-            if (!configFile.exists()) {
-                final InputStream inputStream = classLoader.getResourceAsStream(file);
-                final File parentFile = configFile.getParentFile();
-
-                if (parentFile != null) parentFile.mkdirs();
-
-                if (inputStream != null) {
-                    Files.copy(inputStream, configFile.toPath());
-                } else configFile.createNewFile();
+            if ("jar".equals(uri.getScheme())) {
+                try (FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+                    resourcePath = fileSystem.getPath(resourceDir);
+                    try (Stream<Path> walk = Files.walk(resourcePath, 1)) {
+                        walk.filter(Files::isRegularFile)
+                                .forEach(path -> {
+                                    String relativePath = resourceDir + "/" + path.getFileName().toString();
+                                    create(relativePath);
+                                });
+                    }
+                }
+            } else {
+                resourcePath = Paths.get(uri);
+                try (Stream<Path> walk = Files.walk(resourcePath, 1)) {
+                    walk.filter(Files::isRegularFile)
+                            .forEach(path -> {
+                                String relativePath = resourceDir + "/" + path.getFileName().toString();
+                                create(relativePath);
+                            });
+                }
             }
-        } catch (final IOException ignored) {}
+        } catch (IOException | URISyntaxException | NullPointerException e) {
+            System.err.println("Failed to copy resource directory: " + resourceDir);
+            e.fillInStackTrace();
+        }
     }
 
-    public YamlConfig get(String fileName, ResourceType resourceType) {
-        fileName = fileName.replace("%datafolder%", DATA_FOLDER);
-
-        final File file = new File(fileName);
-
-        return file.exists()
-                ? YamlConfig.loadConfiguration(file, resourceType, mainInitializer)
-                : new YamlConfig(resourceType);
+    private void create(String resourcePath) {
+        try {
+            File destinationFile = new File(DATA_FOLDER, resourcePath);
+            if (!destinationFile.exists()) {
+                InputStream inputStream = classLoader.getResourceAsStream(resourcePath);
+                Objects.requireNonNull(inputStream, "Resource not found in JAR: " + resourcePath);
+                File parentDir = destinationFile.getParentFile();
+                if (parentDir != null) {
+                    parentDir.mkdirs();
+                }
+                Files.copy(inputStream, destinationFile.toPath());
+                inputStream.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to create resource file: " + resourcePath);
+            e.fillInStackTrace();
+        } catch (NullPointerException e) {
+            System.err.println(e.getMessage());
+        }
     }
 }

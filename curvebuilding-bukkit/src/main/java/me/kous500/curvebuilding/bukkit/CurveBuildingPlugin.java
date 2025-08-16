@@ -10,11 +10,16 @@ import me.kous500.curvebuilding.bukkit.commands.CurveBuildingCommand;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.bukkit.config.BukkitResources;
+import me.kous500.curvebuilding.config.ResourceFiles;
+import me.kous500.curvebuilding.config.ResourceType;
+import me.kous500.curvebuilding.config.YamlConfig;
+import me.kous500.curvebuilding.math.PosData;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
 
 import static java.util.Objects.requireNonNull;
 import static me.kous500.curvebuilding.CurveBuilding.*;
-
 
 public final class CurveBuildingPlugin extends JavaPlugin implements MainInitializer {
     public static ParticleList_1_13 particles_1_13;
@@ -26,7 +31,7 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
             fawe = true;
         }
 
-        setResources(new BukkitResources(this));
+        reloadConfigAndResources();
         setConsole((new BukkitConsole(this)));
 
         try {
@@ -47,13 +52,31 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
         CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this);
         requireNonNull(this.getCommand("curvebuilding")).setExecutor(curveBuildingCommand);
         requireNonNull(this.getCommand("curvebuilding")).setTabCompleter(curveBuildingCommand);
+    }
 
-        SendParticles.start((BukkitConfig) config);
+    public void reloadConfigAndResources() {
+        SendParticles.stop();
+        PosData.getPosMap().clear();
+
+        ResourceFiles.setup(this);
+
+        File configFile = new File(this.getConfigPass(), "config.yml");
+        YamlConfig yamlConfig = YamlConfig.loadConfiguration(configFile, ResourceType.config, this);
+
+        BukkitConfig bukkitConfig = new BukkitConfig(yamlConfig);
+
+        String messageFileName = bukkitConfig.messageFilePath.replace("%datafolder%", this.getConfigPass());
+        File messageFile = new File(messageFileName);
+        YamlConfig messagesConfig = YamlConfig.loadConfiguration(messageFile, ResourceType.message, this);
+
+        setResources(new BukkitResources(bukkitConfig, messagesConfig));
+
+        SendParticles.start(bukkitConfig);
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        SendParticles.stop();
     }
 
     @Override
