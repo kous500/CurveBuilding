@@ -12,7 +12,7 @@ Make curved structures using commands and WorldEdit.
 
 WorldEdit or FastAsyncWorldEdit required. CurveBuilding is compatible with Bukkit and Fabric.
 
-To request other versions or features, please comment on the [Discussions](https://github.com/kous500/CurveBuilding/discussions). Consider [donating](https://github.com/sponsors/kous500) for prioritized requests.
+If you have suggestions for other versions or features, please comment on the [Discussions](https://github.com/kous500/CurveBuilding/discussions).
 
 ## Detailed description and downloads
 
