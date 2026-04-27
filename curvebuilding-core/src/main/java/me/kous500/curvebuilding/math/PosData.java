@@ -65,8 +65,8 @@ public final class PosData {
             } else {
                 if (h == 0 && l[h] != null) {
                     double x = location.x() - l[h].x();
-                    double y = location.x() - l[h].x();
-                    double z = location.x() - l[h].x();
+                    double y = location.y() - l[h].y();
+                    double z = location.z() - l[h].z();
 
                     if (l[1] != null) l[1] = l[1].add(x, y, z);
                     if (l[2] != null) l[2] = l[2].add(x, y, z);
