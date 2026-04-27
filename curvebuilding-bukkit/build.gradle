@@ -22,12 +22,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.spigotmc:spigot-api:1.21.10-R0.1-SNAPSHOT"
-    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.3.17") {
+    compileOnly "org.spigotmc:spigot-api:1.21.11-R0.1-SNAPSHOT"
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.4.2") {
         exclude group: 'com.google.guava', module: 'guava'
     }
     compileOnly "org.jetbrains:annotations:24.1.0"
-    api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.5.0"
+    api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.5.1"
     api project(':curvebuilding-core')
 }
 
@@ -73,4 +73,10 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(Javadoc).configureEach {
     options.encoding = "UTF-8"
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        force 'com.google.code.gson:gson:2.11.0'
+    }
 }
