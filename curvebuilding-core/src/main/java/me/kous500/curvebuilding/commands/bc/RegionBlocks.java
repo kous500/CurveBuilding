@@ -14,6 +14,10 @@ public class RegionBlocks {
     private final int minX;
     private final int minY;
     private final int minZ;
+    private final int regionWidth;
+    private final int regionHeight;
+    private final int regionLength;
+
     private final BaseBlock[][][] regionBlocks;
 
     public RegionBlocks(EditSession editSession, Region region) {
@@ -23,8 +27,11 @@ public class RegionBlocks {
         this.minX = minRegion.x();
         this.minY = minRegion.y();
         this.minZ = minRegion.z();
+        this.regionWidth = region.getWidth();
+        this.regionHeight = region.getHeight();
+        this.regionLength = region.getLength();
 
-        this.regionBlocks = new BaseBlock[region.getWidth()][region.getHeight()][region.getLength()];
+        this.regionBlocks = new BaseBlock[regionWidth][regionHeight][regionLength];
 
         for (int x = minX; x <= maxRegion.x(); x++) {
             for (int y = minY; y <= maxRegion.y(); y++) {
@@ -41,10 +48,10 @@ public class RegionBlocks {
      * @return ブロックの情報
      */
     public BaseBlock get(BlockVector3 vec) {
-        try {
-            return regionBlocks[vec.x() - minX][vec.y() - minY][vec.z() - minZ];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return null;
-        }
+        int x = Math.floorMod(vec.x() - minX, regionWidth);
+        int y = Math.floorMod(vec.y() - minY, regionHeight);
+        int z = Math.floorMod(vec.z() - minZ, regionLength);
+
+        return regionBlocks[x][y][z];
     }
 }

@@ -17,9 +17,9 @@ import java.util.UUID;
 
 import static me.kous500.curvebuilding.WorldeditAdapter.*;
 import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.particles_1_13;
-import static me.kous500.curvebuilding.math.PosData.getPosMap;
 import static me.kous500.curvebuilding.Util.*;
 import static java.lang.Math.sqrt;
+import static me.kous500.curvebuilding.math.PosManager.getPosMap;
 import static org.bukkit.Bukkit.getPlayer;
 
 /**
@@ -66,14 +66,14 @@ public class SendParticles extends TimerTask {
     }
 
     private void sendParticlePlayer(PosData posData, Player player) {
-        if (player == null || posData.world == null || posData.p == null) return;
-        if (!posData.world.getName().equals(player.getWorld().getName())) return;
+        if (player == null || posData.getWorld() == null || posData.getMap() == null) return;
+        if (!posData.getWorld().getName().equals(player.getWorld().getName())) return;
 
         boolean endLine = false;
         double curveLength = 0;
 
-        for (int n = 1; n <= posData.p.lastEntry().getKey(); n++) {
-            Vector3[] p = posData.p.get(n);
+        for (int n = 1; n <= posData.getMap().lastEntry().getKey(); n++) {
+            Vector3[] p = posData.getMap().get(n);
             if (p != null) {
                 for (int h = 0; h <= 2; h++) {
                     if (p[h] != null) {
@@ -81,16 +81,16 @@ public class SendParticles extends TimerTask {
                         if (h == 1) color = config.fColor;
                         else if (h == 2) color = config.bColor;
                         else if (n == 1) color = config.startColor;
-                        else if (n == posData.p.lastEntry().getKey()) color = config.endColor;
+                        else if (n == posData.getMap().lastEntry().getKey()) color = config.endColor;
                         else color = config.posColor;
 
-                        if (h == 0) sendCube(p[h], posData.world, player, color);
-                        else sendCross(p[h], posData.world, player, color);
+                        if (h == 0) sendCube(p[h], posData.getWorld(), player, color);
+                        else sendCross(p[h], posData.getWorld(), player, color);
                     }
                 }
 
-                sendLine(p[0], p[1], posData.world, player, particles_1_13.SOUL_FIRE_FLAME);
-                sendLine(p[0], p[2], posData.world, player, particles_1_13.SOUL_FIRE_FLAME);
+                sendLine(p[0], p[1], posData.getWorld(), player, particles_1_13.SOUL_FIRE_FLAME);
+                sendLine(p[0], p[2], posData.getWorld(), player, particles_1_13.SOUL_FIRE_FLAME);
 
                 if (p[0] == null) endLine = true;
             } else {
@@ -98,14 +98,14 @@ public class SendParticles extends TimerTask {
             }
 
             if (!endLine && n != 1) {
-                Vector3[] bp = posData.p.get(n - 1);
+                Vector3[] bp = posData.getMap().get(n - 1);
                 Vector3[] bezierPos = new Vector3[] {
                         bp[0],
                         bp[2] != null ? bp[2] : bp[0],
                         p[1] != null ? p[1] : p[0],
                         p[0]
                 };
-                curveLength = sendBezier(bezierPos, posData.world, player, particles_1_13.FLAME, curveLength);
+                curveLength = sendBezier(bezierPos, posData.getWorld(), player, particles_1_13.FLAME, curveLength);
             }
         }
     }

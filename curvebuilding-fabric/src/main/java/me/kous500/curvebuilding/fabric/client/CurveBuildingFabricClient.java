@@ -3,6 +3,7 @@ package me.kous500.curvebuilding.fabric.client;
 import me.kous500.curvebuilding.fabric.network.PosDataPayload;
 import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.fabric.client.render.RenderPreview;
+import me.kous500.curvebuilding.math.PosManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -24,7 +25,7 @@ public class CurveBuildingFabricClient implements ClientModInitializer {
         });
 
         ClientLoginConnectionEvents.INIT.register((ClientLoginNetworkHandler handler, MinecraftClient client) -> {
-            PosData.getPosMap().clear();
+            PosManager.clearPosMap();
             RenderPreview.posData = null;
         });
     }

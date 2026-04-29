@@ -2,6 +2,7 @@ package me.kous500.curvebuilding.fabric.network;
 
 import com.sk89q.worldedit.fabric.FabricAdapter;
 import me.kous500.curvebuilding.math.PosData;
+import me.kous500.curvebuilding.math.PosManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -39,13 +40,13 @@ public class PacketSender {
     }
 
     public static void sendPosPacket(ServerPlayerEntity player) {
-        PosData posData = PosData.getPosMap().get(player.getUuid());
+        PosData posData = PosManager.getPosMap().get(player.getUuid());
         if (posData == null) return;
 
         if (!playerList.contains(player)) playerList.add(player);
 
-        if (posData.worldId != null && posData.worldId.equals(FabricAdapter.adapt(player.getWorld()).id())) {
-            ServerPlayNetworking.send(player, new PosDataPayload(posData.p));
+        if (posData.getWorldId() != null && posData.getWorldId().equals(FabricAdapter.adapt(player.getEntityWorld()).id())) {
+            ServerPlayNetworking.send(player, new PosDataPayload(posData.getMap()));
         } else {
             ServerPlayNetworking.send(player, new PosDataPayload(new TreeMap<>()));
         }

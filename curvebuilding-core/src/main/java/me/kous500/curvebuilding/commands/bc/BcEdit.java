@@ -13,8 +13,9 @@ import java.util.*;
 
 import static me.kous500.curvebuilding.CurveBuilding.*;
 import static me.kous500.curvebuilding.WorldeditAdapter.*;
-import static me.kous500.curvebuilding.math.PosData.*;
 import static me.kous500.curvebuilding.Util.*;
+import static me.kous500.curvebuilding.math.PosManager.getPos;
+import static me.kous500.curvebuilding.math.PosManager.getWorld;
 
 public final class BcEdit {
     private int width;
@@ -135,7 +136,7 @@ public final class BcEdit {
 
         nowLength = length;
     }
-	
+
     private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
         Vector3 posA = vec;
         Vector3 posB = vec;
@@ -163,7 +164,7 @@ public final class BcEdit {
             }
         }
     }
-	
+
     private void set(Vector3[] selectionPos, int l, int m, int n, double fineness, Vector3 searchT) throws MaxChangedBlocksException {
         double xt1 = selectionPos[0].x();
         double yt1 = selectionPos[0].y();
@@ -194,11 +195,11 @@ public final class BcEdit {
             if (!posT.equals(beforePosT) && L >= L1) {
                 BlockVector3 blockCoordinate;
                 if (direction == Direction.x) {
-                    double a = floorE((((L + nowLength) % width) - (width / 2.0)) * 2, 0.01) / 2 + 0.5;
-                    blockCoordinate = BlockVector3.floor(searchT.add(a, 0, 0));
+                    double a = ((L + nowLength + 0.5) % width) - (width / 2.0);
+                    blockCoordinate = BlockVector3.floor(searchT.add(a + 0.5, 0, 0));
                 } else {
-                    double a = floorE((((L + nowLength) % length) - (length / 2.0)) * 2, 0.01) / 2 + 0.5;
-                    blockCoordinate = BlockVector3.floor(searchT.add(0 , 0, a));
+                    double a = ((L + nowLength + 0.5) % length) - (length / 2.0);
+                    blockCoordinate = BlockVector3.floor(searchT.add(0 , 0, a + 0.5));
                 }
 
                 if (!argument.air || editSession.getBlock(adapt(posT)).toString().equals("minecraft:air")) {

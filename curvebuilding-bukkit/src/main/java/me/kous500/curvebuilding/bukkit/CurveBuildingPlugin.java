@@ -13,7 +13,7 @@ import me.kous500.curvebuilding.bukkit.config.BukkitResources;
 import me.kous500.curvebuilding.config.ResourceFiles;
 import me.kous500.curvebuilding.config.ResourceType;
 import me.kous500.curvebuilding.config.YamlConfig;
-import me.kous500.curvebuilding.math.PosData;
+import me.kous500.curvebuilding.math.PosManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -56,7 +56,7 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
 
     public void reloadConfigAndResources() {
         SendParticles.stop();
-        PosData.getPosMap().clear();
+        PosManager.clearPosMap();
 
         ResourceFiles.setup(this);
 

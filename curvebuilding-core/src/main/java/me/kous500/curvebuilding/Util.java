@@ -2,6 +2,7 @@ package me.kous500.curvebuilding;
 
 import me.kous500.curvebuilding.math.Vector3;
 
+import java.util.Objects;
 import static java.lang.Math.*;
 
 /**
@@ -9,40 +10,30 @@ import static java.lang.Math.*;
  */
 public final class Util {
 
-    /**
-     * 誤差を考慮して実数をfloorで丸める。
-     *
-     * @param d 丸める数値
-     * @param e 考慮する誤差
-     * @return 丸められた値
-     */
-    public static double floorE(double d, double e) {
-        if (d % 1 + e <= 1) {
-            return Math.floor(d + e);
-        } else if (d % 1 - e <= -1) {
-            return Math.floor(d - e);
-        } else {
-            return Math.floor(d);
-        }
+    private Util() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
     /**
-     * pos1からpos4の値からベジエ曲線の長さ求める。
+     * pos1からpos4の値からベジエ曲線の長さを求める。
      *
      * @param pos pos1からpos4の値
+     * @param fineness 分割数（精度）
      * @return 曲線の長さ
-     * @throws AssertionError p1からp4にnullが含まれる場合
      */
     public static double bezierLength(Vector3[] pos, double fineness) {
-        assert (pos[0] != null) && (pos[1] != null) && (pos[2] != null) && (pos[3] != null)
-                : "The value of pos cannot be null.";
+        validateBezierPositions(pos);
+        if (fineness <= 0) {
+            throw new IllegalArgumentException("fineness must be greater than 0");
+        }
 
         double length = 0;
         double xt1 = pos[0].x();
         double yt1 = pos[0].y();
         double zt1 = pos[0].z();
 
-        for (double i = 0; i <= 1; i += 1.0 / fineness) {
+        for (int step = 1; step <= fineness; step++) {
+            double i = step / fineness;
             Vector3 p = bezierCoordinate(pos, i);
             double xt = p.x();
             double yt = p.y();
@@ -62,22 +53,27 @@ public final class Util {
      * @param pos pos1からpos4までの値
      * @param i 曲線上の位置(0 <= i <= 1)
      * @return 座標
-     * @throws AssertionError p1からp4にnullが含まれる場合もしくはiが0以上1以下でない場合
      */
     public static Vector3 bezierCoordinate(Vector3[] pos, double i) {
-        assert (pos[0] != null) && (pos[1] != null) && (pos[2] != null) && (pos[3] != null)
-                : "The value of pos cannot be null.";
-        assert (0 <= i) && (i <= 1)
-                : "The value of i must be in the range 0 to 1";
+        validateBezierPositions(pos);
+        if (i < 0 || i > 1) {
+            throw new IllegalArgumentException("The value of i must be in the range 0 to 1");
+        }
 
         Vector3 p0 = pos[0];
         Vector3 p1 = pos[1];
         Vector3 p2 = pos[2];
         Vector3 p3 = pos[3];
 
-        double x = pow(1-i, 3)*p0.x() + 3*pow(1-i, 2)*i*p1.x() + 3*(1-i)* pow(i, 2)*p2.x() + pow(i, 3)*p3.x() + 0.5;
-        double y = pow(1-i, 3)*p0.y() + 3*pow(1-i, 2)*i*p1.y() + 3*(1-i)* pow(i, 2)*p2.y() + pow(i, 3)*p3.y() + 0.5;
-        double z = pow(1-i, 3)*p0.z() + 3*pow(1-i, 2)*i*p1.z() + 3*(1-i)* pow(i, 2)*p2.z() + pow(i, 3)*p3.z() + 0.5;
+        double u = 1 - i;
+        double bernstein3_0 = u * u * u;
+        double bernstein3_1 = 3 * u * u * i;
+        double bernstein3_2 = 3 * u * i * i;
+        double bernstein3_3 = i * i * i;
+
+        double x = bernstein3_0 * p0.x() + bernstein3_1 * p1.x() + bernstein3_2 * p2.x() + bernstein3_3 * p3.x() + 0.5;
+        double y = bernstein3_0 * p0.y() + bernstein3_1 * p1.y() + bernstein3_2 * p2.y() + bernstein3_3 * p3.y() + 0.5;
+        double z = bernstein3_0 * p0.z() + bernstein3_1 * p1.z() + bernstein3_2 * p2.z() + bernstein3_3 * p3.z() + 0.5;
 
         return Vector3.at(x, y, z);
     }
@@ -92,28 +88,14 @@ public final class Util {
      * @return 動径rを変更した直交座標[ x, y, z ]
      */
     public static double[] changeR(double x, double y, double z, double newR) {
-        double[] polar = toPolar(x, y, z);
-        double theta = polar[1];
-        double phi = polar[2];
-        double x1 = newR * sin(phi) * cos(theta);
-        double y1 = newR * sin(phi) * sin(theta);
-        double z1 = newR * cos(phi);
-        return new double[]{ x1, y1, z1 };
-    }
+        double currentR = sqrt(x * x + y * y + z * z);
 
-    /**
-     * ３次元の直交座標を極座標（球座標）に変換する
-     *
-     * @param x x座標
-     * @param y y座標
-     * @param z z座標
-     * @return 球座標[ r, θ, φ ]
-     */
-    public static double[] toPolar(double x, double y, double z) {
-        double r = sqrt(x * x + y * y + z * z);
-        double theta = atan2(y, x);
-        double phi = acos(z / r);
-        return new double[]{ r, theta, phi };
+        if (currentR == 0) {
+            return new double[]{0, 0, 0};
+        }
+
+        double scale = newR / currentR;
+        return new double[]{ x * scale, y * scale, z * scale };
     }
 
     /**
@@ -124,12 +106,21 @@ public final class Util {
      * @return 置き換え後の文字列
      */
     public static String messageReplace(String message, Object... args) {
-        int i = 0;
-        for (Object arg: args) {
-            message = message.replace("{" + i + "}", arg.toString());
-            i++;
+        if (message == null || args == null) {
+            return message;
+        }
+
+        for (int i = 0; i < args.length; i++) {
+            message = message.replace("{" + i + "}", String.valueOf(args[i]));
         }
 
         return message;
+    }
+
+    private static void validateBezierPositions(Vector3[] pos) {
+        Objects.requireNonNull(pos, "The pos array cannot be null");
+        if (pos.length < 4 || pos[0] == null || pos[1] == null || pos[2] == null || pos[3] == null) {
+            throw new IllegalArgumentException("The pos array must contain at least 4 non-null elements");
+        }
     }
 }

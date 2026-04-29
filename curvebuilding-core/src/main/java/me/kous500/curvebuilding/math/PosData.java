@@ -1,319 +1,145 @@
 package me.kous500.curvebuilding.math;
 
-import com.sk89q.worldedit.entity.Player;
-import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
+import me.kous500.curvebuilding.WorldeditAdapter;
 
-import java.util.*;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
-import static me.kous500.curvebuilding.CurveBuilding.getMessage;
-import static me.kous500.curvebuilding.Util.*;
-import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
-import static me.kous500.curvebuilding.WorldeditAdapter.getWorldId;
+import static me.kous500.curvebuilding.Util.changeR;
 
 /**
- * posのデータの保存方法とデータを操作するメソッドを定義する。
+ * ひとつの曲線（複数の制御点群）の座標データを保持・操作するためのクラス。
+ * プレイヤーに依存せず、独立してインスタンス化して使用できます。
  */
-public final class PosData {
-    public static final String[] directionOptions = new String[] {
-            "back",
-            "down",
-            "east",
-            "forward",
-            "left",
-            "me",
-            "north",
-            "right",
-            "south",
-            "up"
-    };
+public class PosData {
 
-    /**
-     * プレイヤーごとのposのデータを保存する。
-     */
-    private static final Map<UUID, PosData> POS_MAP = new HashMap<>();
+    private World world;
+    private String worldId;
+    private NavigableMap<Integer, Vector3[]> p;
 
-    /**
-     * 指定されたプレイヤーのposをposListに追加する。
-     *
-     * @param  player posを保存するプレイヤー
-     * @param  n posの番号
-     * @param  h posの種類
-     * @throws AssertionError hが0以上2以下ではない場合
-     */
-    public static void addPos(Player player, int n, int h) {
-        assert (h >= 0) && (h <= 2) : "The value of h must be in the range 0 to 2.";
-
-        Vector3 location = adapt(player.getLocation().toVector()).floor();
-        World world = player.getWorld();
-        UUID uuid = player.getUniqueId();
-        PosData posData = POS_MAP.get(uuid);
-
-        if (posData != null) {
-            if (posData.worldId == null || !posData.worldId.equals(getWorldId(world))) {
-                posData.p = new TreeMap<>();
-            }
-
-            Vector3[] l = posData.p.get(n);
-            Vector3[] la = posData.p.get(n + 1);
-            Vector3[] lb = posData.p.get(n - 1);
-
-            if (l == null) {
-                l = new Vector3[3];
-                l[h] = location;
-                posData.p.put(n, l);
-            } else {
-                if (h == 0 && l[h] != null) {
-                    double x = location.x() - l[h].x();
-                    double y = location.y() - l[h].y();
-                    double z = location.z() - l[h].z();
-
-                    if (l[1] != null) l[1] = l[1].add(x, y, z);
-                    if (l[2] != null) l[2] = l[2].add(x, y, z);
-                }
-
-                l[h] = location;
-
-                if (h == 1 && la != null && la[0] != null && l[0] != null) {
-                    l[2] = posAutocompletion(l[0], l[1], l[2]);
-                } else if (h == 2 && lb != null && lb[0] != null && l[0] != null) {
-                    l[1] = posAutocompletion(l[0], l[2], l[1]);
-                }
-
-                posData.p.replace(n, l);
-            }
-
-            if (h == 0 && lb != null && lb[0] != null && lb[1] != null && lb[2] == null) {
-                lb[2] = posAutocompletion(lb[0], lb[1], null);
-                posData.p.replace(n - 1, lb);
-            }
-
-            posData.world = world;
-            posData.worldId = getWorldId(world);
-            POS_MAP.replace(uuid, posData);
-        } else {
-            POS_MAP.put(uuid, new PosData(world, location, n, h));
-        }
-
-        player.printInfo(TextComponent.of(getMessage("messages.pos-set", posToString(n, h), location)));
+    public PosData() {
+        this.p = new TreeMap<>();
     }
-
-    private static Vector3 posAutocompletion(Vector3 h0, Vector3 hIN, Vector3 hOUT){
-        double x = hIN.x() - h0.x();
-        double y = hIN.y() - h0.y();
-        double z = hIN.z() - h0.z();
-
-        if (hOUT == null) {
-            return h0.add(-x, -y, -z);
-        } else {
-            double[] newH = changeR(x, y, z, -1 * h0.distance(hOUT));
-            return h0.add(newH[0], newH[1], newH[2]);
-        }
-    }
-
-    /**
-     * 指定されたプレイヤーのposをposListから削除する。
-     *
-     * @param player posを削除するプレイヤー
-     */
-    public static void clearPos(Player player) {
-        UUID uuid = player.getUniqueId();
-        PosData posData = POS_MAP.get(uuid);
-        if (posData != null) {
-            posData.p = new TreeMap<>();
-            posData.world = null;
-            posData.worldId = null;
-            POS_MAP.replace(uuid, posData);
-            player.printInfo(TextComponent.of(getMessage("messages.pos-clear-all")));
-        }
-    }
-
-    /**
-     * 指定されたプレイヤーのposをposListから削除する。
-     *
-     * @param  player posを削除するプレイヤー
-     * @param  n posの番号
-     * @param  h posの種類
-     * @throws AssertionError hが0以上2以下ではない場合
-     */
-    public static void clearPos(Player player, int n, int h) {
-        assert (h >= 0) && (h <= 2) : "h must be in the range 0 to 2.";
-
-        UUID uuid = player.getUniqueId();
-        PosData posData = POS_MAP.get(uuid);
-
-        if (posData == null) return;
-        Vector3[] l = posData.p.get(n);
-        if (l == null) return;
-
-        if (h == 0) {
-            l = new Vector3[3];
-        } else {
-            l[h] = null;
-        }
-
-        posData.p.replace(n, l);
-        POS_MAP.replace(uuid, posData);
-
-        player.printInfo(TextComponent.of(getMessage("messages.pos-clear", posToString(n, h))));
-    }
-
-    /**
-     * 指定されたposListの番号に新しいposを挿入する。
-     *
-     * @param  player posを削除するプレイヤー
-     * @param  n posの番号
-     */
-    public static void insert(Player player, int n) {
-        PosData posData = POS_MAP.get(player.getUniqueId());
-        if (posData == null || posData.p.get(n) == null) {
-            player.printError(TextComponent.of(getMessage("messages.pos-not-exist", n)));
-            return;
-        }
-
-        NavigableMap<Integer, Vector3[]> newMap = new TreeMap<>();
-        for (int key : posData.p.keySet()) {
-            if (key < n) {
-                newMap.put(key, posData.p.get(key));
-            } else {
-                newMap.put(key + 1, posData.p.get(key));
-            }
-        }
-        posData.p = newMap;
-        addPos(player, n, 0);
-    }
-
-    /**
-     * 指定されたposListの番号のposを取り除く。
-     *
-     * @param  player posを削除するプレイヤー
-     * @param  n posの番号
-     */
-    public static void remove(Player player, int n) {
-        PosData posData = POS_MAP.get(player.getUniqueId());
-        if (posData == null || posData.p.get(n) == null) {
-            player.printError(TextComponent.of(getMessage("messages.pos-not-exist", n)));
-            return;
-        }
-
-        posData.p.remove(n);
-        NavigableMap<Integer, Vector3[]> newMap = new TreeMap<>();
-        for (int key : posData.p.keySet()) {
-            if (key < n) {
-                newMap.put(key, posData.p.get(key));
-            } else if (key > n) {
-                newMap.put(key - 1, posData.p.get(key));
-            }
-        }
-        posData.p = newMap;
-        player.printInfo(TextComponent.of(getMessage("messages.pos-remove", n)));
-    }
-
-    /**
-     * 指定されたプレイヤーのposListのすべてのposを任意の方向へ移動させる。
-     *
-     * @param  player posを削除するプレイヤー
-     * @param  n 移動距離
-     * @param direction 方向
-     */
-    public static void shift(Player player, int n, char direction) {
-        if ('A' <= direction && direction <= 'Z') direction += 32;
-
-        PosData posData = POS_MAP.get(player.getUniqueId());
-        if (posData == null) return;
-
-        double pitch = player.getLocation().getPitch();
-        double yaw = player.getLocation().getYaw();
-        switch (direction) {
-            case 'r' -> yaw += 90;
-            case 'l' -> yaw -= 90;
-            case 'b' -> yaw += 180;
-        }
-
-        if (yaw < -180) yaw += 360;
-        else if (yaw > 180) yaw -= 360;
-
-        boolean notPitch = String.valueOf(direction).matches("[frlb]");
-        boolean notYaw = String.valueOf(direction).matches("[snew]");
-        Vector3 shiftVec = Vector3.at(0, 0, 0);
-        if (pitch > 67.5 && !notPitch && direction == 'm' || direction == 'd') shiftVec = Vector3.at(0, -n, 0);
-        else if (pitch < -67.5 && !notPitch && direction == 'm' || direction == 'u') shiftVec = Vector3.at(0, n, 0);
-        else {
-            if (Math.abs(yaw) < 67.5 && !notYaw || direction == 's') shiftVec = shiftVec.add(0, 0, n);
-            if (-Math.abs(yaw) + 180 < 67.5 && !notYaw || direction == 'n') shiftVec = shiftVec.add(0, 0, -n);
-            if (Math.abs(yaw + 90) < 67.5 && !notYaw || direction == 'e') shiftVec = shiftVec.add(n, 0, 0);
-            if (Math.abs(yaw - 90) < 67.5 && !notYaw || direction == 'w') shiftVec = shiftVec.add(-n, 0, 0);
-        }
-
-        for (int i : posData.p.keySet()) {
-            Vector3[] vec = posData.p.get(i);
-            for (int j = 0; j < 3; j++) {
-                if (vec != null && vec[j] != null) vec[j] = vec[j].add(shiftVec);
-            }
-        }
-        player.printInfo(TextComponent.of(getMessage("messages.pos-shift")));
-    }
-
-    /**
-     * 指定されたプレイヤーのposをposListから取得する。
-     *
-     * @param player posを取得するプレイヤー
-     * @return posListにプレイヤーのデータがあればプレイヤーのposを返す<br>無ければnullを返す
-     */
-    public static NavigableMap<Integer, Vector3[]> getPos(Player player) {
-        UUID uuid = player.getUniqueId();
-        PosData posData = POS_MAP.get(uuid);
-        if (posData != null) {
-            return posData.p;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * 指定されたプレイヤーのposが保存されているワールドをposListから取得する。
-     * @param player Worldを取得するプレイヤー
-     * @return posListにプレイヤーのデータがあればプレイヤーのWorldを返す<br>無ければnullを返す
-     */
-    public static World getWorld(Player player) {
-        UUID uuid = player.getUniqueId();
-        PosData posData = POS_MAP.get(uuid);
-        if (posData != null) {
-            return posData.world;
-        }
-        return null;
-    }
-
-    /**
-     * posListを取得する。
-     *
-     * @return posList
-     */
-    public static Map<UUID, PosData> getPosMap() {
-        return POS_MAP;
-    }
-
-    private static String posToString(int n, int h) {
-        return switch (h) {
-            case 1 -> getMessage("messages.pos-Nf", n);
-            case 2 -> getMessage("messages.pos-Nb", n);
-            default -> getMessage("messages.pos-N", n);
-        };
-    }
-
-    public World world;
-    public String worldId;
-    public NavigableMap<Integer, Vector3[]> p = new TreeMap<>();
 
     public PosData(NavigableMap<Integer, Vector3[]> p) {
         this.p = p;
     }
 
-    private PosData(World world, Vector3 location, int n, int h) {
+    public void reset(World world) {
         this.world = world;
-        this.worldId = getWorldId(world);
-        Vector3[] l = new Vector3[3];
+        this.worldId = WorldeditAdapter.getWorldId(world);
+        this.p.clear();
+    }
+
+    public void updatePos(int n, int h, Vector3 location) {
+        Vector3[] l = p.computeIfAbsent(n, k -> new Vector3[3]);
+        Vector3[] la = p.get(n + 1);
+        Vector3[] lb = p.get(n - 1);
+
+        if (h == 0 && l[h] != null) {
+            double dx = location.x() - l[h].x();
+            double dy = location.y() - l[h].y();
+            double dz = location.z() - l[h].z();
+
+            if (l[1] != null) l[1] = l[1].add(dx, dy, dz);
+            if (l[2] != null) l[2] = l[2].add(dx, dy, dz);
+        }
+
         l[h] = location;
-        this.p.put(n, l);
+
+        if (h == 1 && la != null && la[0] != null && l[0] != null) {
+            l[2] = posAutocompletion(l[0], l[1], l[2]);
+        } else if (h == 2 && lb != null && lb[0] != null && l[0] != null) {
+            l[1] = posAutocompletion(l[0], l[2], l[1]);
+        }
+
+        p.put(n, l);
+
+        if (h == 0 && lb != null && lb[0] != null && lb[1] != null && lb[2] == null) {
+            lb[2] = posAutocompletion(lb[0], lb[1], null);
+            p.put(n - 1, lb);
+        }
+    }
+
+    public boolean clearSpecificPos(int n, int h) {
+        Vector3[] l = p.get(n);
+        if (l == null) return false;
+
+        if (h == 0) {
+            p.put(n, new Vector3[3]);
+        } else {
+            l[h] = null;
+        }
+        return true;
+    }
+
+    public void insertNodeAt(int n) {
+        NavigableMap<Integer, Vector3[]> newMap = new TreeMap<>();
+        for (Map.Entry<Integer, Vector3[]> entry : p.entrySet()) {
+            int key = entry.getKey();
+            if (key < n) {
+                newMap.put(key, entry.getValue());
+            } else {
+                newMap.put(key + 1, entry.getValue());
+            }
+        }
+        this.p = newMap;
+    }
+
+    public void removeNodeAt(int n) {
+        p.remove(n);
+        NavigableMap<Integer, Vector3[]> newMap = new TreeMap<>();
+        for (Map.Entry<Integer, Vector3[]> entry : p.entrySet()) {
+            int key = entry.getKey();
+            if (key < n) {
+                newMap.put(key, entry.getValue());
+            } else if (key > n) {
+                newMap.put(key - 1, entry.getValue());
+            }
+        }
+        this.p = newMap;
+    }
+
+    public void applyShift(Vector3 shiftVec) {
+        for (Vector3[] vec : p.values()) {
+            if (vec != null) {
+                for (int j = 0; j < 3; j++) {
+                    if (vec[j] != null) {
+                        vec[j] = vec[j].add(shiftVec);
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean containsPos(int n) {
+        return p.containsKey(n);
+    }
+
+    public String getWorldId() {
+        return worldId;
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
+    public NavigableMap<Integer, Vector3[]> getMap() {
+        return p;
+    }
+
+    private static Vector3 posAutocompletion(Vector3 h0, Vector3 hIN, Vector3 hOUT) {
+        double dx = hIN.x() - h0.x();
+        double dy = hIN.y() - h0.y();
+        double dz = hIN.z() - h0.z();
+
+        if (hOUT == null) {
+            return h0.add(-dx, -dy, -dz);
+        } else {
+            double[] newH = changeR(dx, dy, dz, -1 * h0.distance(hOUT));
+            return h0.add(newH[0], newH[1], newH[2]);
+        }
     }
 }
