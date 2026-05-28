@@ -3,6 +3,8 @@ plugins {
 }
 
 repositories {
+    mavenCentral()
+
     maven {
         name = "enginehub-maven"
         url = uri("https://maven.enginehub.org/repo/")
