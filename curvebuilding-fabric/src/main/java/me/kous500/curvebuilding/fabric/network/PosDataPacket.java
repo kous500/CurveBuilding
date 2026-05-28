@@ -4,15 +4,13 @@ import com.sk89q.worldedit.fabric.FabricAdapter;
 import com.sk89q.worldedit.math.Vector3;
 import io.netty.buffer.Unpooled;
 import me.kous500.curvebuilding.PosData;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 
 import java.util.*;
 
 public class PosDataPacket {
-    public static final Identifier PACKET_ID = new Identifier("curvebuilding", "bezier-pos");
     private static final List<ServerPlayerEntity> playerList = new ArrayList<>();
 
     public static void SendPacketMembers() {
@@ -49,7 +47,7 @@ public class PosDataPacket {
                 }
         );
 
-        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(PACKET_ID, posBuf));
+        ServerPlayNetworking.send(player, BezierPosPayload.ID, posBuf);
     }
 
     public static NavigableMap<Integer, Vector3[]> readPosPacket(PacketByteBuf posBuf) {

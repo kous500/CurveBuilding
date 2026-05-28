@@ -8,6 +8,8 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+    mavenCentral()
+
     maven {
         name = "enginehub-maven"
         url = uri("https://maven.enginehub.org/repo/")
@@ -20,7 +22,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "com.sk89q.worldedit:worldedit-fabric-mc1.20:7.2.15"
+    modImplementation "com.sk89q.worldedit:worldedit-fabric-mc1.20.4:7.3.0"
     compileOnly "org.jetbrains:annotations:24.0.1"
     include "org.yaml:snakeyaml:1.29"
 
