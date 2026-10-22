@@ -5,7 +5,7 @@ import me.kous500.curvebuilding.WorldeditAdapter;
 
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import static me.kous500.curvebuilding.Util.changeR;
 
@@ -17,10 +17,10 @@ public class PosData {
 
     private World world;
     private String worldId;
-    private NavigableMap<Integer, Vector3[]> p;
+    private volatile NavigableMap<Integer, Vector3[]> p;
 
     public PosData() {
-        this.p = new TreeMap<>();
+        this.p = new ConcurrentSkipListMap<>();
     }
 
     public PosData(NavigableMap<Integer, Vector3[]> p) {
@@ -76,7 +76,7 @@ public class PosData {
     }
 
     public void insertNodeAt(int n) {
-        NavigableMap<Integer, Vector3[]> newMap = new TreeMap<>();
+        NavigableMap<Integer, Vector3[]> newMap = new ConcurrentSkipListMap<>();
         for (Map.Entry<Integer, Vector3[]> entry : p.entrySet()) {
             int key = entry.getKey();
             if (key < n) {
@@ -90,7 +90,7 @@ public class PosData {
 
     public void removeNodeAt(int n) {
         p.remove(n);
-        NavigableMap<Integer, Vector3[]> newMap = new TreeMap<>();
+        NavigableMap<Integer, Vector3[]> newMap = new ConcurrentSkipListMap<>();
         for (Map.Entry<Integer, Vector3[]> entry : p.entrySet()) {
             int key = entry.getKey();
             if (key < n) {

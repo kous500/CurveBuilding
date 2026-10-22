@@ -6,6 +6,7 @@ import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.math.Vector3;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -29,13 +30,13 @@ public class SendParticles extends TimerTask {
     private static Timer timer;
     private static final int INTERVAL = 3;
 
-    public static void start(BukkitConfig config) {
+    public static synchronized void start(BukkitConfig config) {
         if (timer != null) stop();
         timer = new Timer(true);
         timer.schedule(new SendParticles(config), 0, 200);
     }
 
-    public static void stop() {
+    public static synchronized void stop() {
         if (timer != null) {
             timer.cancel();
             timer = null;
@@ -51,7 +52,12 @@ public class SendParticles extends TimerTask {
 
     @Override
     public void run() {
-        send();
+        try {
+            send();
+        } catch (Exception | LinkageError e) {
+            Bukkit.getLogger().warning("[CurveBuilding] Failed to send particles. Restarting the timer: " + e);
+            start(config);
+        }
     }
 
     private void send() {
@@ -72,7 +78,11 @@ public class SendParticles extends TimerTask {
         boolean endLine = false;
         double curveLength = 0;
 
-        for (int n = 1; n <= posData.getMap().lastEntry().getKey(); n++) {
+        Map.Entry<Integer, Vector3[]> last = posData.getMap().lastEntry();
+        if (last == null) return;
+        int lastN = last.getKey();
+
+        for (int n = 1; n <= lastN; n++) {
             Vector3[] p = posData.getMap().get(n);
             if (p != null) {
                 for (int h = 0; h <= 2; h++) {
@@ -81,7 +91,7 @@ public class SendParticles extends TimerTask {
                         if (h == 1) color = config.fColor;
                         else if (h == 2) color = config.bColor;
                         else if (n == 1) color = config.startColor;
-                        else if (n == posData.getMap().lastEntry().getKey()) color = config.endColor;
+                        else if (n == lastN) color = config.endColor;
                         else color = config.posColor;
 
                         if (h == 0) sendCube(p[h], posData.getWorld(), player, color);

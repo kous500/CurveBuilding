@@ -5,6 +5,7 @@ import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
@@ -20,7 +21,7 @@ public final class PosManager {
     /**
      * プレイヤーごとのPosDataを保持するマップ。
      */
-    private static final Map<UUID, PosData> POS_MAP = new HashMap<>();
+    private static final Map<UUID, PosData> POS_MAP = new ConcurrentHashMap<>();
 
     // ユーティリティクラスとしてインスタンス化を防止
     private PosManager() {
