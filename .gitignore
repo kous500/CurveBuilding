@@ -118,3 +118,7 @@ run/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
+
+# Claude Code (personal settings)
+.claude/settings.local.json
+CLAUDE.local.md
