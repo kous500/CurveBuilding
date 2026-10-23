@@ -48,11 +48,12 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
   2. The game server will start on localhost with the mod applied.
 
 Once you have completed testing, please submit a pull request.
+Before contributing, please read [CONTRIBUTING.md](CONTRIBUTING.md) for the pull request title format and other rules.
 
 ## About other language support
 
-If you would like to translate the language files for this plugin into your language and merge them into this plugin, please store the language files under `\src\main\resources\messages` and open a pull request.
-File names should conform to BCP 47 (Language-Region).
+If you would like to translate the language files for this plugin into your language and merge them into this plugin, please store the language files under `src/main/resources/messages` of both `curvebuilding-bukkit` and `curvebuilding-fabric` and open a pull request.
+File names should conform to BCP 47 (Language-Region). See [Translations](CONTRIBUTING.md#translations) for details.
 
 ### Currently supported languages are
 
@@ -60,7 +61,7 @@ File names should conform to BCP 47 (Language-Region).
 |-|-|
 | English(US) | en-US.yml |
 | Spanish(ES) | es-ES.yml |
-| Spanish | es-416.yml |
+| Spanish(Latin America) | es-419.yml |
 | 日本語 | ja-JP.yml |
 | 繁體中文 | zh-Hant.yml |
 | 简体中文 | zh-CN.yml |

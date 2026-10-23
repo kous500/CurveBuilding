@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/kous500/CurveBuilding/discussions
+    about: Ask how to use CurveBuilding or discuss ideas.
+  - name: Security vulnerability
+    url: https://github.com/kous500/CurveBuilding/security/advisories/new
+    about: Report security problems privately. Please do not open a public issue.
