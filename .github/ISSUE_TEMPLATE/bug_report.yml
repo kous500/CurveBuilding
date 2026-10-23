@@ -1,0 +1,65 @@
+name: Bug report
+description: Report something that does not work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting! Please do not report security vulnerabilities here; see SECURITY.md instead.
+        You can write in English or Japanese.
+  - type: input
+    id: curvebuilding-version
+    attributes:
+      label: CurveBuilding version
+      placeholder: "0.6.8"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Paper
+        - Spigot
+        - Other Bukkit-based server
+        - Fabric (client)
+        - Fabric (server)
+    validations:
+      required: true
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft version
+      placeholder: "1.21.10"
+    validations:
+      required: true
+  - type: input
+    id: worldedit-version
+    attributes:
+      label: WorldEdit / FastAsyncWorldEdit version
+      placeholder: "WorldEdit 7.3.17"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Commands you ran and what you had selected.
+      placeholder: |
+        1. //pos1, //pos2 to select a 3x1x1 region
+        2. /bcpos set 1, /bcpos set 2
+        3. /bc
+    validations:
+      required: true
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and screenshots
+      description: Server log or error messages, if any. Logs are formatted as code automatically.
+      render: text

@@ -1,0 +1,35 @@
+name: Feature request
+description: Suggest a new feature or an improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For open-ended ideas or questions, Discussions may be a better place.
+        You can write in English or Japanese.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do?
+      description: The building task or problem this would help with.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How you imagine it working, e.g. a new command option or config setting.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options:
+        - Bukkit (Spigot / Paper)
+        - Fabric
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would like to implement this myself.
