@@ -15,6 +15,21 @@ dependencies {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation 'org.yaml:snakeyaml:2.2'
+
+    testImplementation "com.sk89q.worldedit:worldedit-core:7.4.2"
+    testImplementation platform("org.junit:junit-bom:6.1.3")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+tasks.named("test") {
+    useJUnitPlatform()
+    // MessageFilesTest reads the message files of the platform modules
+    ["curvebuilding-bukkit", "curvebuilding-fabric"].each { module ->
+        inputs.dir(file("../$module/src/main/resources/messages"))
+                .withPropertyName("${module}-messages")
+                .withPathSensitivity(PathSensitivity.RELATIVE)
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
