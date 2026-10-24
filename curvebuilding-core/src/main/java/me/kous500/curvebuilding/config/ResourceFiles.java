@@ -33,7 +33,18 @@ public class ResourceFiles {
             Path resourcePath;
 
             if ("jar".equals(uri.getScheme())) {
-                try (FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+                FileSystem fileSystem;
+                boolean opened;
+                try {
+                    fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
+                    opened = true;
+                } catch (FileSystemAlreadyExistsException e) {
+                    // Fabric Loader keeps the mod jar open. Reuse it and leave it open, or the loader breaks.
+                    fileSystem = FileSystems.getFileSystem(uri);
+                    opened = false;
+                }
+
+                try {
                     resourcePath = fileSystem.getPath(resourceDir);
                     try (Stream<Path> walk = Files.walk(resourcePath, 1)) {
                         walk.filter(Files::isRegularFile)
@@ -42,6 +53,8 @@ public class ResourceFiles {
                                     create(relativePath);
                                 });
                     }
+                } finally {
+                    if (opened) fileSystem.close();
                 }
             } else {
                 resourcePath = Paths.get(uri);
