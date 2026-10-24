@@ -58,6 +58,26 @@ class UtilTest {
 
     @Nested
     class BezierLength {
+        private static Vector3[] straight(Vector3 from, Vector3 to) {
+            return new Vector3[]{from, from, to, to};
+        }
+
+        @ParameterizedTest
+        @ValueSource(doubles = {1, 10, 100, 1000})
+        void straightLineHasItsDistance(double fineness) {
+            assertEquals(10, Util.bezierLength(straight(Vector3.at(0, 64, 0), Vector3.at(10, 64, 0)), fineness), 1e-9);
+        }
+
+        @Test
+        void diagonalLineHasItsDistance() {
+            assertEquals(15, Util.bezierLength(straight(Vector3.at(-3, 70, 2), Vector3.at(2, 80, 12)), 100), 1e-9);
+        }
+
+        @Test
+        void curveLengthConvergesWithFineness() {
+            assertEquals(Util.bezierLength(ARCH, 100_000), Util.bezierLength(ARCH, 1000), 1e-4);
+        }
+
         @ParameterizedTest
         @ValueSource(doubles = {0, -1})
         void rejectsNonPositiveFineness(double fineness) {
