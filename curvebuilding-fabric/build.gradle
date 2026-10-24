@@ -1,11 +1,15 @@
+// Shared build script for every Minecraft version in versions/<version>/.
 plugins {
-    id "java-library"
-    id "com.github.johnrengelman.shadow" version "7.0.0"
-    id 'fabric-loom' version '1.13-SNAPSHOT'
+    id "fabric-loom" version "1.13.6"
 }
 
-version = project.mod_version
-group = project.maven_group
+def minecraftVersion = stonecutter.current.version
+def javaVersion = (project.property("java_version") as String).toInteger()
+
+base {
+    archivesName = "curvebuilding-fabric"
+}
+version = "${rootProject.version}+${minecraftVersion}"
 
 repositories {
     maven {
@@ -15,39 +19,42 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "com.sk89q.worldedit:worldedit-fabric-mc1.21.10:7.3.17"
+    modImplementation "com.sk89q.worldedit:${project.worldedit_artifact}:${project.worldedit_version}"
     compileOnly "org.jetbrains:annotations:24.1.0"
     include "org.yaml:snakeyaml:2.2"
 
-    implementation project(path: ":curvebuilding-core")
+    implementation project(":curvebuilding-core")
     include project(":curvebuilding-core")
 }
 
-def targetJavaVersion = 21
-tasks.withType(JavaCompile).configureEach {
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    // If Javadoc is generated, this must be specified in that task too.
-    it.options.encoding = "UTF-8"
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        it.options.release = targetJavaVersion
+loom {
+    accessWidenerPath = rootProject.file("curvebuilding-fabric/src/main/resources/curvebuilding.accesswidener")
+    runConfigs.configureEach {
+        ideConfigGenerated = true
+        runDir = "../../run"
+    }
+}
+
+processResources {
+    def props = [version: version, minecraft_version: minecraftVersion]
+    inputs.properties props
+    filteringCharset "UTF-8"
+    filesMatching("fabric.mod.json") {
+        expand props
     }
 }
 
 java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
-    archivesBaseName = project.archives_base_name
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
+    toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
     withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = javaVersion
 }

@@ -7,10 +7,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.sk89q.worldedit.entity.Player;
 import me.kous500.curvebuilding.commands.bc.BcCommand;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.server.level.ServerPlayer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +18,7 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.debugRun;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 
 public class Bc implements RunCommand {
     private static final String bcCommandName = "/bc";
@@ -35,35 +34,35 @@ public class Bc implements RunCommand {
         }
     };
 
-    public static void setBcBuilder(CommandDispatcher<ServerCommandSource> dispatcher) {
-        RequiredArgumentBuilder<ServerCommandSource, Integer> builderM = CommandManager
+    public static void setBcBuilder(CommandDispatcher<CommandSourceStack> dispatcher) {
+        RequiredArgumentBuilder<CommandSourceStack, Integer> builderM = Commands
                 .argument(m, integer())
                 .executes(context -> debugRun(new Bc(context, options, n, m)));
 
-        RequiredArgumentBuilder<ServerCommandSource, Integer> builderN = CommandManager
+        RequiredArgumentBuilder<CommandSourceStack, Integer> builderN = Commands
                 .argument(n, integer())
                 .then(builderM)
                 .executes(context -> debugRun(new Bc(context, options, n)));
 
-        RequiredArgumentBuilder<ServerCommandSource, String> builderOption = CommandManager
+        RequiredArgumentBuilder<CommandSourceStack, String> builderOption = Commands
                 .argument(options, string())
                 .then(builderN)
                 .executes(context -> debugRun(new Bc(context, options)));
 
-        LiteralArgumentBuilder<ServerCommandSource> builder = literal(bcCommandName)
+        LiteralArgumentBuilder<CommandSourceStack> builder = literal(bcCommandName)
                 .then(builderOption)
                 .then(builderN)
                 .executes(context -> debugRun(new Bc(context)))
-                .requires(commandSource -> commandSource.hasPermissionLevel(2));
+                .requires(commandSource -> commandSource.hasPermission(2));
 
         dispatcher.register(builder);
     }
 
-    private final CommandContext<ServerCommandSource> context;
+    private final CommandContext<CommandSourceStack> context;
 
     private final String[] arg;
 
-    public Bc(CommandContext<ServerCommandSource> context, String... array) {
+    public Bc(CommandContext<CommandSourceStack> context, String... array) {
         this.context = context;
 
         this.arg = Arrays.stream(array)
@@ -73,7 +72,7 @@ public class Bc implements RunCommand {
 
     @Override
     public int run() {
-        ServerPlayerEntity serverPlayer = context.getSource().getPlayer();
+        ServerPlayer serverPlayer = context.getSource().getPlayer();
         if (serverPlayer == null) return 0;
 
         Player player = adaptPlayer(serverPlayer);
@@ -86,7 +85,7 @@ public class Bc implements RunCommand {
     }
 
     @Override
-    public ServerCommandSource getSource() {
+    public CommandSourceStack getSource() {
         return context.getSource();
     }
 }

@@ -2,7 +2,7 @@ package me.kous500.curvebuilding.fabric.client.render;
 
 import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.math.Vector3;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 import java.awt.*;
@@ -17,7 +17,7 @@ public class RenderPreview {
     private static boolean isError = false;
     private static ArrayDeque<RenderFilledItem> filledQueue = new ArrayDeque<>();
     private static final double INCREASE = 0.001;
-    private static final Vec3d INCREASE_VEC = new Vec3d(INCREASE, INCREASE, INCREASE);
+    private static final Vec3 INCREASE_VEC = new Vec3(INCREASE, INCREASE, INCREASE);
 
     /**
      * クライアントのPosDataからプレビューを描画します
@@ -29,17 +29,17 @@ public class RenderPreview {
 
         try {
             Render.setRender(matrix, fabricConfig.lineRenderThroughWalls, LineRender.getInstance(), render -> {
-                renderBezier(posData.p, fabricConfig.lineCurveColor, render);
+                renderBezier(posData.getMap(), fabricConfig.lineCurveColor, render);
 
-                for (int n : posData.p.keySet()) {
-                    renderControlLine(posData.p.get(n), render);
+                for (int n : posData.getMap().keySet()) {
+                    renderControlLine(posData.getMap().get(n), render);
                 }
             });
 
             Render.setRender(matrix, fabricConfig.posRenderThroughWalls, LineRender.getInstance(), render -> {
-                for (int n : posData.p.keySet()) {
+                for (int n : posData.getMap().keySet()) {
                     for (int h : new int[]{0, 1, 2}) {
-                        PosVector pos = PosVector.getInstance(posData.p, n, h);
+                        PosVector pos = PosVector.getInstance(posData.getMap(), n, h);
                         if (pos != null) {
                             renderPos(pos, render);
                         }
@@ -96,9 +96,9 @@ public class RenderPreview {
         totalLen += length;
         if (totalLen > fabricConfig.lineRenderLength) return totalLen;
 
-        Vec3d bc = null;
+        Vec3 bc = null;
         for (double i = 0; i <= 1; i += 1.0 / (length * fabricConfig.lineRenderAccuracy)) {
-            Vec3d c = adaptVec(bezierCoordinate(bezierPos, i));
+            Vec3 c = adaptVec(bezierCoordinate(bezierPos, i));
             if (bc != null) render.addLine(color, c, bc);
             bc = c;
         }
@@ -131,8 +131,8 @@ public class RenderPreview {
     private static void renderPos(PosVector pos, LineRender render) {
         Color colorLine = pos.getLineColor();
         Color colorFill = pos.getFillColor();
-        Vec3d start = adaptVec(pos.vector).subtract(INCREASE_VEC);
-        Vec3d dimensions = new Vec3d(1, 1, 1).add(INCREASE_VEC).add(INCREASE_VEC);
+        Vec3 start = adaptVec(pos.vector).subtract(INCREASE_VEC);
+        Vec3 dimensions = new Vec3(1, 1, 1).add(INCREASE_VEC).add(INCREASE_VEC);
 
         if (pos.h != 0) {
             render.addCrossing(colorLine, start, dimensions);
@@ -142,16 +142,16 @@ public class RenderPreview {
         filledQueue.add(new RenderFilledItem(colorFill, start, dimensions));
     }
 
-    private static Vec3d adaptVec(Vector3 vec) {
-        return new Vec3d(vec.x(), vec.y(), vec.z());
+    private static Vec3 adaptVec(Vector3 vec) {
+        return new Vec3(vec.x(), vec.y(), vec.z());
     }
 
     private static class RenderFilledItem {
         Color color;
-        Vec3d start;
-        Vec3d dimensions;
+        Vec3 start;
+        Vec3 dimensions;
 
-        RenderFilledItem(Color color, Vec3d start, Vec3d dimensions) {
+        RenderFilledItem(Color color, Vec3 start, Vec3 dimensions) {
             this.color = color;
             this.start = start;
             this.dimensions = dimensions;

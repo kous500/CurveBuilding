@@ -6,19 +6,18 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.server.level.ServerPlayer;
 
 import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.debugRun;
 import static me.kous500.curvebuilding.fabric.network.PacketSender.sendPosPacket;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 
 public class Pos implements RunCommand{
     private static final String posCommandName = "/bcpos";
@@ -47,21 +46,21 @@ public class Pos implements RunCommand{
         }
     };
 
-    public static void setPosBuilder(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void setPosBuilder(CommandDispatcher<CommandSourceStack> dispatcher) {
         for (String command : posCommandArg.keySet()) {
-            LiteralArgumentBuilder<ServerCommandSource> builder;
+            LiteralArgumentBuilder<CommandSourceStack> builder;
             switch (posCommandArg.get(command)) {
                 case 1 -> builder = literal(command).then(
-                        CommandManager
+                        Commands
                                 .argument(T, StringArgumentType.string())
                                 .executes(context -> debugRun(new Pos(context, command, S, T)))
                         );
                 case 2 -> {
-                    RequiredArgumentBuilder<ServerCommandSource, String> directionArg = CommandManager
+                    RequiredArgumentBuilder<CommandSourceStack, String> directionArg = Commands
                             .argument(D, StringArgumentType.string())
                             .executes(context -> debugRun(new Pos(context, command, S, L, D)));
                     builder = literal(command).then(
-                            CommandManager
+                            Commands
                                     .argument(L, IntegerArgumentType.integer(0))
                                     .executes(context -> debugRun(new Pos(context, command, S, L)))
                                     .then(directionArg)
@@ -74,15 +73,15 @@ public class Pos implements RunCommand{
             dispatcher.register(
                     literal(posCommandName)
                             .then(builder)
-                            .requires(commandSource -> commandSource.hasPermissionLevel(2))
+                            .requires(commandSource -> commandSource.hasPermission(2))
             );
         }
     }
 
-    private final CommandContext<ServerCommandSource> context;
+    private final CommandContext<CommandSourceStack> context;
     private final String[] arg;
 
-    public Pos(CommandContext<ServerCommandSource> context, String command, String... array) {
+    public Pos(CommandContext<CommandSourceStack> context, String command, String... array) {
         this.context = context;
         this.arg = Arrays.stream(array)
                 .map(type -> S.equals(type) ? command : String.valueOf(context.getArgument(type, argType.get(type))))
@@ -91,7 +90,7 @@ public class Pos implements RunCommand{
 
     @Override
     public int run() {
-        ServerPlayerEntity sender = context.getSource().getPlayer();
+        ServerPlayer sender = context.getSource().getPlayer();
         if (sender == null) {
             return 0;
         }
@@ -103,7 +102,7 @@ public class Pos implements RunCommand{
     }
 
     @Override
-    public ServerCommandSource getSource() {
+    public CommandSourceStack getSource() {
         return context.getSource();
     }
 }

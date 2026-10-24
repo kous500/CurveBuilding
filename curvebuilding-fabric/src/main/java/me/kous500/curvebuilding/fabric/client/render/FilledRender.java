@@ -1,8 +1,7 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
-import net.minecraft.client.render.*;
-import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix4f;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
 
@@ -14,11 +13,8 @@ public class FilledRender extends Render {
     }
 
     @Override
-    void setRender(Matrix4f matrix, boolean isThroughWalls) {
-        this.matrix = matrix;
-        buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        this.isThroughWalls = isThroughWalls;
-        currentIsBuilding = true;
+    RenderType renderType(boolean isThroughWalls) {
+        return isThroughWalls ? CurveBuildingRenderTypes.FILLED_THROUGH_WALLS : CurveBuildingRenderTypes.FILLED;
     }
 
     /**
@@ -28,42 +24,42 @@ public class FilledRender extends Render {
      * @param start      始点の座標
      * @param dimensions 大きさ
      */
-    public void renderFilled(Color color, Vec3d start, Vec3d dimensions) {
+    public void renderFilled(Color color, Vec3 start, Vec3 dimensions) {
         genericAABBRender(
                 start,
                 dimensions,
                 color,
                 buffer,
                 (buffer, x1, y1, z1, x2, y2, z2, red, green, blue, alpha) -> {
-                    buffer.vertex(matrix, x1, y2, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x1, y2, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y2, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y2, z1).color(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y2, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y2, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y2, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y2, z1).setColor(red, green, blue, alpha);
 
-                    buffer.vertex(matrix, x1, y1, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y1, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y2, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x1, y2, z2).color(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y1, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y1, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y2, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y2, z2).setColor(red, green, blue, alpha);
 
-                    buffer.vertex(matrix, x2, y2, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y1, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y1, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y2, z1).color(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y2, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y1, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y1, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y2, z1).setColor(red, green, blue, alpha);
 
-                    buffer.vertex(matrix, x2, y2, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y1, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x1, y1, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x1, y2, z1).color(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y2, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y1, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y1, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y2, z1).setColor(red, green, blue, alpha);
 
-                    buffer.vertex(matrix, x1, y2, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x1, y1, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x1, y1, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x1, y2, z2).color(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y2, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y1, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y1, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y2, z2).setColor(red, green, blue, alpha);
 
-                    buffer.vertex(matrix, x1, y1, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y1, z1).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x2, y1, z2).color(red, green, blue, alpha);
-                    buffer.vertex(matrix, x1, y1, z2).color(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y1, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y1, z1).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x2, y1, z2).setColor(red, green, blue, alpha);
+                    buffer.addVertex(matrix, x1, y1, z2).setColor(red, green, blue, alpha);
                 }
         );
     }
