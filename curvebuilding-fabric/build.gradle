@@ -1,10 +1,10 @@
 // Shared build script for every Minecraft version in versions/<version>/.
-plugins {
-    id "fabric-loom" version "1.13.6"
-}
-
 def minecraftVersion = stonecutter.current.version
 def javaVersion = (project.property("java_version") as String).toInteger()
+// Minecraft 1.21.11 and older are obfuscated and need remapping; 26.1 and newer are not.
+def obfuscated = (project.property("obfuscated") as String).toBoolean()
+
+apply plugin: obfuscated ? "net.fabricmc.fabric-loom-remap" : "net.fabricmc.fabric-loom"
 
 base {
     archivesName = "curvebuilding-fabric"
@@ -18,13 +18,17 @@ repositories {
     }
 }
 
+def modDependency = obfuscated ? "modImplementation" : "implementation"
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraftVersion}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    if (obfuscated) {
+        mappings loom.officialMojangMappings()
+    }
+    add(modDependency, "net.fabricmc:fabric-loader:${project.loader_version}")
+    add(modDependency, "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
-    modImplementation "com.sk89q.worldedit:${project.worldedit_artifact}:${project.worldedit_version}"
+    add(modDependency, "com.sk89q.worldedit:${project.worldedit_artifact}:${project.worldedit_version}")
     compileOnly "org.jetbrains:annotations:24.1.0"
     include "org.yaml:snakeyaml:2.2"
 
@@ -33,10 +37,12 @@ dependencies {
 }
 
 loom {
-    accessWidenerPath = rootProject.file("curvebuilding-fabric/src/main/resources/curvebuilding.accesswidener")
+    // The access widener differs between Minecraft versions, so each version has its own.
+    accessWidenerPath = file("curvebuilding.accesswidener")
     runConfigs.configureEach {
         ideConfigGenerated = true
-        runDir = "../../run"
+        // Separate per version, so a world is not upgraded by a newer version and mods of other versions are not loaded
+        runDir = "../../run/${minecraftVersion}"
     }
 }
 
@@ -47,6 +53,7 @@ processResources {
     filesMatching("fabric.mod.json") {
         expand props
     }
+    from(loom.accessWidenerPath)
 }
 
 java {

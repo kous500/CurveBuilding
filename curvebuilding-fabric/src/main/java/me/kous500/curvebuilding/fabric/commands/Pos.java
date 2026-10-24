@@ -9,11 +9,12 @@ import com.mojang.brigadier.context.CommandContext;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import me.kous500.curvebuilding.fabric.FabricCompat;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 
-import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
+import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.debugRun;
 import static me.kous500.curvebuilding.fabric.network.PacketSender.sendPosPacket;
@@ -73,7 +74,7 @@ public class Pos implements RunCommand{
             dispatcher.register(
                     literal(posCommandName)
                             .then(builder)
-                            .requires(commandSource -> commandSource.hasPermission(2))
+                            .requires(FabricCompat::isGameMaster)
             );
         }
     }

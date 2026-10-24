@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="curvebuilding-fabric [runClient]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="curvebuilding-fabric 26.3 [runServer]" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":curvebuilding-fabric:1.21.10:runClient" />
+          <option value=":curvebuilding-fabric:26.3:runServer" />
         </list>
       </option>
       <option name="vmOptions" />

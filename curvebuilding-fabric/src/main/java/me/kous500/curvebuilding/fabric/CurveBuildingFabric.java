@@ -10,7 +10,6 @@ import me.kous500.curvebuilding.fabric.network.PacketSender;
 import me.kous500.curvebuilding.fabric.network.PosDataPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 import java.io.File;
 
@@ -46,7 +45,7 @@ public class CurveBuildingFabric implements ModInitializer, MainInitializer {
             setBcBuilder(dispatcher);
         });
 
-        PayloadTypeRegistry.playS2C().register(PosDataPayload.ID, PosDataPayload.CODEC);
+        FabricCompat.registerClientboundPayload(PosDataPayload.ID, PosDataPayload.CODEC);
 
         PacketSender.start();
     }

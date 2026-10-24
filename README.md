@@ -29,9 +29,10 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
 2. Download and install [IntelliJ IDEA](https://www.jetbrains.com/idea/download/).
 3. Install the **Minecraft Development** plugin in IDEA.
 4. In the IDEA, open the folder where you saved CurveBuilding's code. This will create a new project in IDEA.
-5. Set the project SDK version to 21.
+5. Install JDK 25 and JDK 21. Gradle runs on JDK 25 (set in `gradle/gradle-daemon-jvm.properties`) and finds installed JDKs automatically. Set the project SDK version to 25.
 
-All modules are part of a single Gradle build. The Fabric module uses [Stonecutter](https://stonecutter.kikugie.dev/) to build one jar per Minecraft version; each version has its own project `:curvebuilding-fabric:<minecraft version>` with settings in `curvebuilding-fabric/versions/<minecraft version>/gradle.properties`.
+All modules are part of a single Gradle build. The Fabric module uses [Stonecutter](https://stonecutter.kikugie.dev/) to build several jars from the same code. Each jar is built against one Minecraft version and can support a range of compatible versions; it has its own project `:curvebuilding-fabric:<minecraft version>` with settings in `curvebuilding-fabric/versions/<minecraft version>/gradle.properties`.
+Fabric is currently built for Minecraft 1.21.10 and 26.3.
 
 ### Running the Project
 
@@ -39,14 +40,14 @@ All modules are part of a single Gradle build. The Fabric module uses [Stonecutt
   1. Select "Run `curvebuilding-bukkit [build]`" from Run/Debug Configurations, or run `./gradlew :curvebuilding-bukkit:build`.
   2. The project will be built and a jar file will be created in `curvebuilding-bukkit/build/libs`.
 - To build CurveBuilding Fabric:
-  1. Select "Run `curvebuilding-fabric [build]`" from Run/Debug Configurations, or run `./gradlew :curvebuilding-fabric:1.21.10:build`.
-  2. The project will be built and a jar file will be created in `curvebuilding-fabric/versions/1.21.10/build/libs`.
+  1. Select "Run `curvebuilding-fabric [build]`" from Run/Debug Configurations to build every Minecraft version, or run `./gradlew :curvebuilding-fabric:<minecraft version>:build` for one version.
+  2. The project will be built and a jar file will be created in `curvebuilding-fabric/versions/<minecraft version>/build/libs`.
 - To build everything, run `./gradlew build`.
 - To run CurveBuilding Fabric as a game client:
-  1. Select "Run `curvebuilding-fabric [runClient]`" from Run/Debug Configurations.
-  2. The game client will start with the mod applied.
+  1. Select "Run `curvebuilding-fabric <minecraft version> [runClient]`" from Run/Debug Configurations.
+  2. The game client will start with the mod applied. Each Minecraft version uses its own directory `curvebuilding-fabric/run/<minecraft version>`.
 - To run CurveBuilding Fabric as a game server:
-  1. Select "Run `curvebuilding-fabric [runServer]`" from Run/Debug Configurations.
+  1. Select "Run `curvebuilding-fabric <minecraft version> [runServer]`" from Run/Debug Configurations.
   2. The game server will start on localhost with the mod applied.
 
 Once you have completed testing, please submit a pull request.

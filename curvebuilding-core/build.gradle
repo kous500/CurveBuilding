@@ -34,6 +34,8 @@ tasks.named("test") {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
+    // Gradle runs on Java 25, so pin the bytecode level used by Bukkit and every Fabric version
+    options.release = 21
 }
 
 tasks.withType(Javadoc).configureEach {
