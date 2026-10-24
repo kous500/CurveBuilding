@@ -25,7 +25,7 @@ stonecutter {
 
     // Minecraft versions built by the Fabric module. Each has curvebuilding-fabric/versions/<version>/gradle.properties.
     create(":curvebuilding-fabric") {
-        versions "1.21.10", "26.3"
+        versions "1.21.10", "1.21.11", "26.3"
         vcsVersion = "1.21.10"
     }
 }

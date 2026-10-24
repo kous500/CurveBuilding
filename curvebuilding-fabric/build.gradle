@@ -1,6 +1,12 @@
 // Shared build script for every Minecraft version in versions/<version>/.
 def minecraftVersion = stonecutter.current.version
 def javaVersion = (project.property("java_version") as String).toInteger()
+// The jar is compiled against minecraftVersion and runs on every version from minecraft_min to minecraft_max.
+// Both ends must be tested; see "Jar names" in CONTRIBUTING.md.
+def minecraftMin = project.property("minecraft_min") as String
+def minecraftMax = project.property("minecraft_max") as String
+def minecraftRange = minecraftMin == minecraftMax ? minecraftMin : "${minecraftMin}-${minecraftMax}"
+def minecraftDependency = minecraftMin == minecraftMax ? minecraftMin : ">=${minecraftMin} <=${minecraftMax}"
 // Minecraft 1.21.11 and older are obfuscated and need remapping; 26.1 and newer are not.
 def obfuscated = (project.property("obfuscated") as String).toBoolean()
 
@@ -9,7 +15,7 @@ apply plugin: obfuscated ? "net.fabricmc.fabric-loom-remap" : "net.fabricmc.fabr
 base {
     archivesName = "curvebuilding-fabric"
 }
-version = "${rootProject.version}+${minecraftVersion}"
+version = "${rootProject.version}+${minecraftRange}"
 
 repositories {
     maven {
@@ -47,7 +53,7 @@ loom {
 }
 
 processResources {
-    def props = [version: version, minecraft_version: minecraftVersion]
+    def props = [version: version, minecraft_dependency: minecraftDependency]
     inputs.properties props
     filteringCharset "UTF-8"
     filesMatching("fabric.mod.json") {

@@ -39,7 +39,7 @@ public class CurveBuildingFabricClient implements ClientModInitializer {
         CurveBuildingRenderTypes.init();
         //? if >=26.1 {
         /*LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
-            Render.beginFrame(context.submitNodeCollector(), context.poseStack());
+            Render.beginFrame(context.submitNodeCollector(), context.poseStack(), context.levelState().cameraRenderState.pos);
             RenderPreview.RenderPosData(context.poseStack().last().pose());
         });
         *///?} else {

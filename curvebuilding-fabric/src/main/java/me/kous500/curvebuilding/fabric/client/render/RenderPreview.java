@@ -25,7 +25,7 @@ public class RenderPreview {
      * @param matrix MatrixStack
      */
     public static void RenderPosData(Matrix4f matrix) {
-        if (isError || posData == null) return;
+        if (isError || posData == null || !CurveBuildingRenderTypes.isAvailable()) return;
 
         try {
             Render.setRender(matrix, fabricConfig.lineRenderThroughWalls, LineRender.getInstance(), render -> {

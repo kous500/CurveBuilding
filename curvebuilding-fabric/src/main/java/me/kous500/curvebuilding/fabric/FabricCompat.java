@@ -10,7 +10,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
-//? if >=26.1 {
+//? if >=1.21.11 {
 /*import net.minecraft.commands.Commands;
 import net.minecraft.resources.Identifier;
 *///?} else {
@@ -44,7 +44,7 @@ public final class FabricCompat {
      * Whether the command source has the permission level of a game master (operator level 2).
      */
     public static boolean isGameMaster(CommandSourceStack source) {
-        //? if >=26.1 {
+        //? if >=1.21.11 {
         /*return Commands.LEVEL_GAMEMASTERS.check(source.permissions());
         *///?} else {
         return source.hasPermission(2);
@@ -52,7 +52,7 @@ public final class FabricCompat {
     }
 
     public static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> payloadType(String path) {
-        //? if >=26.1 {
+        //? if >=1.21.11 {
         /*return new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("curvebuilding", path));
         *///?} else {
         return new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("curvebuilding", path));

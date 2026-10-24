@@ -11,6 +11,10 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import java.util.ArrayList;
 import java.util.List;
+*///?} else if >=1.21.11 {
+/*import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
 *///?} else {
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -25,11 +29,15 @@ public abstract class Render {
     //? if >=26.1 {
     /*private static SubmitNodeCollector collector;
     private static PoseStack poseStack;
+    private static Vec3 cameraPos = Vec3.ZERO;
 
     // Sets where the preview of the current frame is submitted to. Called before each frame's RenderPosData.
-    public static void beginFrame(SubmitNodeCollector frameCollector, PoseStack framePoseStack) {
+    // The camera position comes from the frame's render state, because the camera getter of GameRenderer
+    // differs between 26.x versions (getMainCamera / mainCamera).
+    public static void beginFrame(SubmitNodeCollector frameCollector, PoseStack framePoseStack, Vec3 frameCameraPos) {
         collector = frameCollector;
         poseStack = framePoseStack;
+        cameraPos = frameCameraPos;
     }
     *///?} else {
     private static final MultiBufferSource.BufferSource BUFFER_SOURCE = MultiBufferSource.immediate(new ByteBufferBuilder(RenderType.SMALL_BUFFER_SIZE));
@@ -50,7 +58,9 @@ public abstract class Render {
 
     private static Vec3 transformVec3d(Vec3 in) {
         //? if >=26.1 {
-        /*Camera camera = CLIENT.gameRenderer.mainCamera();
+        /*Vec3 camPos = cameraPos;
+        *///?} else if >=1.21.11 {
+        /*Camera camera = CLIENT.gameRenderer.getMainCamera();
         Vec3 camPos = camera.position();
         *///?} else {
         Camera camera = CLIENT.gameRenderer.getMainCamera();
