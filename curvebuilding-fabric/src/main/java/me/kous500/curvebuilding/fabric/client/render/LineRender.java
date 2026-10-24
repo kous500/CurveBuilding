@@ -1,6 +1,10 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.rendertype.RenderType;
+*///?} else {
 import net.minecraft.client.renderer.RenderType;
+//?}
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;

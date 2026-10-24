@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.fabric.network;
 
-import com.sk89q.worldedit.fabric.FabricAdapter;
+import me.kous500.curvebuilding.fabric.FabricCompat;
 import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.math.PosManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -44,7 +44,7 @@ public class PacketSender {
 
         if (!playerList.contains(player)) playerList.add(player);
 
-        if (posData.getWorldId() != null && posData.getWorldId().equals(FabricAdapter.adapt(player.level()).id())) {
+        if (posData.getWorldId() != null && posData.getWorldId().equals(FabricCompat.adaptWorld(player.level()).id())) {
             ServerPlayNetworking.send(player, new PosDataPayload(posData.getMap()));
         } else {
             ServerPlayNetworking.send(player, new PosDataPayload(new TreeMap<>()));

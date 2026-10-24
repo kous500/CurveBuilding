@@ -22,7 +22,7 @@ Thank you for your interest in improving CurveBuilding! Bug reports, feature ide
 
 ## Development setup
 
-See [Edit the Code](README.md#edit-the-code) in the README for setting up IntelliJ IDEA and building the Bukkit and Fabric jars. Java 21 is required for development.
+See [Edit the Code](README.md#edit-the-code) in the README for setting up IntelliJ IDEA and building the Bukkit and Fabric jars. JDK 25 and JDK 21 are required for development: Gradle runs on Java 25, and the jars for older Minecraft versions are compiled with Java 21.
 
 ## Pull requests
 
@@ -86,12 +86,12 @@ To add a language, copy `en-US.yml`, translate the values (not the keys), and na
 
 | Platform | Target support |
 |---|---|
-| Bukkit (Spigot / Paper) | Minecraft 1.20 and later, with a single jar |
-| Fabric | Representative versions from Minecraft 1.20.1 onward, one jar per version |
+| Bukkit (Spigot / Paper) | Minecraft 1.20 and later on Java 21 or newer, with a single jar |
+| Fabric | Major Minecraft versions from 1.20 onward on Java 21 or newer. Each jar covers as many Minecraft versions as it can run on |
 
-All supported versions are built from `main`. We do not keep separate branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch.
+All supported versions are built from `main`. We do not keep separate branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch. In the Fabric module, write it with [Stonecutter](https://stonecutter.kikugie.dev/) comments, for example `//? if >=26.1 {`.
 
-> The multi-version Fabric build is being set up. Until it is in place, Fabric is built for a single Minecraft version.
+> Support for more Fabric versions is being added. The Minecraft versions built right now are listed in `settings.gradle`.
 
 ## Branches (maintainers)
 
@@ -134,7 +134,14 @@ While the version is `0.x`, the person who creates the tag picks the version fro
 | Platform | Name |
 |---|---|
 | Bukkit | `curvebuilding-bukkit-<version>.jar` |
-| Fabric | `curvebuilding-fabric-<version>+<minecraft version>.jar` |
+| Fabric | `curvebuilding-fabric-<version>+<minecraft range>.jar` |
+
+`<minecraft range>` is the oldest and newest Minecraft version the jar supports, joined with `-`, or a single version when the jar supports only one:
+
+- `curvebuilding-fabric-0.6.9+1.21.9-1.21.11.jar` supports Minecraft 1.21.9 to 1.21.11.
+- `curvebuilding-fabric-0.6.9+26.3.jar` supports only Minecraft 26.3.
+
+Both ends must be versions the jar has been tested on; a new Minecraft patch is not included until it has been tested. The same range is used for `minecraft` in `fabric.mod.json`, and the mod version is the part of the file name after `curvebuilding-fabric-` (for example `0.6.9+1.21.9-1.21.11`).
 
 ### Release steps
 

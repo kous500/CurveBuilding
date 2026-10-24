@@ -1,5 +1,8 @@
 plugins {
     id "java"
+    // Applied per Minecraft version in curvebuilding-fabric/build.gradle
+    id "net.fabricmc.fabric-loom" version "1.18.4" apply false
+    id "net.fabricmc.fabric-loom-remap" version "1.18.4" apply false
 }
 
 allprojects {

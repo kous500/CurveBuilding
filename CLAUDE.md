@@ -2,10 +2,13 @@
 
 ## Compatibility
 
-- Every supported Minecraft version is built from `main`: Bukkit 1.20+ as a single jar, Fabric as
-  one jar per representative version from 1.20.1. Never create branches for older Minecraft
-  versions; handle version differences with version-specific code.
-- Core and Bukkit target Java 17. Do not use Java 18+ language features or APIs there.
+- Support the major Minecraft versions from 1.20 onward that run on Java 21 or newer, all built
+  from `main`. Bukkit is a single jar. A Fabric jar should cover every Minecraft version it can
+  run on (a version range in `fabric.mod.json`); add a jar only where the API breaks.
+- Never create branches for older Minecraft versions; handle version differences with
+  version-specific code (Stonecutter comments). Outside rendering, keep Fabric version differences
+  in `FabricCompat`.
+- Core and Bukkit target Java 21. Do not use Java 22+ language features or APIs there.
 - When adding a message key, add it to every message file in both the Bukkit and the Fabric module.
 
 ## Versions and releases

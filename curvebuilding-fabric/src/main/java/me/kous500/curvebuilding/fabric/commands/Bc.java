@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.sk89q.worldedit.entity.Player;
+import me.kous500.curvebuilding.fabric.FabricCompat;
 import me.kous500.curvebuilding.commands.bc.BcCommand;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
 import net.minecraft.commands.CommandSourceStack;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
-import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
+import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.debugRun;
 import static net.minecraft.commands.Commands.literal;
 
@@ -53,7 +54,7 @@ public class Bc implements RunCommand {
                 .then(builderOption)
                 .then(builderN)
                 .executes(context -> debugRun(new Bc(context)))
-                .requires(commandSource -> commandSource.hasPermission(2));
+                .requires(FabricCompat::isGameMaster);
 
         dispatcher.register(builder);
     }
