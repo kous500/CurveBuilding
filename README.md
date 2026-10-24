@@ -30,16 +30,18 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
 3. Install the **Minecraft Development** plugin in IDEA.
 4. In the IDEA, open the folder where you saved CurveBuilding's code. This will create a new project in IDEA.
 5. Set the project SDK version to 21.
-6. If the analysis for curvebuilding-fabric isn't performed, add a link to curvebuilding-fabric from the Gradle tool window.
+
+All modules are part of a single Gradle build. The Fabric module uses [Stonecutter](https://stonecutter.kikugie.dev/) to build one jar per Minecraft version; each version has its own project `:curvebuilding-fabric:<minecraft version>` with settings in `curvebuilding-fabric/versions/<minecraft version>/gradle.properties`.
 
 ### Running the Project
 
 - To build CurveBuilding Bukkit:
-  1. Select "Run `curvebuilding-bukkit [build]`" from Run/Debug Configurations.
+  1. Select "Run `curvebuilding-bukkit [build]`" from Run/Debug Configurations, or run `./gradlew :curvebuilding-bukkit:build`.
   2. The project will be built and a jar file will be created in `curvebuilding-bukkit/build/libs`.
 - To build CurveBuilding Fabric:
-  1. Select "Run `curvebuilding-fabric [build]`" from Run/Debug Configurations.
-  2. The project will be built and a jar file will be created in `curvebuilding-fabric/build/libs`.
+  1. Select "Run `curvebuilding-fabric [build]`" from Run/Debug Configurations, or run `./gradlew :curvebuilding-fabric:1.21.10:build`.
+  2. The project will be built and a jar file will be created in `curvebuilding-fabric/versions/1.21.10/build/libs`.
+- To build everything, run `./gradlew build`.
 - To run CurveBuilding Fabric as a game client:
   1. Select "Run `curvebuilding-fabric [runClient]`" from Run/Debug Configurations.
   2. The game client will start with the mod applied.

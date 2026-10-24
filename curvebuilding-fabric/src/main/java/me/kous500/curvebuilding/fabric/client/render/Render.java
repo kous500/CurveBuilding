@@ -1,21 +1,20 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.render.*;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.function.Consumer;
 
 public abstract class Render {
-    static final MinecraftClient CLIENT = MinecraftClient.getInstance();
-    private static final Logger log = LoggerFactory.getLogger(Render.class);
+    static final Minecraft CLIENT = Minecraft.getInstance();
+    private static final MultiBufferSource.BufferSource BUFFER_SOURCE = MultiBufferSource.immediate(new ByteBufferBuilder(RenderType.SMALL_BUFFER_SIZE));
 
     /**
      * actionのレンダリング処理を実行します
@@ -30,62 +29,45 @@ public abstract class Render {
         render.rendering();
     }
 
-    private static Vec3d transformVec3d(Vec3d in) {
-        Camera camera = CLIENT.gameRenderer.getCamera();
-        Vec3d camPos = camera.getPos();
+    private static Vec3 transformVec3d(Vec3 in) {
+        Camera camera = CLIENT.gameRenderer.getMainCamera();
+        Vec3 camPos = camera.getPosition();
         return in.subtract(camPos);
     }
 
-    boolean isThroughWalls;
     boolean currentIsBuilding = false;
-    boolean said = false;
-    BufferBuilder buffer;
+    VertexConsumer buffer;
     Matrix4f matrix;
 
-    abstract void setRender(Matrix4f matrix, boolean isThroughWalls);
+    /**
+     * Returns the render type to draw with.
+     *
+     * @param isThroughWalls whether to draw through walls
+     */
+    abstract RenderType renderType(boolean isThroughWalls);
+
+    void setRender(Matrix4f matrix, boolean isThroughWalls) {
+        this.matrix = matrix;
+        buffer = BUFFER_SOURCE.getBuffer(renderType(isThroughWalls));
+        currentIsBuilding = true;
+    }
 
     void rendering() {
         if (!currentIsBuilding) return;
 
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.enableDepthTest();
-        RenderSystem.lineWidth(10.0f);
-        RenderSystem.depthFunc(isThroughWalls ? GL11.GL_ALWAYS : GL11.GL_LEQUAL);
-
-        if(!said){
-            said = true;
-            if (RenderSystem.getShader() != null){
-                log.info("the RenderSystem has a shader");
-                log.info(RenderSystem.getShader().toString());
-            }else{
-                log.warn("There is no shader in the RenderSystem");
-            }
-        }
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-
-        try (BuiltBuffer builtBuffer = buffer.endNullable()) {
-            if (builtBuffer != null) {
-                BufferRenderer.drawWithGlobalProgram(builtBuffer);
-            }
-        }
-
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-        RenderSystem.disableDepthTest();
-
+        BUFFER_SOURCE.endBatch();
         currentIsBuilding = false;
     }
 
-    void genericAABBRender(Vec3d start, Vec3d dimensions, Color color, BufferBuilder buffer, RenderAction action) {
+    void genericAABBRender(Vec3 start, Vec3 dimensions, Color color, VertexConsumer buffer, RenderAction action) {
         if (!currentIsBuilding) return;
 
         float red = color.getRed() / 255f;
         float green = color.getGreen() / 255f;
         float blue = color.getBlue() / 255f;
         float alpha = color.getAlpha() / 255f;
-        Vec3d vec3d = transformVec3d(start);
-        Vec3d end = vec3d.add(dimensions);
+        Vec3 vec3d = transformVec3d(start);
+        Vec3 end = vec3d.add(dimensions);
         float x1 = (float) vec3d.x;
         float y1 = (float) vec3d.y;
         float z1 = (float) vec3d.z;
@@ -93,7 +75,7 @@ public abstract class Render {
         float y2 = (float) end.y;
         float z2 = (float) end.z;
 
-        Consumer<BufferBuilder> runner = bufferBuilder -> action.run(bufferBuilder, x1, y1, z1, x2, y2, z2, red, green, blue, alpha);
+        Consumer<VertexConsumer> runner = bufferBuilder -> action.run(bufferBuilder, x1, y1, z1, x2, y2, z2, red, green, blue, alpha);
         runner.accept(buffer);
     }
 
@@ -102,6 +84,6 @@ public abstract class Render {
     }
 
     interface RenderAction {
-        void run(BufferBuilder buffer, float x, float y, float z, float x1, float y1, float z1, float red, float green, float blue, float alpha);
+        void run(VertexConsumer buffer, float x, float y, float z, float x1, float y1, float z1, float red, float green, float blue, float alpha);
     }
 }

@@ -1,3 +1,31 @@
-//TODO: Bind Fabric to Root Gradle
+pluginManagement {
+    repositories {
+        maven {
+            name = "Fabric"
+            url = "https://maven.fabricmc.net/"
+        }
+        maven {
+            name = "KikuGie"
+            url = "https://maven.kikugie.dev/releases"
+        }
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id "dev.kikugie.stonecutter" version "0.7.11"
+}
+
 rootProject.name = "CurveBuilding"
-include ":curvebuilding-core", ":curvebuilding-bukkit"
+include ":curvebuilding-core", ":curvebuilding-bukkit", ":curvebuilding-fabric"
+
+stonecutter {
+    centralScript = "build.gradle"
+    kotlinController = false
+
+    // Minecraft versions built by the Fabric module. Each has curvebuilding-fabric/versions/<version>/gradle.properties.
+    create(":curvebuilding-fabric") {
+        versions "1.21.10"
+        vcsVersion = "1.21.10"
+    }
+}
