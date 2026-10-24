@@ -28,7 +28,6 @@ public final class Util {
         }
 
         double length = 0;
-        // 曲線上の点と同じくブロックの中心にずらした始点から測る
         Vector3 start = bezierCoordinate(pos, 0);
         double xt1 = start.x();
         double yt1 = start.y();
