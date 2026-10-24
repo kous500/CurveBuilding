@@ -58,6 +58,35 @@ class UtilTest {
 
     @Nested
     class BezierLength {
+        private static Vector3[] straight(Vector3 from, Vector3 to) {
+            return new Vector3[]{from, from, to, to};
+        }
+
+        @ParameterizedTest
+        @ValueSource(doubles = {1, 10, 100, 1000})
+        void straightLineHasItsDistance(double fineness) {
+            assertEquals(10, Util.bezierLength(straight(Vector3.at(0, 64, 0), Vector3.at(10, 64, 0)), fineness), 1e-9);
+        }
+
+        @Test
+        void diagonalLineHasItsDistance() {
+            assertEquals(15, Util.bezierLength(straight(Vector3.at(-3, 70, 2), Vector3.at(2, 80, 12)), 100), 1e-9);
+        }
+
+        @Test
+        void parabolaHasItsArcLength() {
+            // x = 10t, y = 10t^2, whose arc length is 10 * (sqrt(5) / 2 + asinh(2) / 4)
+            Vector3[] parabola = {
+                    Vector3.at(0, 0, 0),
+                    Vector3.at(10.0 / 3, 0, 0),
+                    Vector3.at(20.0 / 3, 10.0 / 3, 0),
+                    Vector3.at(10, 10, 0)
+            };
+            double expected = 10 * (Math.sqrt(5) / 2 + Math.log(2 + Math.sqrt(5)) / 4);
+
+            assertEquals(expected, Util.bezierLength(parabola, 100), 1e-3);
+        }
+
         @ParameterizedTest
         @ValueSource(doubles = {0, -1})
         void rejectsNonPositiveFineness(double fineness) {

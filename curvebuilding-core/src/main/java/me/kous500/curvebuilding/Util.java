@@ -28,9 +28,10 @@ public final class Util {
         }
 
         double length = 0;
-        double xt1 = pos[0].x();
-        double yt1 = pos[0].y();
-        double zt1 = pos[0].z();
+        Vector3 start = bezierCoordinate(pos, 0);
+        double xt1 = start.x();
+        double yt1 = start.y();
+        double zt1 = start.z();
 
         for (int step = 1; step <= fineness; step++) {
             double i = step / fineness;
