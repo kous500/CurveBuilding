@@ -74,8 +74,17 @@ class UtilTest {
         }
 
         @Test
-        void curveLengthConvergesWithFineness() {
-            assertEquals(Util.bezierLength(ARCH, 100_000), Util.bezierLength(ARCH, 1000), 1e-4);
+        void parabolaHasItsArcLength() {
+            // x = 10t, y = 10t^2, whose arc length is 10 * (sqrt(5) / 2 + asinh(2) / 4)
+            Vector3[] parabola = {
+                    Vector3.at(0, 0, 0),
+                    Vector3.at(10.0 / 3, 0, 0),
+                    Vector3.at(20.0 / 3, 10.0 / 3, 0),
+                    Vector3.at(10, 10, 0)
+            };
+            double expected = 10 * (Math.sqrt(5) / 2 + Math.log(2 + Math.sqrt(5)) / 4);
+
+            assertEquals(expected, Util.bezierLength(parabola, 100), 1e-3);
         }
 
         @ParameterizedTest
