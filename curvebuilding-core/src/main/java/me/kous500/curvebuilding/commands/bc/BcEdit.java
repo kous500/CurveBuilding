@@ -80,21 +80,8 @@ public final class BcEdit {
 
             RegionBlocks regionBlocks = new RegionBlocks(editSession, region);
 
-            for (int n = 1; n <= posMap.lastEntry().getKey(); n++) {
-                Vector3[] p = posMap.get(n);
-
-                if (p == null || p[0] == null) break;
-
-                if (n > 1) {
-                    Vector3[] bp = posMap.get(n - 1);
-                    Vector3[] bezierPos = new Vector3[] {
-                            bp[0],
-                            bp[2] != null ? bp[2] : bp[0],
-                            p[1] != null ? p[1] : p[0],
-                            p[0]
-                    };
-                    editBC(bezierPos);
-                }
+            for (Vector3[] segment : bezierSegments(posMap)) {
+                editBC(segment);
             }
 
             for (Map.Entry<BlockVector3, NavigableMap<BlockVector3, Integer>> entry : blockMap.entrySet()) {
@@ -118,9 +105,7 @@ public final class BcEdit {
     }
 
     private void editBC(Vector3[] selectionPos) throws MaxChangedBlocksException, MaxSetLengthException {
-        if (selectionPos[0].distance(selectionPos[3]) > config.maxSetLength) throw new MaxSetLengthException();
-        if (selectionPos[0].distance(selectionPos[1]) > config.maxSetLength) throw new MaxSetLengthException();
-        if (selectionPos[3].distance(selectionPos[2]) > config.maxSetLength) throw new MaxSetLengthException();
+        if (!isBezierSegmentWithin(selectionPos, config.maxSetLength)) throw new MaxSetLengthException();
 
         double selectionLength = bezierLength(selectionPos, selectionPos[0].distance(selectionPos[3]) * 20);
         double fineness = config.fineness * selectionLength;

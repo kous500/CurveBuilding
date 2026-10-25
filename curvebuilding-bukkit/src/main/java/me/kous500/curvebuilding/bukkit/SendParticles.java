@@ -75,9 +75,6 @@ public class SendParticles extends TimerTask {
         if (player == null || posData.getWorld() == null || posData.getMap() == null) return;
         if (!posData.getWorld().getName().equals(player.getWorld().getName())) return;
 
-        boolean endLine = false;
-        double curveLength = 0;
-
         Map.Entry<Integer, Vector3[]> last = posData.getMap().lastEntry();
         if (last == null) return;
         int lastN = last.getKey();
@@ -101,22 +98,12 @@ public class SendParticles extends TimerTask {
 
                 sendLine(p[0], p[1], posData.getWorld(), player, particles_1_13.SOUL_FIRE_FLAME);
                 sendLine(p[0], p[2], posData.getWorld(), player, particles_1_13.SOUL_FIRE_FLAME);
-
-                if (p[0] == null) endLine = true;
-            } else {
-                endLine = true;
             }
+        }
 
-            if (!endLine && n != 1) {
-                Vector3[] bp = posData.getMap().get(n - 1);
-                Vector3[] bezierPos = new Vector3[] {
-                        bp[0],
-                        bp[2] != null ? bp[2] : bp[0],
-                        p[1] != null ? p[1] : p[0],
-                        p[0]
-                };
-                curveLength = sendBezier(bezierPos, posData.getWorld(), player, particles_1_13.FLAME, curveLength);
-            }
+        double curveLength = 0;
+        for (Vector3[] segment : bezierSegments(posData.getMap())) {
+            curveLength = sendBezier(segment, posData.getWorld(), player, particles_1_13.FLAME, curveLength);
         }
     }
 
@@ -221,11 +208,7 @@ public class SendParticles extends TimerTask {
     }
 
     private double sendBezier(Vector3[] p, World world, org.bukkit.entity.Player player, ParticleTypeMotion particleType, double totalLength) {
-        if (p[0] == null || p[1] == null || p[2] == null || p[3] == null) return config.lineMaxLength + 1;
-
-        if (p[0].distance(p[3]) > config.lineMaxLength) return config.lineMaxLength + 1;
-        if (p[0].distance(p[1]) > config.lineMaxLength) return config.lineMaxLength + 1;
-        if (p[3].distance(p[2]) > config.lineMaxLength) return config.lineMaxLength + 1;
+        if (totalLength > config.lineMaxLength || !isBezierSegmentWithin(p, config.lineMaxLength)) return config.lineMaxLength + 1;
 
         double length = totalLength + bezierLength(p, p[0].distance(p[3]) * 20);
         if (length > config.lineMaxLength) return length;
@@ -233,8 +216,7 @@ public class SendParticles extends TimerTask {
         int cnt = 0;
         Vector3 PlayerVec = adapt(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(player).getLocation().toVector());
         Vector3 bVec = bezierCoordinate(p, 0);
-        for (double i = 0; i <= 1; i += 1.0 / (length * config.lineDensity)) {
-            Vector3 vec = bezierCoordinate(p, i);
+        for (Vector3 vec : bezierPoints(p, Math.max(1, (int) Math.ceil(length * config.lineDensity)))) {
             if ((PlayerVec.distance(vec) / 3000 * config.lineDensity) + (0.8 / config.lineDensity) < vec.distance(bVec)) {
                 Location location = getLocation(world, vec);
                 if (cnt % INTERVAL == r) {

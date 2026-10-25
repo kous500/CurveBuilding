@@ -6,8 +6,11 @@
   from `main`. Bukkit is a single jar. A Fabric jar should cover every Minecraft version it can
   run on (a version range in `fabric.mod.json`); add a jar only where the API breaks.
 - Never create branches for older Minecraft versions; handle version differences with
-  version-specific code (Stonecutter comments). Outside rendering, keep Fabric version differences
-  in `FabricCompat`.
+  version-specific code (Stonecutter comments). Keep Fabric rendering differences in the preview
+  backends (`client/render/backend`, one file per version range, picked by `PreviewBackends`) and
+  other differences in `FabricCompat`; the preview geometry code must not branch by version.
+- Stonecutter's `vcsVersion` is the newest supported Minecraft version; when adding a newer one,
+  make it the `vcsVersion`. Commit only with the sources in that state (`Reset active project`).
 - Core and Bukkit target Java 21. Do not use Java 22+ language features or APIs there.
 - When adding a message key, add it to every message file in both the Bukkit and the Fabric module.
 

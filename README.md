@@ -49,6 +49,9 @@ Fabric is currently built for Minecraft 1.21.10, 1.21.11 and 26.1 - 26.3 (one ja
 - To run CurveBuilding Fabric as a game server:
   1. Select "Run `curvebuilding-fabric <minecraft version> [runServer]`" from Run/Debug Configurations.
   2. The game server will start on localhost with the mod applied.
+- To test a Fabric jar on another Minecraft version in its range (for example the 26.1 - 26.3 jar on 26.1):
+  1. Select "Run `fabric-test-runs <minecraft version> [runClient]`" (or `[runServer]`), or run `./gradlew -PtestRuns :fabric-test-runs:<minecraft version>:runClient`.
+  2. The jar is built and started on that Minecraft version. The versions are in `fabric-test-runs/<minecraft version>/gradle.properties`; add a directory there to test another version.
 
 Once you have completed testing, please submit a pull request.
 Before contributing, please read [CONTRIBUTING.md](CONTRIBUTING.md) for the pull request title format and other rules.
