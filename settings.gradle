@@ -25,7 +25,22 @@ stonecutter {
 
     // Minecraft versions built by the Fabric module. Each has curvebuilding-fabric/versions/<version>/gradle.properties.
     create(":curvebuilding-fabric") {
-        versions "1.21.10", "26.3"
-        vcsVersion = "1.21.10"
+        versions "1.21.10", "1.21.11", "26.3"
+        vcsVersion = "26.3"
+    }
+}
+
+// Projects that run a built Fabric jar on other Minecraft versions in its range, e.g.
+// ./gradlew -PtestRuns :fabric-test-runs:26.1:runClient
+// Only included on request, so normal builds do not set up those Minecraft versions.
+if (providers.gradleProperty("testRuns").isPresent()) {
+    include ":fabric-test-runs"
+    // build.gradle in fabric-test-runs is shared by the version projects, not the parent
+    project(":fabric-test-runs").buildFileName = "none.gradle"
+    file("fabric-test-runs").eachDir { dir ->
+        if (new File(dir, "gradle.properties").exists()) {
+            include ":fabric-test-runs:${dir.name}"
+            project(":fabric-test-runs:${dir.name}").buildFileName = "../build.gradle"
+        }
     }
 }

@@ -2,6 +2,9 @@ package me.kous500.curvebuilding;
 
 import me.kous500.curvebuilding.math.Vector3;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NavigableMap;
 import java.util.Objects;
 import static java.lang.Math.*;
 
@@ -77,6 +80,65 @@ public final class Util {
         double z = bernstein3_0 * p0.z() + bernstein3_1 * p1.z() + bernstein3_2 * p2.z() + bernstein3_3 * p3.z() + 0.5;
 
         return Vector3.at(x, y, z);
+    }
+
+    /**
+     * Splits the curve through positions 1, 2, ... into cubic Bézier segments, one per pair of consecutive positions.
+     * The segment from position n - 1 to n is {position n - 1, handle 2 of n - 1, handle 1 of n, position n}; a missing
+     * handle is replaced by its position. Stops at the first missing position.
+     *
+     * @param posMap positions by number; each value is {position, handle 1, handle 2}
+     * @return the segments in order, empty when there are fewer than two positions or {@code posMap} is null
+     */
+    public static List<Vector3[]> bezierSegments(NavigableMap<Integer, Vector3[]> posMap) {
+        List<Vector3[]> segments = new ArrayList<>();
+        if (posMap == null || posMap.isEmpty()) return segments;
+
+        for (int n = 1; n <= posMap.lastKey(); n++) {
+            Vector3[] p = posMap.get(n);
+            if (p == null || p[0] == null) break;
+
+            if (n > 1) {
+                Vector3[] bp = posMap.get(n - 1);
+                segments.add(new Vector3[]{
+                        bp[0],
+                        bp[2] != null ? bp[2] : bp[0],
+                        p[1] != null ? p[1] : p[0],
+                        p[0]
+                });
+            }
+        }
+        return segments;
+    }
+
+    /**
+     * Whether the ends of a segment, and each end and its handle, are at most {@code maxLength} apart.
+     *
+     * @param segment a segment from {@link #bezierSegments}
+     */
+    public static boolean isBezierSegmentWithin(Vector3[] segment, double maxLength) {
+        return segment[0].distance(segment[3]) <= maxLength
+                && segment[0].distance(segment[1]) <= maxLength
+                && segment[3].distance(segment[2]) <= maxLength;
+    }
+
+    /**
+     * Points on the curve at evenly spaced positions from 0 to 1, both ends included, as by {@link #bezierCoordinate}.
+     *
+     * @param pos the four control points of the curve
+     * @param divisions number of parts to split the curve into; the result has {@code divisions + 1} points
+     */
+    public static List<Vector3> bezierPoints(Vector3[] pos, int divisions) {
+        validateBezierPositions(pos);
+        if (divisions < 1) {
+            throw new IllegalArgumentException("divisions must be at least 1");
+        }
+
+        List<Vector3> points = new ArrayList<>(divisions + 1);
+        for (int step = 0; step <= divisions; step++) {
+            points.add(bezierCoordinate(pos, (double) step / divisions));
+        }
+        return points;
     }
 
     /**

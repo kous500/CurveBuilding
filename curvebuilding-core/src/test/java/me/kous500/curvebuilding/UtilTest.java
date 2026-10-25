@@ -6,11 +6,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+
 import static me.kous500.curvebuilding.math.VectorAssertions.assertVector;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UtilTest {
     private static final Vector3[] ARCH = {
@@ -98,6 +104,112 @@ class UtilTest {
             assertThrows(NullPointerException.class, () -> Util.bezierLength(null, 10));
             assertThrows(IllegalArgumentException.class,
                     () -> Util.bezierLength(new Vector3[]{ARCH[0], ARCH[1], null, ARCH[3]}, 10));
+        }
+    }
+
+    @Nested
+    class BezierSegments {
+        private final Vector3 a = Vector3.at(0, 64, 0);
+        private final Vector3 aBack = Vector3.at(0, 64, 3);
+        private final Vector3 b = Vector3.at(10, 64, 0);
+        private final Vector3 bFront = Vector3.at(10, 64, -3);
+        private final Vector3 c = Vector3.at(20, 64, 0);
+
+        @Test
+        void connectsConsecutivePositionsThroughTheirHandles() {
+            NavigableMap<Integer, Vector3[]> posMap = new TreeMap<>();
+            posMap.put(1, new Vector3[]{a, null, aBack});
+            posMap.put(2, new Vector3[]{b, bFront, null});
+
+            List<Vector3[]> segments = Util.bezierSegments(posMap);
+
+            assertEquals(1, segments.size());
+            assertArrayEquals(new Vector3[]{a, aBack, bFront, b}, segments.get(0));
+        }
+
+        @Test
+        void missingHandlesFallBackToTheirPositions() {
+            NavigableMap<Integer, Vector3[]> posMap = new TreeMap<>();
+            posMap.put(1, new Vector3[]{a, null, null});
+            posMap.put(2, new Vector3[]{b, null, null});
+            posMap.put(3, new Vector3[]{c, null, null});
+
+            List<Vector3[]> segments = Util.bezierSegments(posMap);
+
+            assertEquals(2, segments.size());
+            assertArrayEquals(new Vector3[]{a, a, b, b}, segments.get(0));
+            assertArrayEquals(new Vector3[]{b, b, c, c}, segments.get(1));
+        }
+
+        @Test
+        void stopsAtTheFirstMissingPosition() {
+            NavigableMap<Integer, Vector3[]> posMap = new TreeMap<>();
+            posMap.put(1, new Vector3[]{a, null, null});
+            posMap.put(2, new Vector3[]{b, null, null});
+            posMap.put(4, new Vector3[]{c, null, null});
+            posMap.put(5, new Vector3[]{a, null, null});
+
+            assertEquals(1, Util.bezierSegments(posMap).size());
+
+            posMap.put(3, new Vector3[]{null, bFront, null});
+            assertEquals(1, Util.bezierSegments(posMap).size());
+        }
+
+        @Test
+        void hasNoSegmentsWithoutTwoPositions() {
+            NavigableMap<Integer, Vector3[]> posMap = new TreeMap<>();
+            assertTrue(Util.bezierSegments(null).isEmpty());
+            assertTrue(Util.bezierSegments(posMap).isEmpty());
+
+            posMap.put(1, new Vector3[]{a, null, null});
+            assertTrue(Util.bezierSegments(posMap).isEmpty());
+
+            posMap.remove(1);
+            posMap.put(2, new Vector3[]{b, null, null});
+            assertTrue(Util.bezierSegments(posMap).isEmpty());
+        }
+    }
+
+    @Nested
+    class IsBezierSegmentWithin {
+        @Test
+        void checksTheEndsAndEachHandle() {
+            assertTrue(Util.isBezierSegmentWithin(ARCH, 10));
+            assertFalse(Util.isBezierSegmentWithin(ARCH, 9.9));
+
+            Vector3[] farHandle = {Vector3.at(0, 0, 0), Vector3.at(0, 20, 0), Vector3.at(5, 0, 0), Vector3.at(5, 0, 0)};
+            assertFalse(Util.isBezierSegmentWithin(farHandle, 10));
+
+            Vector3[] farEndHandle = {Vector3.at(0, 0, 0), Vector3.at(0, 0, 0), Vector3.at(5, 20, 0), Vector3.at(5, 0, 0)};
+            assertFalse(Util.isBezierSegmentWithin(farEndHandle, 10));
+        }
+    }
+
+    @Nested
+    class BezierPoints {
+        @Test
+        void includesBothEndsAndEvenSteps() {
+            List<Vector3> points = Util.bezierPoints(ARCH, 4);
+
+            assertEquals(5, points.size());
+            assertVector(0.5, 0.5, 0.5, points.get(0));
+            assertVector(5.5, 8.0, 0.5, points.get(2));
+            assertVector(10.5, 0.5, 0.5, points.get(4));
+        }
+
+        @Test
+        void oneDivisionGivesTheEnds() {
+            List<Vector3> points = Util.bezierPoints(ARCH, 1);
+
+            assertEquals(2, points.size());
+            assertVector(0.5, 0.5, 0.5, points.get(0));
+            assertVector(10.5, 0.5, 0.5, points.get(1));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1})
+        void rejectsFewerThanOneDivision(int divisions) {
+            assertThrows(IllegalArgumentException.class, () -> Util.bezierPoints(ARCH, divisions));
         }
     }
 

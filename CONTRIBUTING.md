@@ -91,6 +91,8 @@ To add a language, copy `en-US.yml`, translate the values (not the keys), and na
 
 All supported versions are built from `main`. We do not keep separate branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch. In the Fabric module, write it with [Stonecutter](https://stonecutter.kikugie.dev/) comments, for example `//? if >=26.1 {`.
 
+The Fabric sources in the repository are kept in the state of the newest supported Minecraft version, Stonecutter's `vcsVersion` in `settings.gradle`. When support for a newer Minecraft version is added, make it the `vcsVersion` in the same pull request. Before committing, run the `Reset active project` task so that the sources are in that state.
+
 > Support for more Fabric versions is being added. The Minecraft versions built right now are listed in `settings.gradle`.
 
 ## Branches (maintainers)

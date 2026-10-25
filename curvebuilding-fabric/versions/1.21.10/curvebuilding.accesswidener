@@ -1,6 +1,6 @@
 accessWidener v2 named
 
-# Used by CurveBuildingRenderTypes to create the preview render types
+# Used by LegacyPreviewBackend to create the preview render types
 accessible field net/minecraft/client/renderer/RenderPipelines DEBUG_FILLED_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible class net/minecraft/client/renderer/RenderType$CompositeRenderType
 accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;ILcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;

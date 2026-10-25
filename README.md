@@ -32,7 +32,7 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
 5. Install JDK 25 and JDK 21. Gradle runs on JDK 25 (set in `gradle/gradle-daemon-jvm.properties`) and finds installed JDKs automatically. Set the project SDK version to 25.
 
 All modules are part of a single Gradle build. The Fabric module uses [Stonecutter](https://stonecutter.kikugie.dev/) to build several jars from the same code. Each jar is built against one Minecraft version and can support a range of compatible versions; it has its own project `:curvebuilding-fabric:<minecraft version>` with settings in `curvebuilding-fabric/versions/<minecraft version>/gradle.properties`.
-Fabric is currently built for Minecraft 1.21.10 and 26.3.
+Fabric is currently built for Minecraft 1.21.10, 1.21.11 and 26.1 - 26.3 (one jar for 26.1 - 26.3).
 
 ### Running the Project
 
@@ -49,6 +49,9 @@ Fabric is currently built for Minecraft 1.21.10 and 26.3.
 - To run CurveBuilding Fabric as a game server:
   1. Select "Run `curvebuilding-fabric <minecraft version> [runServer]`" from Run/Debug Configurations.
   2. The game server will start on localhost with the mod applied.
+- To test a Fabric jar on another Minecraft version in its range (for example the 26.1 - 26.3 jar on 26.1):
+  1. Select "Run `fabric-test-runs <minecraft version> [runClient]`" (or `[runServer]`), or run `./gradlew -PtestRuns :fabric-test-runs:<minecraft version>:runClient`.
+  2. The jar is built and started on that Minecraft version. The versions are in `fabric-test-runs/<minecraft version>/gradle.properties`; add a directory there to test another version.
 
 Once you have completed testing, please submit a pull request.
 Before contributing, please read [CONTRIBUTING.md](CONTRIBUTING.md) for the pull request title format and other rules.
