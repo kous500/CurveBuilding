@@ -1,0 +1,42 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Tokyo
+    # Wait until a release has been out for two weeks; security updates are not delayed
+    cooldown:
+      default-days: 14
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore
+    # No labels until the release notes labels are set up
+    labels: []
+
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Tokyo
+    cooldown:
+      default-days: 14
+    groups:
+      gradle-minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    commit-message:
+      prefix: chore
+    labels: []
+    # Versions chosen per Minecraft version are updated by hand together with the Minecraft
+    # version, in an "mc:" pull request
+    ignore:
+      - dependency-name: "com.mojang:minecraft"
+      - dependency-name: "net.fabricmc:fabric-loader"
+      - dependency-name: "net.fabricmc.fabric-api:*"
+      - dependency-name: "com.sk89q.worldedit:*"
+      - dependency-name: "org.spigotmc:spigot-api"
