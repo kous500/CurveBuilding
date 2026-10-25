@@ -112,6 +112,8 @@ Contributors working in their own fork can name branches freely. Branches create
 
 Examples: `fix/40-particles-disappear-on-clearall-20261024`, `mc/bukkit-26.4-20261024`, `chore/release-workflow-20261024`
 
+A branch that does not start with `<type>/` or does not end with `-<yyyymmdd>` cannot be pushed to this repository: GitHub rejects creating it. The rest of the name, such as upper case letters in the summary, is checked by CI when the pull request is opened. To fix a name, push the commits again under a correct name and open a new pull request.
+
 ## Versioning and releases (maintainers)
 
 A release is a **tag on `main`**. The tag is the only place where the version number is decided; it is not written in the source.
