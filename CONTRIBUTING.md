@@ -69,7 +69,7 @@ The description may be written in **English or Japanese**. The template asks for
 
 ### Checks
 
-Pull requests must build and pass the tests before they are merged. For contributors outside the project, a maintainer approves the CI run first. (CI is being set up; until then, maintainers build the pull request locally.)
+Pull requests must pass CI before they are merged: the build and tests, a Fabric server start on each built Minecraft version, and the title format (and, for branches in this repository, the branch name). CI does not run on draft pull requests; it starts when the pull request is marked ready for review. For contributors outside the project, a maintainer approves the CI run first.
 
 Please do not share built jars in issues or pull requests. Official builds are only distributed through [GitHub Releases](https://github.com/kous500/CurveBuilding/releases) and the official download pages listed in the README.
 

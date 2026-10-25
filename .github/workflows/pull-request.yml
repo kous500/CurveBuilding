@@ -1,0 +1,50 @@
+name: Pull request
+
+# Checks the pull request title and branch name against CONTRIBUTING.md.
+# Separate from the build so that editing the title does not start a build.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions: {}
+
+jobs:
+  title:
+    name: Title
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check the title format
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # <type>: <summary>, the summary starting with a capital letter and without a trailing period
+          if ! printf '%s' "$TITLE" | grep -qE '^(feature|fix|mc|chore): [A-Z].*[^.]$'; then
+            echo "::error::The title must be '<type>: <summary>' (type: feature, fix, mc or chore; the summary in English, starting with a capital letter, without a trailing period). Example: 'fix: Particles disappear after bcpos clearall'. See CONTRIBUTING.md."
+            exit 1
+          fi
+          if [ "${#TITLE}" -gt 72 ]; then
+            echo "::warning::The title is ${#TITLE} characters long; aim for 72 or fewer."
+          fi
+
+  branch:
+    name: Branch name
+    # Branches in forks can be named freely, and Dependabot names its own branches.
+    if: >-
+      ${{ !github.event.pull_request.draft
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && !startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check the branch name format
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          # <type>/<summary>-<yyyymmdd> or <type>/<issue>-<summary>-<yyyymmdd>, in lowercase
+          if ! printf '%s' "$BRANCH" | grep -qE '^(feature|fix|mc|chore)/[a-z0-9][a-z0-9.-]*-[0-9]{8}$'; then
+            echo "::error::The branch name must be '<type>/<summary>-<yyyymmdd>' or '<type>/<issue>-<summary>-<yyyymmdd>' in lowercase letters, digits, '.' and '-' (type: feature, fix, mc or chore). Example: 'fix/40-particles-disappear-on-clearall-20261024'. See CONTRIBUTING.md."
+            exit 1
+          fi
