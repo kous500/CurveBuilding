@@ -1,0 +1,218 @@
+name: Publish
+
+# Publishes a published GitHub release to Modrinth and CurseForge after a maintainer approves the release
+# environment. The files are the release assets, checked against SHA256SUMS and the build provenance of the release
+# workflow; nothing is built again. Pre-releases are published too: -alpha.N as alpha, -rc.N as beta.
+# The Bukkit plugin is not published to CurseForge or dev.bukkit.org, which mc-publish does not support for plugins;
+# publish its new versions there by hand.
+on:
+  release:
+    types: [published]
+  # To publish a release again, for example after a failed run
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of a published release, for example 0.6.9
+        type: string
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: publish-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  MODRINTH_ID: qgRxV8C7
+  CURSEFORGE_ID: "860912"
+  # The Bukkit jar does not name its Minecraft versions. Keep this the same as the supported versions in the release
+  # notes when Bukkit support changes.
+  BUKKIT_GAME_VERSIONS: "[1.20.2,26.3]"
+
+jobs:
+  files:
+    name: Check the release files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      attestations: read
+    outputs:
+      version-type: ${{ steps.list.outputs.version-type }}
+      modrinth: ${{ steps.list.outputs.modrinth }}
+      curseforge: ${{ steps.list.outputs.curseforge }}
+    steps:
+      - name: Download the release files
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! printf '%s' "$TAG" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|rc)\.[0-9]+)?$'; then
+            echo "::error::$TAG is not a release version."
+            exit 1
+          fi
+          if [ "$(gh release view "$TAG" --repo "$REPO" --json isDraft --jq .isDraft)" != false ]; then
+            echo "::error::The release $TAG is not published."
+            exit 1
+          fi
+          gh release view "$TAG" --repo "$REPO" --json body --jq .body > CHANGELOG.md
+          gh release download "$TAG" --repo "$REPO" --dir release
+
+      - name: Check the checksums and the build provenance
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        working-directory: release
+        run: |
+          sha256sum -c SHA256SUMS
+          if [ "$(ls *.jar | wc -l)" != "$(wc -l < SHA256SUMS)" ]; then
+            echo "::error::The release has jars that are not in SHA256SUMS."
+            exit 1
+          fi
+          for jar in *.jar; do
+            gh attestation verify "$jar" --repo "$REPO" --signer-workflow "$REPO/.github/workflows/release.yml"
+          done
+
+      - name: List the jars to publish
+        id: list
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          case "$TAG" in
+            *-alpha.*) echo "version-type=alpha" >> "$GITHUB_OUTPUT" ;;
+            *-rc.*) echo "version-type=beta" >> "$GITHUB_OUTPUT" ;;
+            *) echo "version-type=release" >> "$GITHUB_OUTPUT" ;;
+          esac
+          entries=$(
+            for jar in release/*.jar; do
+              file=$(basename "$jar")
+              case "$file" in
+                curvebuilding-bukkit-*)
+                  jq -n --arg file "$file" --arg tag "$TAG" --arg games "$BUKKIT_GAME_VERSIONS" '{
+                    platform: "bukkit", file: $file, version: $tag, name: "CurveBuilding \($tag) for Bukkit",
+                    loaders: "bukkit spigot paper purpur", "game-versions": $games, java: "21",
+                    dependencies: "worldedit(required){modrinth:worldedit}"
+                  }'
+                  ;;
+                curvebuilding-fabric-*)
+                  # curvebuilding-fabric-<version>+<min>-<max>.jar, or +<version> for a jar of one Minecraft version
+                  range=${file#curvebuilding-fabric-"$TAG"+}
+                  range=${range%.jar}
+                  case "$range" in
+                    *-*) games="[${range%-*},${range#*-}]"; label="${range%-*} - ${range#*-}" ;;
+                    *) games=$range; label=$range ;;
+                  esac
+                  # Minecraft 26.1 and newer need Java 25
+                  case "$range" in 1.*) java=21 ;; *) java=25 ;; esac
+                  jq -n --arg file "$file" --arg version "$TAG+$range" --arg name "CurveBuilding $TAG for Fabric $label" \
+                    --arg games "$games" --arg java "$java" '{
+                    platform: "fabric", file: $file, version: $version, name: $name,
+                    loaders: "fabric", "game-versions": $games, java: $java,
+                    dependencies: "fabric-api(required){modrinth:fabric-api}{curseforge:fabric-api}\nworldedit(required){modrinth:worldedit}{curseforge:worldedit}"
+                  }'
+                  ;;
+                *)
+                  echo "::error::Unknown jar $file."
+                  exit 1
+                  ;;
+              esac
+            done | jq -cs .
+          )
+          echo "$entries" | jq .
+          echo "modrinth=$entries" >> "$GITHUB_OUTPUT"
+          echo "curseforge=$(echo "$entries" | jq -c '[.[] | select(.platform == "fabric")]')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-files
+          path: |
+            release/*.jar
+            CHANGELOG.md
+          if-no-files-found: error
+          retention-days: 1
+
+  modrinth:
+    name: Modrinth (${{ matrix.name }})
+    needs: files
+    environment: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.files.outputs.modrinth) }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-files
+          path: release-files
+
+      # A run that is started again skips the versions it already published
+      - name: Check whether the version is on Modrinth already
+        id: published
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          VERSION: ${{ matrix.version }}
+        run: |
+          # Without the answer the upload is tried anyway; Modrinth rejects a file it has already
+          if ! versions=$(curl -sSf -H "Authorization: $MODRINTH_TOKEN" "https://api.modrinth.com/v2/project/$MODRINTH_ID/version"); then
+            echo "::warning::Could not list the versions on Modrinth."
+            exit 0
+          fi
+          if echo "$versions" | jq -e --arg version "$VERSION" 'any(.[]; .version_number == $version)' > /dev/null; then
+            echo "$VERSION is on Modrinth already."
+            echo "done=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: ${{ steps.published.outputs.done != 'true' }}
+        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
+        with:
+          modrinth-id: ${{ env.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: release-files/release/${{ matrix.file }}
+          name: ${{ matrix.name }}
+          version: ${{ matrix.version }}
+          version-type: ${{ needs.files.outputs.version-type }}
+          changelog-file: release-files/CHANGELOG.md
+          loaders: ${{ matrix.loaders }}
+          game-versions: ${{ matrix.game-versions }}
+          game-version-filter: releases
+          java: ${{ matrix.java }}
+          dependencies: ${{ matrix.dependencies }}
+
+  curseforge:
+    name: CurseForge (${{ matrix.name }})
+    needs: files
+    environment: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.files.outputs.curseforge) }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-files
+          path: release-files
+
+      # CurseForge cannot be asked for existing files with this token, so start only failed jobs again.
+      - uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
+        with:
+          curseforge-id: ${{ env.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: release-files/release/${{ matrix.file }}
+          name: ${{ matrix.name }}
+          version: ${{ matrix.version }}
+          version-type: ${{ needs.files.outputs.version-type }}
+          changelog-file: release-files/CHANGELOG.md
+          loaders: ${{ matrix.loaders }}
+          game-versions: ${{ matrix.game-versions }}
+          game-version-filter: releases
+          java: ${{ matrix.java }}
+          dependencies: ${{ matrix.dependencies }}
