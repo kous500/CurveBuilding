@@ -84,6 +84,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+      actions: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -110,6 +111,18 @@ jobs:
           path: dry-run/
           if-no-files-found: error
           retention-days: 7
+
+      # The build keeps the jars in the run for this job. Anyone signed in to GitHub can download artifacts of a
+      # public repository, so they are deleted once this job has used them. A failed job keeps them for a re-run.
+      - name: Delete the jars kept by the build
+        env:
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for id in $(gh api "repos/$REPO/actions/runs/$RUN_ID/artifacts" --jq '.artifacts[] | select(.name == "jars") | .id'); do
+            gh api -X DELETE "repos/$REPO/actions/artifacts/$id"
+          done
 
       - name: Show what the release would contain
         env:
@@ -157,6 +170,7 @@ jobs:
       contents: write
       id-token: write
       attestations: write
+      actions: write
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -207,3 +221,15 @@ jobs:
           gh release create "$VERSION" --repo "$REPO" --draft --verify-tag --title "$VERSION" \
             --generate-notes $prerelease release/*.jar release/SHA256SUMS
           echo "Draft release created. Write the release notes and publish it." >> "$GITHUB_STEP_SUMMARY"
+
+      # The build keeps the jars in the run for this job. Anyone signed in to GitHub can download artifacts of a
+      # public repository, so they are deleted once this job has used them. A failed job keeps them for a re-run.
+      - name: Delete the jars kept by the build
+        env:
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for id in $(gh api "repos/$REPO/actions/runs/$RUN_ID/artifacts" --jq '.artifacts[] | select(.name == "jars") | .id'); do
+            gh api -X DELETE "repos/$REPO/actions/artifacts/$id"
+          done
