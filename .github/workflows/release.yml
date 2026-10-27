@@ -1,0 +1,207 @@
+name: Release
+
+# Run from the Actions tab ("Run workflow") on main. Builds and checks main, then tags the commit with the version
+# and creates a draft release with the jars. A maintainer writes the release notes and publishes the draft.
+# The tag is created only after every check passed, because tags cannot be moved or deleted (tags ruleset).
+#
+# A dry run works on any branch and leaves nothing behind but the run: it builds with the version
+# <version>-dry-run.g<commit>, written into the jars so that they cannot pass for the release, keeps them for
+# 7 days and shows what the release would contain. It does not tag, create a release or attest the build.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release, for example 0.6.9, 0.7.0-alpha.1 or 0.7.0-rc.1
+        type: string
+        required: true
+      dry-run:
+        description: "Dry run: build and show the release without creating it"
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check the version
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      build-version: ${{ steps.check.outputs.build-version }}
+    steps:
+      - name: Check the branch, the version format and that the tag is free
+        id: check
+        env:
+          VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry-run }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$DRY_RUN" != true ] && [ "$REF" != refs/heads/main ]; then
+            echo "::error::Run the release workflow on main, not on $REF."
+            exit 1
+          fi
+          # CONTRIBUTING.md: no v prefix, pre-releases use -alpha.N or -rc.N
+          if ! printf '%s' "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|rc)\.[0-9]+)?$'; then
+            echo "::error::The version must look like 0.6.9, 0.7.0-alpha.1 or 0.7.0-rc.1."
+            exit 1
+          fi
+          # A tag on this commit is left over from a run that failed later, which may be run again
+          tagged=$(gh api "repos/$REPO/git/ref/tags/$VERSION" --jq .object.sha 2>/dev/null || true)
+          if [ -n "$tagged" ] && [ "$tagged" != "$SHA" ]; then
+            echo "::error::The tag $VERSION already exists on another commit."
+            exit 1
+          fi
+          if [ "$DRY_RUN" = true ]; then
+            echo "build-version=$VERSION-dry-run.g${SHA:0:7}" >> "$GITHUB_OUTPUT"
+          else
+            echo "build-version=$VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build
+    needs: check
+    uses: ./.github/workflows/build.yml
+    with:
+      release-version: ${{ needs.check.outputs.build-version }}
+    permissions:
+      contents: read
+
+  preview:
+    name: Show the release (dry run)
+    if: ${{ inputs.dry-run }}
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # For the pull requests since the previous release
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: jars
+          path: artifact
+
+      - name: Collect the jars and write their checksums
+        run: |
+          mkdir dry-run
+          find artifact -name '*.jar' -exec mv {} dry-run/ \;
+          cd dry-run
+          sha256sum *.jar > SHA256SUMS
+          cat SHA256SUMS
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dry-run
+          path: dry-run/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Show what the release would contain
+        env:
+          VERSION: ${{ inputs.version }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The same previous release as in the release-notes skill: for a release, the latest one that is not a
+          # pre-release; for a pre-release, the latest one of any kind
+          case "$VERSION" in
+            *-*) prerelease=yes; previous=$(gh release list --repo "$REPO" --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName // empty') ;;
+            *) prerelease=no; previous=$(gh release list --repo "$REPO" --exclude-drafts --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName // empty') ;;
+          esac
+          {
+            echo "## Dry run of $VERSION"
+            echo
+            echo "Nothing was tagged or released. The jars (named with the dry-run version) are kept in the \`dry-run\` artifact for 7 days."
+            echo
+            echo "- Tag: \`$VERSION\` on \`${GITHUB_SHA:0:7}\`"
+            echo "- Pre-release: $prerelease"
+            echo "- Previous release: \`${previous:-none}\`"
+            echo
+            echo "### Files"
+            echo
+            echo "| File | Size |"
+            echo "|---|---|"
+            for file in dry-run/*; do
+              echo "| \`$(basename "$file")\` | $(du -h "$file" | cut -f1) |"
+            done
+            echo
+            echo "### Pull requests since $previous"
+            echo
+            if [ -n "$previous" ]; then
+              git log --first-parent --format='- %s' "$previous..HEAD"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    name: Create the draft release
+    if: ${{ !inputs.dry-run }}
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: jars
+          path: artifact
+
+      - name: Collect the jars and write their checksums
+        run: |
+          mkdir release
+          find artifact -name '*.jar' -exec mv {} release/ \;
+          cd release
+          sha256sum *.jar > SHA256SUMS
+          cat SHA256SUMS
+
+      # Lets anyone check that a jar was built by this workflow: gh attestation verify <jar> --repo <repository>
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/*.jar
+
+      - name: Tag the commit
+        env:
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tagged=$(gh api "repos/$REPO/git/ref/tags/$VERSION" --jq .object.sha 2>/dev/null || true)
+          if [ -z "$tagged" ]; then
+            gh api "repos/$REPO/git/refs" -f ref="refs/tags/$VERSION" -f sha="$SHA" > /dev/null
+          elif [ "$tagged" != "$SHA" ]; then
+            echo "::error::The tag $VERSION already exists on another commit."
+            exit 1
+          fi
+
+      - name: Create the draft release
+        env:
+          VERSION: ${{ inputs.version }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$VERSION" --repo "$REPO" > /dev/null 2>&1; then
+            echo "::error::A release for $VERSION already exists."
+            exit 1
+          fi
+          prerelease=
+          case "$VERSION" in *-*) prerelease=--prerelease ;; esac
+          gh release create "$VERSION" --repo "$REPO" --draft --verify-tag --title "$VERSION" \
+            --generate-notes $prerelease release/*.jar release/SHA256SUMS
+          echo "Draft release created. Write the release notes and publish it." >> "$GITHUB_STEP_SUMMARY"
