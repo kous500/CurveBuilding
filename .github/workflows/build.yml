@@ -6,6 +6,13 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
+  # Called by the release workflow, which uses the jars of a successful run
+  workflow_call:
+    inputs:
+      release-version:
+        description: Version of the release; the jars are kept for the calling workflow
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -18,6 +25,8 @@ env:
   # Gradle does not find the JDKs installed by setup-java by itself; they are passed through these variables.
   # Gradle runs on JDK 25 (JAVA_HOME), and Minecraft 1.21.x is compiled with JDK 21.
   GRADLE_TOOLCHAINS: -Porg.gradle.java.installations.fromEnv=JAVA_HOME_21_X64,JAVA_HOME_25_X64
+  # Empty except when called by the release workflow
+  RELEASE_VERSION: ${{ inputs.release-version }}
 
 jobs:
   build:
@@ -30,6 +39,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The build version is made from the latest release tag (git describe)
+          fetch-depth: 0
 
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
@@ -55,7 +66,7 @@ jobs:
           fi
 
       - name: Build
-        run: ./gradlew $GRADLE_TOOLCHAINS build
+        run: ./gradlew $GRADLE_TOOLCHAINS ${RELEASE_VERSION:+-PreleaseVersion=$RELEASE_VERSION} build
 
       - name: Upload test reports
         if: ${{ failure() }}
@@ -77,6 +88,18 @@ jobs:
               echo "| \`$(basename "$jar")\` | $(du -h "$jar" | cut -f1) |"
             done
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the jars for the release
+        if: ${{ env.RELEASE_VERSION != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: jars
+          path: |
+            curvebuilding-bukkit/build/libs/*.jar
+            curvebuilding-fabric/versions/*/build/libs/*.jar
+            !**/*-sources.jar
+          if-no-files-found: error
+          retention-days: 1
 
   server:
     name: Start Fabric server (${{ matrix.minecraft }})
@@ -101,6 +124,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The build version is made from the latest release tag (git describe)
+          fetch-depth: 0
 
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
@@ -124,7 +149,7 @@ jobs:
           mkdir -p "$run_dir"
           echo "eula=true" > "$run_dir/eula.txt"
 
-          ./gradlew $GRADLE_TOOLCHAINS $ARGS "$TASK" > server.log 2>&1 &
+          ./gradlew $GRADLE_TOOLCHAINS ${RELEASE_VERSION:+-PreleaseVersion=$RELEASE_VERSION} $ARGS "$TASK" > server.log 2>&1 &
           gradle_pid=$!
 
           # The server is killed instead of stopped: PacketSender's timer keeps its JVM running after the stop

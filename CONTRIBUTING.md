@@ -116,9 +116,7 @@ A branch that does not start with `<type>/` or does not end with `-<yyyymmdd>` c
 
 ## Versioning and releases (maintainers)
 
-A release is a **tag on `main`**. The tag is the only place where the version number is decided; it is not written in the source.
-
-> The tag-based versioning and the release automation are being set up. Until they are in place, maintainers update the version in the build files, build the jars locally from the tag and upload them manually, following the same version and naming rules.
+A release is a **tag on `main`**. The tag is the only place where the version number is decided; it is not written in the source. The release workflow creates the tag, so maintainers do not tag by hand.
 
 ### Version numbers
 
@@ -129,9 +127,11 @@ While the version is `0.x`, the person who creates the tag picks the version fro
 | Minor (`0.6.x` → `0.7.0`) | User-visible changes: new features or commands, or anything marked `BREAKING:` | New configuration option |
 | Patch (`0.6.8` → `0.6.9`) | Bug fixes, support for new Minecraft versions, translations | `mc: Support Bukkit 26.4` |
 
-- Pre-releases use `-rc.N`, for example `0.7.0-rc.1`.
+- Pre-releases come before the version they lead to, in this order:
+  - `-alpha.N`, for example `0.7.0-alpha.1`: early builds for trying out unfinished features or a new Minecraft version. They may have known bugs.
+  - `-rc.N`, for example `0.7.0-rc.1`: release candidates, feature-complete and meant to become the release unchanged.
 - Tags have no `v` prefix: `0.6.9`.
-- Builds from `main` without a tag are versioned `0.0.0-SNAPSHOT` and are not distributed.
+- Other builds are named after the latest release and the commit, as `git describe` prints them: `0.6.8-5-g3db5589` is 5 commits after 0.6.8 at commit `3db5589`, with `-dirty` added when there are uncommitted changes. They are not distributed.
 
 ### Jar names
 
@@ -150,9 +150,14 @@ Both ends must be versions the jar has been tested on; a new Minecraft patch is 
 ### Release steps
 
 1. Make sure every pull request planned for the release (its milestone) is merged into `main`.
-2. Create and push the tag on `main`.
-3. CI builds every jar, runs the tests and creates the GitHub Release with generated release notes. If any build fails, nothing is released.
-4. A maintainer approves the `release` environment. CI then publishes the jars to Modrinth and CurseForge.
+2. In the Actions tab, open the **Release** workflow, choose **Run workflow** on `main` and enter the version.
+3. CI checks the version, builds every jar and runs the same checks as for pull requests. Only then does it tag the commit and create a **draft** release with the jars and `SHA256SUMS`. If anything fails, no tag is created and the workflow can be run again.
+4. Write the release notes in the draft, in the style of the earlier releases (in Claude Code, `/release-notes <version>` writes them from the changes since the previous release), and publish it.
+5. A maintainer approves the `release` environment. CI then publishes the jars to Modrinth and CurseForge.
+
+> Step 5 is being set up. Until then, upload the jars to Modrinth and CurseForge manually.
+
+To try the release first, check **Dry run** in step 2. A dry run works on any branch, so changes to the release or build workflows can be tried before they are merged, and leaves no tag or release. It builds the jars with the version `<version>-dry-run.g<commit>`, keeps them in the run for 7 days (for testing only, do not share them) and shows the files and the pull requests the release would contain.
 
 ## What you can expect from maintainers
 

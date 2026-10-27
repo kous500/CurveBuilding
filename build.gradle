@@ -5,7 +5,25 @@ plugins {
     id "net.fabricmc.fabric-loom-remap" version "1.18.4" apply false
 }
 
+// The release workflow passes the version of the release tag (-PreleaseVersion). Other builds are named after
+// the latest release tag and the commit, as `git describe` prints them, e.g. 0.6.8-5-g3db5589 or
+// 0.6.8-5-g3db5589-dirty with uncommitted changes. Without Git history the version is 0.0.0-SNAPSHOT.
+def describedVersion() {
+    try {
+        def output = providers.exec {
+            commandLine "git", "describe", "--tags", "--dirty", "--match", "[0-9]*"
+            ignoreExitValue = true
+        }
+        return output.result.get().exitValue == 0 ? output.standardOutput.asText.get().trim() : null
+    } catch (Exception ignored) {
+        // Git is not installed
+        return null
+    }
+}
+
+def buildVersion = providers.gradleProperty("releaseVersion").getOrNull() ?: describedVersion() ?: "0.0.0-SNAPSHOT"
+
 allprojects {
     group = "me.kous500.curvebuilding"
-    version = "0.6.8"
+    version = buildVersion
 }
