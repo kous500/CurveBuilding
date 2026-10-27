@@ -54,8 +54,9 @@ jobs:
             echo "::error::The version must look like 0.6.9, 0.7.0-alpha.1 or 0.7.0-rc.1."
             exit 1
           fi
-          # A tag on this commit is left over from a run that failed later, which may be run again
-          tagged=$(gh api "repos/$REPO/git/ref/tags/$VERSION" --jq .object.sha 2>/dev/null || true)
+          # A tag on this commit is left over from a run that failed later, which may be run again.
+          # matching-refs gives an empty list when there is no such tag; a failed request fails the step.
+          tagged=$(gh api "repos/$REPO/git/matching-refs/tags/$VERSION" --jq ".[] | select(.ref == \"refs/tags/$VERSION\") | .object.sha")
           if [ -n "$tagged" ] && [ "$tagged" != "$SHA" ]; then
             echo "::error::The tag $VERSION already exists on another commit."
             exit 1
@@ -182,7 +183,8 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          tagged=$(gh api "repos/$REPO/git/ref/tags/$VERSION" --jq .object.sha 2>/dev/null || true)
+          # An empty list when there is no such tag; a failed request fails the step
+          tagged=$(gh api "repos/$REPO/git/matching-refs/tags/$VERSION" --jq ".[] | select(.ref == \"refs/tags/$VERSION\") | .object.sha")
           if [ -z "$tagged" ]; then
             gh api "repos/$REPO/git/refs" -f ref="refs/tags/$VERSION" -f sha="$SHA" > /dev/null
           elif [ "$tagged" != "$SHA" ]; then
