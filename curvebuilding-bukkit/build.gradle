@@ -9,10 +9,6 @@ repositories {
         url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
     }
     maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
-    }
-    maven {
         name = "enginehub-maven"
         url = uri("https://maven.enginehub.org/repo/")
     }
