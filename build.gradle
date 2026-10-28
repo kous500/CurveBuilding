@@ -28,6 +28,20 @@ allprojects {
     version = buildVersion
 }
 
+// runServer gets a server.properties that runClient, which plays under an offline name, can join from this computer
+// only; Minecraft's defaults would keep it out. An existing file is left as it is.
+subprojects {
+    tasks.matching { it.name == "runServer" }.configureEach {
+        doFirst {
+            def properties = file("${loom.runConfigs.getByName("server").runDir}/server.properties")
+            if (!properties.exists()) {
+                properties.parentFile.mkdirs()
+                properties.text = "online-mode=false\nserver-ip=127.0.0.1\nwhite-list=false\n"
+            }
+        }
+    }
+}
+
 // ./gradlew allTests: the unit tests and the Fabric game tests on every Minecraft version, including the oldest
 // version of each jar's range (fabric-test-runs, which settings.gradle includes for this task)
 tasks.register("allTests") {
