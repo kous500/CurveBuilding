@@ -154,7 +154,7 @@ Both ends must be versions the jar has been tested on; a new Minecraft patch is 
 3. CI checks the version, builds every jar and runs the same checks as for pull requests. Only then does it tag the commit and create a **draft** release with the jars and `SHA256SUMS`. If anything fails, no tag is created and the workflow can be run again.
 4. Write the release notes in the draft, in the style of the earlier releases (in Claude Code, `/release-notes <version>` writes them from the changes since the previous release), and publish it.
 5. Publishing starts the **Publish** workflow. A maintainer approves the `release` environment, and CI publishes the release files, after checking them against `SHA256SUMS` and the build provenance, to Modrinth (the plugin and the mod) and CurseForge (the mod). Pre-releases are published as alpha (`-alpha.N`) or beta (`-rc.N`).
-6. Publish the new version of the Bukkit plugin by hand on CurseForge and [dev.bukkit.org](https://dev.bukkit.org/): upload the Bukkit jar from the release with the release notes as the changelog, the release type (alpha, beta or release, as on Modrinth) and the supported Minecraft versions. CI does not publish it there.
+6. Publish the new version of the Bukkit plugin by hand on CurseForge and [SpigotMC](https://www.spigotmc.org/), with the Bukkit jar and the release notes from the release. CI does not publish it there.
 
 If publishing fails, start only the failed jobs again, or run the **Publish** workflow with the tag. When the Minecraft versions supported by the Bukkit plugin change, update `BUKKIT_GAME_VERSIONS` in `.github/workflows/publish.yml` and the versions of the Bukkit server start in `.github/workflows/build.yml`.
 

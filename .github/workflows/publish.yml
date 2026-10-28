@@ -3,7 +3,7 @@ name: Publish
 # Publishes a published GitHub release to Modrinth and CurseForge after a maintainer approves the release
 # environment. The files are the release assets, checked against SHA256SUMS and the build provenance of the release
 # workflow; nothing is built again. Pre-releases are published too: -alpha.N as alpha, -rc.N as beta.
-# The Bukkit plugin is not published to CurseForge or dev.bukkit.org, which mc-publish does not support for plugins;
+# The Bukkit plugin is not published to CurseForge or SpigotMC, which mc-publish does not support for plugins;
 # publish its new versions there by hand.
 on:
   release:
