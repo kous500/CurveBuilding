@@ -30,7 +30,7 @@ env:
 
 jobs:
   build:
-    name: Build and test
+    name: Build and unit tests
     # Draft pull requests are not built; marking one ready for review starts the build.
     if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
@@ -133,7 +133,7 @@ jobs:
           key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
 
   server:
-    name: Start Fabric server (${{ matrix.minecraft }})
+    name: Fabric server startup (${{ matrix.minecraft }})
     if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -225,7 +225,7 @@ jobs:
         run: cat server.log
 
   gametest:
-    name: Game tests (${{ matrix.minecraft }})
+    name: Fabric game tests (${{ matrix.minecraft }})
     if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
