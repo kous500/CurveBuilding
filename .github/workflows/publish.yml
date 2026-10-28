@@ -26,7 +26,7 @@ env:
   MODRINTH_ID: qgRxV8C7
   CURSEFORGE_ID: "860912"
   # The Bukkit jar does not name its Minecraft versions. Keep this the same as the supported versions in the release
-  # notes when Bukkit support changes.
+  # notes when Bukkit support changes, and its ends the same as the versions of the Bukkit server start in build.yml.
   BUKKIT_GAME_VERSIONS: "[1.20.2,26.3]"
 
 jobs:
