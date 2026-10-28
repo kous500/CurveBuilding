@@ -42,13 +42,44 @@ dependencies {
     include project(":curvebuilding-core")
 }
 
+// Game tests in src/gametest run on a real server with runGameTest (see CONTRIBUTING.md).
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "curvebuilding-gametest"
+        enableClientGameTests = false
+        eula = true
+        // Every run starts from an empty build/run/gameTest, so the tests see what a new installation sees
+        clearRunDirectory = true
+    }
+}
+
+// Loom makes check (and so build) run the game tests, which start a server for each Minecraft version. They run
+// only when asked for (runGameTest, a CI job of its own, or allTests); build still compiles them.
+tasks.named("runGameTest") {
+    onlyIf("runGameTest or allTests was asked for") {
+        gradle.startParameter.taskNames.any {
+            it in ["runGameTest", "allTests"] || it.endsWith(":runGameTest") || it.endsWith(":allTests")
+        }
+    }
+}
+
+// The game tests as a mod jar, for running them on another Minecraft version in the jar's range (fabric-test-runs)
+tasks.register("gametestJar", Jar) {
+    archiveClassifier = "gametest"
+    from sourceSets.gametest.output
+}
+
 loom {
     // The access widener differs between Minecraft versions, so each version has its own.
     accessWidenerPath = file("curvebuilding.accesswidener")
     runConfigs.configureEach {
         ideConfigGenerated = true
-        // Separate per version, so a world is not upgraded by a newer version and mods of other versions are not loaded
-        runDir = "../../run/${minecraftVersion}"
+        // Separate per version, so a world is not upgraded by a newer version and mods of other versions are not loaded.
+        // Not for the game tests: their directory (build/run/gameTest) is deleted before each run.
+        if (name != "gameTest") {
+            runDir = "../../run/${minecraftVersion}"
+        }
     }
 }
 

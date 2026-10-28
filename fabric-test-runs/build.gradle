@@ -1,5 +1,6 @@
 // Runs a built CurveBuilding Fabric jar on another Minecraft version in its range, to test the range in development.
 // These projects have no sources and build nothing; they are only included with -PtestRuns (see settings.gradle).
+// runClient and runServer start the jar; runGameTest runs the game tests of its project on this version.
 // Each <minecraft version>/gradle.properties names the Minecraft version, its dependencies and the jar to run.
 // Only versions that need no remapping (26.1 and newer) are supported.
 apply plugin: "net.fabricmc.fabric-loom"
@@ -10,11 +11,24 @@ def jarProject = project.property("jar_project") as String
 
 evaluationDependsOn(jarProject)
 def modJar = project(jarProject).tasks.named("jar")
+// The game tests of the same project, compiled for its Minecraft version, run here with runGameTest
+def gametestJar = project(jarProject).tasks.named("gametestJar")
 
 repositories {
     maven {
         name = "enginehub-maven"
         url = uri("https://maven.enginehub.org/repo/")
+    }
+}
+
+// Before dependencies: it creates the gametest source set and its configurations
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "curvebuilding-test-runs"
+        enableClientGameTests = false
+        eula = true
+        clearRunDirectory = true
     }
 }
 
@@ -25,12 +39,16 @@ dependencies {
     implementation "com.sk89q.worldedit:${project.worldedit_artifact}:${project.worldedit_version}"
 
     localRuntime files(modJar.flatMap { it.archiveFile }).builtBy(modJar)
+    gametestRuntimeOnly files(gametestJar.flatMap { it.archiveFile }).builtBy(gametestJar)
 }
 
 loom {
     runConfigs.configureEach {
         ideConfigGenerated = true
-        runDir = "../../curvebuilding-fabric/run/${minecraftVersion}"
+        // Not for the game tests: their directory (build/run/gameTest) is deleted before each run.
+        if (name != "gameTest") {
+            runDir = "../../curvebuilding-fabric/run/${minecraftVersion}"
+        }
     }
 }
 

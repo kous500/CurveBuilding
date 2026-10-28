@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "curvebuilding-gametest",
+  "version": "1.0.0",
+  "name": "CurveBuilding game tests",
+  "description": "Game tests for CurveBuilding, run with runGameTest. Not part of the released mod.",
+  "license": "GNU-v3.0",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "me.kous500.curvebuilding.fabric.gametest.CurveBuildingGameTests"
+    ]
+  },
+  "depends": {
+    "curvebuilding": "*",
+    "worldedit": "*"
+  }
+}

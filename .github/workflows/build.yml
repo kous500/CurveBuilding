@@ -178,12 +178,69 @@ jobs:
         if: ${{ always() }}
         run: cat server.log
 
+  gametest:
+    name: Game tests (${{ matrix.minecraft }})
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - minecraft: "1.21.10"
+            task: ":curvebuilding-fabric:1.21.10:runGameTest"
+            dir: curvebuilding-fabric/versions/1.21.10
+          - minecraft: "1.21.11"
+            task: ":curvebuilding-fabric:1.21.11:runGameTest"
+            dir: curvebuilding-fabric/versions/1.21.11
+          - minecraft: "26.3"
+            task: ":curvebuilding-fabric:26.3:runGameTest"
+            dir: curvebuilding-fabric/versions/26.3
+          # The 26.1 - 26.3 jar and its tests on the oldest version of its range
+          - minecraft: "26.1"
+            task: ":fabric-test-runs:26.1:runGameTest"
+            args: -PtestRuns
+            dir: fabric-test-runs/26.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The build version is made from the latest release tag (git describe)
+          fetch-depth: 0
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            25
+
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-provider: basic
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      # The tests in curvebuilding-fabric/src/gametest, on a server with WorldEdit
+      - name: Run the game tests
+        env:
+          TASK: ${{ matrix.task }}
+          ARGS: ${{ matrix.args }}
+        run: ./gradlew $GRADLE_TOOLCHAINS ${RELEASE_VERSION:+-PreleaseVersion=$RELEASE_VERSION} $ARGS "$TASK"
+
+      - name: Upload the server log
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gametest-log-${{ matrix.minecraft }}
+          path: ${{ matrix.dir }}/build/run/gameTest/logs/
+          retention-days: 14
+
   ci-passed:
     name: CI passed
     # The main ruleset requires this job instead of each job above, so it does not change when a Minecraft
     # version is added to the matrix. It runs even when a job above fails, and fails then.
     if: ${{ always() && (github.event_name != 'pull_request' || !github.event.pull_request.draft) }}
-    needs: [build, server]
+    needs: [build, server, gametest]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

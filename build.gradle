@@ -27,3 +27,11 @@ allprojects {
     group = "me.kous500.curvebuilding"
     version = buildVersion
 }
+
+// ./gradlew allTests: the unit tests and the Fabric game tests on every Minecraft version, including the oldest
+// version of each jar's range (fabric-test-runs, which settings.gradle includes for this task)
+tasks.register("allTests") {
+    group = "verification"
+    description = "Runs the unit tests and the Fabric game tests on every built Minecraft version."
+    dependsOn subprojects.collect { project -> project.tasks.matching { it.name in ["test", "runGameTest"] } }
+}
