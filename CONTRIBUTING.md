@@ -69,7 +69,7 @@ The description may be written in **English or Japanese**. The template asks for
 
 ### Checks
 
-Pull requests must pass CI before they are merged: the build and tests, a Fabric server start and the Fabric game tests on each built Minecraft version, and, for branches in this repository, the branch name. CI does not run on draft pull requests; it starts when the pull request is marked ready for review. For contributors outside the project, a maintainer approves the CI run first.
+Pull requests must pass CI before they are merged: the build and tests, a Fabric server start and the Fabric game tests on each built Minecraft version, a Bukkit server start (Paper) on the oldest and the newest supported Minecraft version, and, for branches in this repository, the branch name. CI does not run on draft pull requests; it starts when the pull request is marked ready for review. For contributors outside the project, a maintainer approves the CI run first.
 
 Please do not share built jars in issues or pull requests. Official builds are only distributed through [GitHub Releases](https://github.com/kous500/CurveBuilding/releases) and the official download pages listed in the README.
 
@@ -156,7 +156,7 @@ Both ends must be versions the jar has been tested on; a new Minecraft patch is 
 5. Publishing starts the **Publish** workflow. A maintainer approves the `release` environment, and CI publishes the release files, after checking them against `SHA256SUMS` and the build provenance, to Modrinth (the plugin and the mod) and CurseForge (the mod). Pre-releases are published as alpha (`-alpha.N`) or beta (`-rc.N`).
 6. Publish the new version of the Bukkit plugin by hand on CurseForge and [dev.bukkit.org](https://dev.bukkit.org/): upload the Bukkit jar from the release with the release notes as the changelog, the release type (alpha, beta or release, as on Modrinth) and the supported Minecraft versions. CI does not publish it there.
 
-If publishing fails, start only the failed jobs again, or run the **Publish** workflow with the tag. When the Minecraft versions supported by the Bukkit plugin change, update `BUKKIT_GAME_VERSIONS` in `.github/workflows/publish.yml`.
+If publishing fails, start only the failed jobs again, or run the **Publish** workflow with the tag. When the Minecraft versions supported by the Bukkit plugin change, update `BUKKIT_GAME_VERSIONS` in `.github/workflows/publish.yml` and the versions of the Bukkit server start in `.github/workflows/build.yml`.
 
 To try the release first, check **Dry run** in step 2. A dry run works on any branch, so changes to the release or build workflows can be tried before they are merged, and leaves no tag or release. It builds the jars with the version `<version>-dry-run.g<commit>`, keeps them in the run for 7 days (for testing only, do not share them) and shows the files and the pull requests the release would contain.
 
