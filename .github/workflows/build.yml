@@ -34,7 +34,8 @@ jobs:
     # Draft pull requests are not built; marking one ready for review starts the build.
     if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # Without the Gradle cache, downloading Minecraft and the dependencies has taken over 25 minutes
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -52,10 +53,21 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # The default provider is a commercial service; basic uses the GitHub Actions cache
-          cache-provider: basic
-          # Pull requests can read the cache but not change it
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # The Gradle home is cached by the steps below. setup-gradle's default provider is a commercial service,
+          # and its basic provider starts from an empty cache whenever a build file changes.
+          cache-disabled: true
+
+      # The key changes with the build files; without an exact match the latest cache is used, so a pull request
+      # that changes a build file downloads only what is new. Only this job saves it, and only on main.
+      - name: Restore the Gradle cache
+        id: gradle-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/gradle.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
 
       - name: Check that the Fabric sources are in the Stonecutter vcsVersion state
         run: |
@@ -101,11 +113,30 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      # The build does not set up the other versions in the jars' ranges (fabric-test-runs), which the other jobs
+      # run on. Configuring them downloads their Minecraft.
+      - name: Set up the fabric-test-runs versions for the cache
+        if: ${{ github.event_name == 'push' && steps.gradle-cache.outputs.cache-hit != 'true' }}
+        run: ./gradlew $GRADLE_TOOLCHAINS -PtestRuns help
+
+      - name: Stop Gradle before saving the cache
+        if: ${{ github.event_name == 'push' && steps.gradle-cache.outputs.cache-hit != 'true' }}
+        run: ./gradlew --stop
+
+      - name: Save the Gradle cache
+        if: ${{ github.event_name == 'push' && steps.gradle-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
+
   server:
     name: Start Fabric server (${{ matrix.minecraft }})
     if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -136,8 +167,17 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          cache-provider: basic
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          cache-disabled: true
+
+      # Saved by the build job
+      - name: Restore the Gradle cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/gradle.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
 
       - name: Start the server and wait until it is ready
         env:
@@ -152,9 +192,12 @@ jobs:
           ./gradlew $GRADLE_TOOLCHAINS ${RELEASE_VERSION:+-PreleaseVersion=$RELEASE_VERSION} $ARGS "$TASK" > server.log 2>&1 &
           gradle_pid=$!
 
+          # The time limit starts when Gradle runs the task: before that, Gradle may be downloading Minecraft and the
+          # dependencies, which without the cache has taken over 20 minutes. The job's timeout covers that part.
           # The server is killed instead of stopped: PacketSender's timer keeps its JVM running after the stop
           # command. Loom starts the server through the dev launch injector.
-          for _ in $(seq 1 240); do
+          waited=0
+          while [ "$waited" -lt 600 ]; do
             if grep -q 'Done (' server.log; then
               grep -E '^\s+- (curvebuilding|worldedit) ' server.log || true
               if grep -qE '^\s+- curvebuilding ' server.log; then
@@ -170,8 +213,11 @@ jobs:
               exit 1
             fi
             sleep 5
+            if grep -qF "> Task $TASK" server.log; then
+              waited=$((waited + 5))
+            fi
           done
-          echo "::error::The server was not ready within 20 minutes."
+          echo "::error::The server was not ready within 10 minutes of starting $TASK."
           exit 1
 
       - name: Show the server log
@@ -182,7 +228,7 @@ jobs:
     name: Game tests (${{ matrix.minecraft }})
     if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -217,8 +263,17 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          cache-provider: basic
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          cache-disabled: true
+
+      # Saved by the build job
+      - name: Restore the Gradle cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/gradle.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
 
       # The tests in curvebuilding-fabric/src/gametest, on a server with WorldEdit
       - name: Run the game tests
