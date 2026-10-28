@@ -71,7 +71,7 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
 
         setResources(new BukkitResources(bukkitConfig, messagesConfig));
 
-        SendParticles.start(bukkitConfig);
+        SendParticles.start(this, bukkitConfig);
     }
 
     @Override
