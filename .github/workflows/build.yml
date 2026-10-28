@@ -179,7 +179,7 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/gradle.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-${{ runner.os }}-
 
-      - name: Start the server and wait until it is ready
+      - name: Start the server and stop it
         env:
           MINECRAFT: ${{ matrix.minecraft }}
           TASK: ${{ matrix.task }}
@@ -189,27 +189,26 @@ jobs:
           mkdir -p "$run_dir"
           echo "eula=true" > "$run_dir/eula.txt"
 
-          ./gradlew $GRADLE_TOOLCHAINS ${RELEASE_VERSION:+-PreleaseVersion=$RELEASE_VERSION} $ARGS "$TASK" > server.log 2>&1 &
+          # Types the stop command into the server's console once stop-requested exists
+          (
+            for _ in $(seq 1 3600); do
+              [ -e stop-requested ] && break
+              sleep 1
+            done
+            echo "stop"
+          ) | ./gradlew $GRADLE_TOOLCHAINS ${RELEASE_VERSION:+-PreleaseVersion=$RELEASE_VERSION} $ARGS "$TASK" > server.log 2>&1 &
           gradle_pid=$!
 
           # The time limit starts when Gradle runs the task: before that, Gradle may be downloading Minecraft and the
           # dependencies, which without the cache has taken over 20 minutes. The job's timeout covers that part.
-          # The server is killed instead of stopped: PacketSender's timer keeps its JVM running after the stop
-          # command. Loom starts the server through the dev launch injector.
           waited=0
-          while [ "$waited" -lt 600 ]; do
-            if grep -q 'Done (' server.log; then
-              grep -E '^\s+- (curvebuilding|worldedit) ' server.log || true
-              if grep -qE '^\s+- curvebuilding ' server.log; then
-                echo "The server started with CurveBuilding loaded."
-                pkill -f net.fabricmc.devlaunchinjector.Main || true
-                exit 0
-              fi
-              echo "::error::The server started, but CurveBuilding was not loaded."
-              exit 1
-            fi
+          until grep -q 'Done (' server.log; do
             if ! kill -0 "$gradle_pid" 2>/dev/null; then
               echo "::error::The server stopped before it was ready."
+              exit 1
+            fi
+            if [ "$waited" -ge 600 ]; then
+              echo "::error::The server was not ready within 10 minutes of starting $TASK."
               exit 1
             fi
             sleep 5
@@ -217,8 +216,30 @@ jobs:
               waited=$((waited + 5))
             fi
           done
-          echo "::error::The server was not ready within 10 minutes of starting $TASK."
-          exit 1
+
+          grep -E '^\s+- (curvebuilding|worldedit) ' server.log || true
+          if ! grep -qE '^\s+- curvebuilding ' server.log; then
+            echo "::error::The server started, but CurveBuilding was not loaded."
+            exit 1
+          fi
+
+          # A thread left running by a mod keeps the server's JVM, and so Gradle, from ending
+          touch stop-requested
+          for _ in $(seq 1 120); do
+            kill -0 "$gradle_pid" 2>/dev/null || break
+            sleep 1
+          done
+          if kill -0 "$gradle_pid" 2>/dev/null; then
+            echo "::error::The server did not end within 2 minutes of the stop command."
+            exit 1
+          fi
+          status=0
+          wait "$gradle_pid" || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Gradle failed after the server stopped (exit status $status)."
+            exit 1
+          fi
+          echo "The server started with CurveBuilding loaded and ended after the stop command."
 
       - name: Show the server log
         if: ${{ always() }}
