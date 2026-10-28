@@ -36,7 +36,7 @@ dependencies {
 
     add(modDependency, "com.sk89q.worldedit:${project.worldedit_artifact}:${project.worldedit_version}")
     compileOnly "org.jetbrains:annotations:26.1.0"
-    include "org.yaml:snakeyaml:2.2"
+    include "org.yaml:snakeyaml:2.7"
 
     implementation project(":curvebuilding-core")
     include project(":curvebuilding-core")

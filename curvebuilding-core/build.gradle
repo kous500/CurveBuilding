@@ -14,7 +14,7 @@ dependencies {
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.4.2") {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    implementation 'org.yaml:snakeyaml:2.2'
+    implementation 'org.yaml:snakeyaml:2.7'
 
     testImplementation "com.sk89q.worldedit:worldedit-core:7.4.2"
     testImplementation platform("org.junit:junit-bom:6.1.3")
