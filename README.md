@@ -36,22 +36,37 @@ Fabric is currently built for Minecraft 1.21.10, 1.21.11 and 26.1 - 26.3 (one ja
 
 ### Running the Project
 
-- To build CurveBuilding Bukkit:
-  1. Select "Run `curvebuilding-bukkit [build]`" from Run/Debug Configurations, or run `./gradlew :curvebuilding-bukkit:build`.
-  2. The project will be built and a jar file will be created in `curvebuilding-bukkit/build/libs`.
-- To build CurveBuilding Fabric:
-  1. Select "Run `curvebuilding-fabric [build]`" from Run/Debug Configurations to build every Minecraft version, or run `./gradlew :curvebuilding-fabric:<minecraft version>:build` for one version.
-  2. The project will be built and a jar file will be created in `curvebuilding-fabric/versions/<minecraft version>/build/libs`.
-- To build everything, run `./gradlew build`.
-- To run CurveBuilding Fabric as a game client:
-  1. Select "Run `curvebuilding-fabric <minecraft version> [runClient]`" from Run/Debug Configurations.
-  2. The game client will start with the mod applied. Each Minecraft version uses its own directory `curvebuilding-fabric/run/<minecraft version>`.
-- To run CurveBuilding Fabric as a game server:
-  1. Select "Run `curvebuilding-fabric <minecraft version> [runServer]`" from Run/Debug Configurations.
-  2. The game server will start on localhost with the mod applied.
-- To test a Fabric jar on another Minecraft version in its range (for example the 26.1 - 26.3 jar on 26.1):
-  1. Select "Run `fabric-test-runs <minecraft version> [runClient]`" (or `[runServer]`), or run `./gradlew -PtestRuns :fabric-test-runs:<minecraft version>:runClient`.
-  2. The jar is built and started on that Minecraft version. The versions are in `fabric-test-runs/<minecraft version>/gradle.properties`; add a directory there to test another version.
+Each task can be started from the Run/Debug Configurations in IDEA or with Gradle. `<version>` is a Minecraft version that Fabric is built for.
+
+#### Building
+
+| What | Run configuration | Command | Jars in |
+|---|---|---|---|
+| Everything | - | `./gradlew build` | the folders below |
+| Bukkit | `curvebuilding-bukkit [build]` | `./gradlew :curvebuilding-bukkit:build` | `curvebuilding-bukkit/build/libs` |
+| Fabric, every version | `curvebuilding-fabric [build]` | - | `curvebuilding-fabric/versions/<version>/build/libs` |
+| Fabric, one version | - | `./gradlew :curvebuilding-fabric:<version>:build` | `curvebuilding-fabric/versions/<version>/build/libs` |
+
+#### Running in the game
+
+| What | Run configuration | Command |
+|---|---|---|
+| Fabric client | `curvebuilding-fabric <version> [runClient]` | `./gradlew :curvebuilding-fabric:<version>:runClient` |
+| Fabric server (localhost) | `curvebuilding-fabric <version> [runServer]` | `./gradlew :curvebuilding-fabric:<version>:runServer` |
+| A Fabric jar on another version in its range, for example the 26.1 - 26.3 jar on 26.1 | `fabric-test-runs <version> [runClient]` or `[runServer]` | `./gradlew -PtestRuns :fabric-test-runs:<version>:runClient` |
+
+Each Minecraft version runs in its own folder, `curvebuilding-fabric/run/<version>`. The other versions in a jar's range are set up in `fabric-test-runs/<version>/gradle.properties`; add a folder there to run another version.
+
+#### Testing
+
+| What | Run configuration | Command |
+|---|---|---|
+| Every test | `CurveBuilding [allTests]` | `./gradlew allTests --continue` |
+| Unit tests | - | `./gradlew test` |
+| Game tests on one version | - | `./gradlew :curvebuilding-fabric:<version>:runGameTest`, or `./gradlew -PtestRuns :fabric-test-runs:<version>:runGameTest` for another version in a jar's range |
+
+- The game tests (`curvebuilding-fabric/src/gametest`) build curves with WorldEdit on a real server. The server runs in `build/run/gameTest` of the version's project, emptied before each run, and the task fails if a test fails. `build` compiles the game tests but does not run them.
+- `--continue` runs the remaining tests after a failure.
 
 Once you have completed testing, please submit a pull request.
 Before contributing, please read [CONTRIBUTING.md](CONTRIBUTING.md) for the pull request title format and other rules.
