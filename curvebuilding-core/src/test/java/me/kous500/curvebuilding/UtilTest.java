@@ -108,6 +108,41 @@ class UtilTest {
     }
 
     @Nested
+    class BezierFineness {
+        private static final Vector3 A = Vector3.at(0, 64, 0);
+
+        @Test
+        void segmentWithoutHandlesUsesTheDistanceBetweenItsEnds() {
+            Vector3 b = Vector3.at(10, 64, 0);
+            assertEquals(200, Util.bezierFineness(new Vector3[]{A, A, b, b}, 20), 1e-9);
+        }
+
+        @Test
+        void loopWithItsEndsAtTheSamePlaceGetsStepsAlongItsHandles() {
+            Vector3[] loop = {A, Vector3.at(0, 64, 10), Vector3.at(10, 64, 10), A};
+            double fineness = Util.bezierFineness(loop, 20);
+
+            assertEquals((10 + 10 + Math.sqrt(200)) * 20, fineness, 1e-9);
+            double exact = Util.bezierLength(loop, 100_000);
+            assertEquals(exact, Util.bezierLength(loop, fineness), exact * 0.01);
+        }
+
+        @Test
+        void segmentWithEveryPointAtTheSamePlaceGetsOneStep() {
+            Vector3[] point = {A, A, A, A};
+            assertEquals(1, Util.bezierFineness(point, 20));
+            assertEquals(0, Util.bezierLength(point, Util.bezierFineness(point, 20)));
+        }
+
+        @Test
+        void rejectsIncompletePositions() {
+            assertThrows(NullPointerException.class, () -> Util.bezierFineness(null, 20));
+            assertThrows(IllegalArgumentException.class,
+                    () -> Util.bezierFineness(new Vector3[]{A, A, null, A}, 20));
+        }
+    }
+
+    @Nested
     class BezierSegments {
         private final Vector3 a = Vector3.at(0, 64, 0);
         private final Vector3 aBack = Vector3.at(0, 64, 3);

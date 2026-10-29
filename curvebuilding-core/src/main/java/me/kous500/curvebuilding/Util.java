@@ -52,6 +52,19 @@ public final class Util {
     }
 
     /**
+     * A fineness for {@link #bezierLength}: {@code stepsPerBlock} steps per block of the control polygon, at least 1.
+     * The polygon, not the distance between the ends, so that a curve whose ends are at the same place still gets
+     * steps along its handles.
+     *
+     * @param pos the four control points of the curve
+     */
+    public static double bezierFineness(Vector3[] pos, double stepsPerBlock) {
+        validateBezierPositions(pos);
+        double polygonLength = pos[0].distance(pos[1]) + pos[1].distance(pos[2]) + pos[2].distance(pos[3]);
+        return Math.max(1, polygonLength * stepsPerBlock);
+    }
+
+    /**
      * pos1からpos4の値から生成されるベジエ曲線の曲線上の位置iの座標を求める。
      *
      * @param pos pos1からpos4までの値

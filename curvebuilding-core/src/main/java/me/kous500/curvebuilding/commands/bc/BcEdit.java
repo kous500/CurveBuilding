@@ -107,7 +107,9 @@ public final class BcEdit {
     private void editBC(Vector3[] selectionPos) throws MaxChangedBlocksException, MaxSetLengthException {
         if (!isBezierSegmentWithin(selectionPos, config.maxSetLength)) throw new MaxSetLengthException();
 
-        double selectionLength = bezierLength(selectionPos, selectionPos[0].distance(selectionPos[3]) * 20);
+        double selectionLength = bezierLength(selectionPos, bezierFineness(selectionPos, 20));
+        // Two positions at the same place with no handles between them: nothing to place
+        if (selectionLength == 0) return;
         double fineness = config.fineness * selectionLength;
         int length = nowLength + (int) bezierLength(selectionPos, fineness);
         double h = Math.floor(height / 2.0 - 0.5);

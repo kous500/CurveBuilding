@@ -41,7 +41,7 @@ public class RenderPreview {
         for (Vector3[] segment : bezierSegments(pos)) {
             if (!isBezierSegmentWithin(segment, fabricConfig.lineRenderLength)) return;
 
-            double length = bezierLength(segment, Math.max(1, segment[0].distance(segment[3]) * 5));
+            double length = bezierLength(segment, bezierFineness(segment, 5));
             totalLen += length;
             if (totalLen > fabricConfig.lineRenderLength) return;
 

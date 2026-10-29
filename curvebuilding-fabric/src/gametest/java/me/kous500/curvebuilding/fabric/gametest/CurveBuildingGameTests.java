@@ -88,6 +88,41 @@ public class CurveBuildingGameTests {
     }
 
     @GameTest
+    public void segmentBetweenPositionsAtTheSamePlaceIsSkipped(GameTestHelper helper) {
+        Curve curve = new Curve(helper);
+        curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
+        curve.pos(1, 0, new BlockPos(1, 1, 3));
+        curve.pos(2, 0, new BlockPos(1, 1, 3));
+        curve.pos(3, 0, new BlockPos(6, 1, 3));
+        curve.build();
+
+        // Nothing from position 1 to 2, then the same blocks as a straight curve from 2 to 3
+        assertBlocks(helper, Blocks.STONE, List.of(
+                new BlockPos(0, 1, 0),
+                new BlockPos(1, 1, 3), new BlockPos(2, 1, 3), new BlockPos(3, 1, 3),
+                new BlockPos(4, 1, 3), new BlockPos(5, 1, 3), new BlockPos(6, 1, 3)
+        ));
+        helper.succeed();
+    }
+
+    @GameTest
+    public void loopWithItsEndsAtTheSamePlaceIsBuilt(GameTestHelper helper) {
+        Curve curve = new Curve(helper);
+        curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
+        curve.pos(1, 0, new BlockPos(1, 1, 1));
+        curve.pos(1, 2, new BlockPos(1, 1, 6));
+        curve.pos(2, 0, new BlockPos(1, 1, 1));
+        curve.pos(2, 1, new BlockPos(6, 1, 1));
+        curve.build();
+
+        // The loop goes out along the control points and back, so it places more than its two ends
+        List<BlockPos> stone = blocks(helper, Blocks.STONE);
+        helper.assertTrue(stone.contains(new BlockPos(1, 1, 1)) && stone.size() > 4,
+                Component.literal("expected a loop from (1, 1, 1), found stone at " + stone));
+        helper.succeed();
+    }
+
+    @GameTest
     public void curveLongerThanTheLimitIsNotBuilt(GameTestHelper helper) {
         Curve curve = new Curve(helper);
         curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
