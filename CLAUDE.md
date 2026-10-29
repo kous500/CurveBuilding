@@ -14,6 +14,17 @@
 - Core and Bukkit target Java 21. Do not use Java 22+ language features or APIs there.
 - When adding a message key, add it to every message file in both the Bukkit and the Fabric module.
 
+## Code comments
+
+These rules and the ones in CONTRIBUTING.md apply to comments in the code, the Gradle build scripts
+and the GitHub Actions workflows.
+
+- Write code comments in English.
+- Write what someone opening the file half a year later needs: the reasons, assumptions and
+  constraints that the code does not show. The history of the work belongs in the pull request
+  description, not in comments.
+- Keep them short and limited to what is needed.
+
 ## Versions and releases
 
 - The release tag is the only source of the version number. Do not bump version numbers in build
@@ -24,6 +35,5 @@
 
 - Follow CONTRIBUTING.md for branch names, commit messages and pull request titles.
 - Never push to `main` or force-push. Pull requests are squash-merged.
-- Ask before anything other people can see: pushing, opening or merging pull requests, commenting
-  on issues or pull requests, changing repository settings.
-- When reusing code from someone else's pull request, credit them with a `Co-authored-by:` trailer.
+- When reusing code from someone else's pull request, credit them with a `Co-authored-by:` trailer
+  at the end of the pull request description, which becomes the squash commit message.

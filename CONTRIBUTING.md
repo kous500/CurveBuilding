@@ -73,6 +73,14 @@ Pull requests must pass CI before they are merged: the build and tests, a Fabric
 
 Please do not share built jars in issues or pull requests. Official builds are only distributed through [GitHub Releases](https://github.com/kous500/CurveBuilding/releases) and the official download pages listed in the README.
 
+## Code comments
+
+- Write code comments in English.
+- For a workaround, name the problem it avoids (the library and its version) and when it can be removed.
+- For version-specific code (Stonecutter conditions, `FabricCompat`, the preview backends), say which Minecraft version changed what.
+- Write a TODO only with an issue number, for example `TODO(#40)`.
+- Do not leave commented-out code.
+
 ## Translations
 
 Message files live in two places and should be kept in sync:
@@ -164,7 +172,7 @@ To try the release first, check **Dry run** in step 2. A dry run works on any br
 
 - A **first response within one month**. Even when a decision takes longer, we will tell you that we received your contribution and what the next step is.
 - If we decide not to merge a pull request, we **close it with the reason** instead of leaving it open.
-- If we reuse parts of your work in another pull request, we credit you with a `Co-authored-by:` trailer.
+- If we reuse parts of your work in another pull request, we credit you with a `Co-authored-by:` trailer at the end of its description, which becomes the commit message when it is squash-merged.
 
 ## License
 

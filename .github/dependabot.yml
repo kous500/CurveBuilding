@@ -14,7 +14,7 @@ updates:
         patterns: ["*"]
     commit-message:
       prefix: chore
-    # No labels until the release notes labels are set up
+    # No labels: pull requests are told apart by the type in their titles
     labels: []
 
   - package-ecosystem: gradle
