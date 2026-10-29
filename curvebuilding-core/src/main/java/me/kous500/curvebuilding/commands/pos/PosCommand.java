@@ -16,44 +16,27 @@ public class PosCommand {
         if (!command.equalsIgnoreCase("/bcpos")) return false;
         if (!log.isEmpty()) player.printInfo(TextComponent.of(log.toString()));
 
-        if (args.length >= 2 && args[0].equals("clear")) {
-            PosType posType = PosType.get(args[1]);
-            if (argIsError(player, args, posType)) {
-                clearPos(player, posType.n, posType.h);
+        PosSubcommand subcommand = args.length >= 1 ? PosSubcommand.of(args[0]) : null;
+        if (subcommand == null || (subcommand.arguments != PosSubcommand.Arguments.NONE && args.length < 2)) {
+            player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
+            if (args.length >= 1) problemHere(player, "bcpos", args[0]);
+            else problemHere(player, "pos", "");
+            return false;
+        }
+
+        switch (subcommand) {
+            case CLEARALL -> {
+                clearPos(player);
                 return true;
-            } else {
-                return false;
             }
-        } else if (args.length >= 1 && args[0].equals("clearall")) {
-            clearPos(player);
-            return true;
-        } else if (args.length >= 2 && args[0].equals("insert")) {
-            PosType posType = PosType.get(args[1]);
-            if (argIsError(player, args, posType)) {
-                insert(player, posType.n);
-                return true;
-            } else {
-                return false;
-            }
-        } else if (args.length >= 2 && args[0].equals("remove")) {
-            PosType posType = PosType.get(args[1]);
-            if (argIsError(player, args, posType)) {
-                remove(player, posType.n);
-                return true;
-            } else {
-                return false;
-            }
-        } else if (args.length >= 2 && args[0].equals("set")) {
-            PosType posType = PosType.get(args[1]);
-            if (argIsError(player, args, posType)) {
-                addPos(player, posType.n, posType.h);
-                return true;
-            } else {
-                return false;
-            }
-        } else if (args.length >= 2 && args[0].equals("shift")) {
-            int n = toInt(args[1]);
-            if (n >= 0) {
+            case SHIFT -> {
+                int n = toInt(args[1]);
+                if (n < 0) {
+                    player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
+                    problemHere(player, args[0], args[1]);
+                    return false;
+                }
+
                 String direction = args.length >= 3 ? args[2] : "me";
                 Pattern regex = Pattern.compile("^[bdeflmnrsuw]", Pattern.CASE_INSENSITIVE);
                 if (!regex.matcher(direction).find()) {
@@ -64,16 +47,20 @@ public class PosCommand {
 
                 shift(player, n, direction.charAt(0));
                 return true;
-            } else {
-                player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-                problemHere(player, args[0], args[1]);
-                return false;
             }
-        } else {
-            player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-            if (args.length >= 1) problemHere(player, "bcpos", args[0]);
-            else problemHere(player, "pos", "");
-            return false;
+            default -> {
+                PosType posType = PosType.get(args[1]);
+                if (!argIsError(player, args, posType)) return false;
+
+                switch (subcommand) {
+                    case CLEAR -> clearPos(player, posType.n, posType.h);
+                    case INSERT -> insert(player, posType.n);
+                    case REMOVE -> remove(player, posType.n);
+                    case SET -> addPos(player, posType.n, posType.h);
+                    default -> throw new IllegalStateException("Unexpected subcommand: " + subcommand);
+                }
+                return true;
+            }
         }
     }
 
