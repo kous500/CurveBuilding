@@ -223,7 +223,7 @@ public class SendParticles {
     private double sendBezier(Vector3[] p, Target target, ParticleTypeMotion particleType, double totalLength, int r) {
         if (totalLength > config.lineMaxLength || !isBezierSegmentWithin(p, config.lineMaxLength)) return config.lineMaxLength + 1;
 
-        double length = totalLength + bezierLength(p, p[0].distance(p[3]) * 20);
+        double length = totalLength + bezierLength(p, bezierFineness(p, 20));
         if (length > config.lineMaxLength) return length;
 
         int cnt = 0;
