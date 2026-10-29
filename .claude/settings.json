@@ -34,9 +34,7 @@
       "Bash(gh release edit:*)",
       "Bash(gh release delete:*)",
       "Bash(gh repo edit:*)",
-      "Bash(gh repo delete:*)",
-      "Read(./bukkit-test/**)",
-      "Edit(./bukkit-test/**)"
+      "Bash(gh repo delete:*)"
     ]
   }
 }
