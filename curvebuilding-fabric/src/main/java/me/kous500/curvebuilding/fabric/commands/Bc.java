@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.sk89q.worldedit.entity.Player;
 import me.kous500.curvebuilding.fabric.FabricCompat;
 import me.kous500.curvebuilding.commands.bc.BcCommand;
+import me.kous500.curvebuilding.commands.bc.BcCompletion;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -47,6 +48,8 @@ public class Bc implements RunCommand {
 
         RequiredArgumentBuilder<CommandSourceStack, String> builderOption = Commands
                 .argument(options, string())
+                // Only here: the options come before the numbers in this command tree
+                .suggests(CoreSuggestions.of(BcCompletion::complete))
                 .then(builderN)
                 .executes(context -> debugRun(new Bc(context, options)));
 

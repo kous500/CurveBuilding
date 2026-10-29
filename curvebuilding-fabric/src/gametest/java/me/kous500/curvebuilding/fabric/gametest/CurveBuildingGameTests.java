@@ -1,5 +1,8 @@
 package me.kous500.curvebuilding.fabric.gametest;
 
+import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.suggestion.Suggestion;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.entity.Player;
@@ -12,9 +15,11 @@ import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
 import me.kous500.curvebuilding.fabric.FabricCompat;
 import me.kous500.curvebuilding.math.PosManager;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -47,6 +52,25 @@ public class CurveBuildingGameTests {
         for (String command : new String[]{"/bc", "/bcpos"}) {
             helper.assertTrue(root.getChild(command) != null, Component.literal("/" + command + " is not registered"));
         }
+        helper.succeed();
+    }
+
+    @GameTest
+    public void commandsSuggestLikeBukkit(GameTestHelper helper) {
+        assertSuggestions(helper, "//bcpos s", List.of("set", "shift"));
+        assertSuggestions(helper, "//bcpos set 3", List.of("3b", "3f"));
+        assertSuggestions(helper, "//bcpos insert ", List.of("1", "2", "3", "4", "5", "6", "7", "8", "9"));
+        assertSuggestions(helper, "//bcpos shift 5 ", List.of());
+        assertSuggestions(helper, "//bc -a", List.of("-ax", "-az"));
+
+        // The length and a direction are filled in at once, and the result is a command that parses to the end
+        String command = "//bcpos shift 5";
+        Suggestion back = suggestions(helper, command).stream()
+                .filter(suggestion -> suggestion.getText().equals("5 back")).findFirst().orElse(null);
+        helper.assertTrue(back != null, Component.literal("no \"5 back\" for " + command));
+        String applied = back.apply(command);
+        helper.assertTrue(applied.equals("//bcpos shift 5 back"), Component.literal("\"5 back\" gave " + applied));
+        helper.assertTrue(!parse(helper, applied).getReader().canRead(), Component.literal(applied + " does not parse"));
         helper.succeed();
     }
 
@@ -151,6 +175,28 @@ public class CurveBuildingGameTests {
     private static void assertBlocks(GameTestHelper helper, Block block, List<BlockPos> expected) {
         List<BlockPos> actual = blocks(helper, block);
         helper.assertTrue(actual.equals(expected), Component.literal("expected " + block + " at " + expected + ", found at " + actual));
+    }
+
+    /**
+     * Parses {@code command} as the server does for a player's chat input, skipping its first {@code /}, with the
+     * permissions of the server console.
+     */
+    private static ParseResults<CommandSourceStack> parse(GameTestHelper helper, String command) {
+        MinecraftServer server = helper.getLevel().getServer();
+        StringReader reader = new StringReader(command);
+        reader.skip();
+        return server.getCommands().getDispatcher().parse(reader, server.createCommandSourceStack());
+    }
+
+    /** The suggestions the server sends back for {@code command} typed up to its end. */
+    private static List<Suggestion> suggestions(GameTestHelper helper, String command) {
+        MinecraftServer server = helper.getLevel().getServer();
+        return server.getCommands().getDispatcher().getCompletionSuggestions(parse(helper, command)).join().getList();
+    }
+
+    private static void assertSuggestions(GameTestHelper helper, String command, List<String> expected) {
+        List<String> found = suggestions(helper, command).stream().map(Suggestion::getText).toList();
+        helper.assertTrue(found.equals(expected), Component.literal("expected " + expected + " for " + command + ", found " + found));
     }
 
     /** Every position in the test area with {@code block}, ordered by x, then y, then z. */
