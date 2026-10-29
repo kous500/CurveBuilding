@@ -6,6 +6,11 @@ import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 
 public final class BcCommand {
+    /** Option letters after {@code -}: replace only air blocks. */
+    public static final String AIR_OPTION = "a";
+    /** Option letters after {@code -}: read the selection along x or along z; at most one of them. */
+    public static final String[] DIRECTION_OPTIONS = {"x", "z"};
+
     public int n = 0;
     public int m = 0;
     public boolean air = false;
@@ -36,11 +41,11 @@ public final class BcCommand {
                     for(String s : arg.split("")) {
                         if (s.equals("-") && first) {
                             first = false;
-                        } else if (s.equals("a") && !air) {
+                        } else if (s.equals(AIR_OPTION) && !air) {
                             air = true;
-                        } else if (s.equals("x") && !isDirectionX && !isDirectionZ) {
+                        } else if (s.equals(DIRECTION_OPTIONS[0]) && !isDirectionX && !isDirectionZ) {
                             isDirectionX = true;
-                        } else if (s.equals("z") && !isDirectionX && !isDirectionZ) {
+                        } else if (s.equals(DIRECTION_OPTIONS[1]) && !isDirectionX && !isDirectionZ) {
                             isDirectionZ = true;
                         } else {
                             goodArg = false;
