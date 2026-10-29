@@ -9,7 +9,7 @@
   ],
   "contact": {},
   "license": "GNU-v3.0",
-  "icon": "assets/CurveBuilding/icon.png",
+  "icon": "assets/curvebuilding/icon.png",
   "environment": "*",
   "entrypoints": {
     "client": [
