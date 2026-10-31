@@ -5,7 +5,6 @@ package me.kous500.curvebuilding.config;
  * replaced with the arguments given with it, in that order.
  */
 public enum Message {
-    PLUGIN_LOAD_ERROR("plugin-load-error"),
     NON_PLAYER_EXECUTION("non-player-execution"),
     INCORRECT_ARGUMENT("incorrect-argument"),
     INTEGER_LESS("integer-less"),

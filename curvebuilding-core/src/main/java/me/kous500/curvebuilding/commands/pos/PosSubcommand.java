@@ -1,8 +1,8 @@
 package me.kous500.curvebuilding.commands.pos;
 
 /**
- * The subcommands of {@code //bcpos} and the arguments each takes. The command, its tab completion on Bukkit and its
- * command tree on Fabric are all built from this list.
+ * The subcommands of {@code //bcpos} and the arguments each takes. The command and its suggestions on every
+ * platform are built from this list.
  */
 public enum PosSubcommand {
     CLEAR("clear", Arguments.POS_TYPE),

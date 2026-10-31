@@ -1,5 +1,4 @@
 messages:
-  plugin-load-error: "加载 {0} 时发生错误："
   non-player-execution: "无法在控制台执行该命令。"
   incorrect-argument: "无效的指令参数。"
   integer-less: "整数不能小于 {0}，而输入值为 {1}。"

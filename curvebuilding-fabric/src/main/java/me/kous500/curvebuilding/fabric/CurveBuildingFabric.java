@@ -8,6 +8,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 import static me.kous500.curvebuilding.CurveBuilding.loadResources;
+import static me.kous500.curvebuilding.CurveBuilding.setConsole;
 import static me.kous500.curvebuilding.fabric.commands.Bc.setBcBuilder;
 import static me.kous500.curvebuilding.fabric.commands.Pos.setPosBuilder;
 
@@ -19,6 +20,8 @@ public class CurveBuildingFabric implements ModInitializer, MainInitializer {
 
     @Override
     public void onInitialize() {
+        setConsole(new FabricConsole());
+
         fabricConfig = loadResources(this, FabricConfig::new);
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
