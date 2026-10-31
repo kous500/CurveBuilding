@@ -28,18 +28,17 @@ public final class BcEdit {
     private Vector3 center;
     private Direction direction;
     private EditSession editSession;
-    private final BcCommand argument;
+    private final BcArguments argument;
     private final  NavigableMap<BlockVector3, NavigableMap<BlockVector3, Integer>> blockMap;
 
     private enum Direction {x, z}
 
     /**
-     * 設定したposからベジエ曲線をブロックで生成する。
+     * Builds the Bézier curve through the positions of {@code player} with the blocks of their selection.
      *
-     * @param player コマンドを実行したプレイヤー
-     * @param argument bcコマンドの引数
+     * @param argument the arguments of {@code //bc}
      */
-    public BcEdit(Player player, BcCommand argument) {
+    public BcEdit(Player player, BcArguments argument) {
         this.argument = argument;
         blockMap = new TreeMap<>();
 
@@ -57,8 +56,8 @@ public final class BcEdit {
             height = region.getHeight();
             center = adapt(region.getCenter());
 
-            if (argument.isDirectionX) direction = Direction.x;
-            else if (argument.isDirectionZ) direction = Direction.z;
+            if (argument.axis() == BcOptions.Axis.X) direction = Direction.x;
+            else if (argument.axis() == BcOptions.Axis.Z) direction = Direction.z;
             else if (width <= length) direction = Direction.x;
             else direction = Direction.z;
 
@@ -128,7 +127,7 @@ public final class BcEdit {
     private void xz(Vector3[] selectionPos, int m, double fineness, Vector3 vec) throws MaxChangedBlocksException {
         Vector3 posA = vec;
         Vector3 posB = vec;
-        int n = argument.n;
+        int n = argument.n();
 
         if (direction == Direction.x) {
             for (int l = 0; l <= length / 2; l++) {
@@ -158,7 +157,7 @@ public final class BcEdit {
         double yt1 = selectionPos[0].y();
         double zt1 = selectionPos[0].z();
 
-        int L1 = argument.m;
+        int L1 = argument.m();
         if (nowLength != 0 && n != 0) L1 += nowLength % n;
 
         double s = 0;
@@ -190,7 +189,7 @@ public final class BcEdit {
                     blockCoordinate = BlockVector3.floor(searchT.add(0 , 0, a + 0.5));
                 }
 
-                if (!argument.air || editSession.getBlock(adapt(posT)).toString().equals("minecraft:air")) {
+                if (!argument.air() || editSession.getBlock(adapt(posT)).toString().equals("minecraft:air")) {
                     blockMap.computeIfAbsent(posT, k -> new TreeMap<>());
                     var nowBlock = blockMap.get(posT);
                     nowBlock.putIfAbsent(blockCoordinate, 0);

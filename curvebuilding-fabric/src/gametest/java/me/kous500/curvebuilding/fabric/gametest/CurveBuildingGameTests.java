@@ -10,7 +10,8 @@ import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.extension.platform.permission.ActorSelectorLimits;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.RegionSelector;
-import me.kous500.curvebuilding.commands.bc.BcCommand;
+import me.kous500.curvebuilding.commands.ArgumentException;
+import me.kous500.curvebuilding.commands.bc.BcArguments;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
 import me.kous500.curvebuilding.commands.pos.PosCommand;
 import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
@@ -99,6 +100,23 @@ public class CurveBuildingGameTests {
             helper.assertTrue(!PosCommand.posCommand(player, args), Component.literal(String.join(" ", args) + " was used"));
         }
         helper.assertTrue(PosManager.getPos(player) == null, Component.literal("a position was set"));
+        helper.succeed();
+    }
+
+    @GameTest
+    public void commandsReadTheArgumentsAsTyped(GameTestHelper helper) {
+        Curve curve = new Curve(helper);
+        curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
+        curve.run("//bcpos set 1", new BlockPos(1, 1, 3));
+        curve.run("//bcpos set 2", new BlockPos(6, 1, 3));
+        curve.run("//bc -a 0", new BlockPos(0, 1, 0));
+
+        // The same curve as straightCurveCopiesTheSelection builds
+        assertBlocks(helper, Blocks.STONE, List.of(
+                new BlockPos(0, 1, 0),
+                new BlockPos(1, 1, 3), new BlockPos(2, 1, 3), new BlockPos(3, 1, 3),
+                new BlockPos(4, 1, 3), new BlockPos(5, 1, 3), new BlockPos(6, 1, 3)
+        ));
         helper.succeed();
     }
 
@@ -273,9 +291,25 @@ public class CurveBuildingGameTests {
 
         /** Builds the curve, as //bc without arguments does. */
         void build(String... arguments) {
-            BcCommand command = new BcCommand(arguments, player);
-            helper.assertTrue(command.success, Component.literal("invalid arguments"));
-            new BcEdit(player, command);
+            try {
+                new BcEdit(player, BcArguments.parse(arguments));
+            } catch (ArgumentException e) {
+                helper.fail(Component.literal("invalid arguments: " + String.join(" ", arguments)));
+            }
+        }
+
+        /** Runs {@code command}, such as {@code //bcpos set 1}, as the player standing at {@code pos}. */
+        void run(String command, BlockPos pos) {
+            BlockPos absolute = helper.absolutePos(pos);
+            serverPlayer.setPos(absolute.getX() + 0.5, absolute.getY(), absolute.getZ() + 0.5);
+            MinecraftServer server = helper.getLevel().getServer();
+            CommandSourceStack source = server.createCommandSourceStack().withEntity(serverPlayer);
+            try {
+                // The first "/" is the one typed in the chat
+                server.getCommands().getDispatcher().execute(command.substring(1), source);
+            } catch (CommandSyntaxException e) {
+                helper.fail(Component.literal(command + " failed: " + e.getMessage()));
+            }
         }
 
         /** Undoes the last change of the player, as //undo does. */

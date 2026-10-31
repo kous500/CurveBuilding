@@ -11,6 +11,7 @@ import java.util.List;
 public final class ArgumentException extends Exception {
     private final Enum<?> message;
     private final transient Object[] args;
+    private int index = -1;
 
     public ArgumentException(GameMessage message, Object... args) {
         super(message.key, null, false, false);
@@ -33,13 +34,24 @@ public final class ArgumentException extends Exception {
         return List.of(args);
     }
 
+    /** Makes this the error of the argument at {@code index}, unless it is already the error of one. */
+    public ArgumentException at(int index) {
+        if (this.index < 0) this.index = index;
+        return this;
+    }
+
+    /** The index of the argument with the problem, or -1 when no argument was set with {@link #at}. */
+    public int index() {
+        return index;
+    }
+
     /**
-     * Shows the error, then points at {@code args[index]}, the argument with the problem, or at the end of the command
-     * when it is missing.
+     * Shows the error, then points at the argument with the problem, or at the end of the command when it is missing.
      *
      * @param command the command name, shown in front of the first argument
      */
-    public void show(Player player, String command, String[] args, int index) {
+    public void show(Player player, String command, String[] args) {
+        int index = Math.max(this.index, 0);
         if (message instanceof GameMessage gameMessage) {
             Chat.error(player, gameMessage, this.args);
         } else {

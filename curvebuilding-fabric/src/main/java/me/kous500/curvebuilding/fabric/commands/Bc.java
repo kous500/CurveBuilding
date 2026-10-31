@@ -1,88 +1,51 @@
 package me.kous500.curvebuilding.fabric.commands;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.sk89q.worldedit.entity.Player;
-import me.kous500.curvebuilding.fabric.FabricCompat;
-import me.kous500.curvebuilding.commands.bc.BcCommand;
 import me.kous500.curvebuilding.commands.bc.BcCompletion;
-import me.kous500.curvebuilding.commands.bc.BcEdit;
+import me.kous500.curvebuilding.fabric.FabricCompat;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static com.mojang.brigadier.arguments.StringArgumentType.string;
+import static com.mojang.brigadier.arguments.StringArgumentType.word;
+import static me.kous500.curvebuilding.commands.bc.BcCommand.bcCommand;
 import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.runLogged;
+import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class Bc implements RunCommand {
     private static final String bcCommandName = "/bc";
-    private static final String options = "options";
-    private static final String n = "n";
-    private static final String m = "m";
-
-    private static final Map<String, Class<?>> argType = new HashMap<>() {
-        {
-            put(options, String.class);
-            put(n, int.class);
-            put(m, int.class);
-        }
-    };
+    private static final Command<CommandSourceStack> RUN = context -> runLogged(new Bc(context));
 
     public static void setBcBuilder(CommandDispatcher<CommandSourceStack> dispatcher) {
-        RequiredArgumentBuilder<CommandSourceStack, Integer> builderM = Commands
-                .argument(m, integer())
-                .executes(context -> runLogged(new Bc(context, options, n, m)));
+        RequiredArgumentBuilder<CommandSourceStack, Integer> builderN = argument("n", integer())
+                .then(argument("m", integer()).executes(RUN))
+                .executes(RUN);
 
-        RequiredArgumentBuilder<CommandSourceStack, Integer> builderN = Commands
-                .argument(n, integer())
-                .then(builderM)
-                .executes(context -> runLogged(new Bc(context, options, n)));
-
-        RequiredArgumentBuilder<CommandSourceStack, String> builderOption = Commands
-                .argument(options, string())
-                // Only here: the options come before the numbers in this command tree
-                .suggests(CoreSuggestions.of(BcCompletion::complete))
+        dispatcher.register(literal(bcCommandName)
+                .then(argument("options", word())
+                        // Only here: the options come before the numbers in this command tree
+                        .suggests(CoreSuggestions.of(BcCompletion::complete))
+                        .then(builderN)
+                        .executes(RUN))
                 .then(builderN)
-                .executes(context -> runLogged(new Bc(context, options)));
-
-        LiteralArgumentBuilder<CommandSourceStack> builder = literal(bcCommandName)
-                .then(builderOption)
-                .then(builderN)
-                .executes(context -> runLogged(new Bc(context)))
-                .requires(FabricCompat::isGameMaster);
-
-        dispatcher.register(builder);
+                .executes(RUN)
+                .requires(FabricCompat::isGameMaster));
     }
 
     private final CommandContext<CommandSourceStack> context;
 
-    private final String[] arg;
-
-    public Bc(CommandContext<CommandSourceStack> context, String... array) {
+    private Bc(CommandContext<CommandSourceStack> context) {
         this.context = context;
-
-        this.arg = Arrays.stream(array)
-                .map(type -> String.valueOf(context.getArgument(type, argType.get(type))))
-                .toArray(String[]::new);
     }
 
     @Override
     public int run() throws CommandSyntaxException {
-        Player player = adaptPlayer(context.getSource().getPlayerOrException());
-        BcCommand argument = new BcCommand(arg, player);
-
-        if (!argument.success) return 0;
-        new BcEdit(player, argument);
-
-        return 1;
+        return bcCommand(adaptPlayer(context.getSource().getPlayerOrException()), CommandInput.arguments(context)) ? 1 : 0;
     }
 
     @Override

@@ -1,8 +1,6 @@
 package me.kous500.curvebuilding.bukkit.commands;
 
-import me.kous500.curvebuilding.commands.bc.BcCommand;
 import me.kous500.curvebuilding.commands.bc.BcCompletion;
-import me.kous500.curvebuilding.commands.bc.BcEdit;
 import me.kous500.curvebuilding.config.Message;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -14,25 +12,19 @@ import java.util.List;
 
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
+import static me.kous500.curvebuilding.commands.bc.BcCommand.bcCommand;
 
 public class Bc implements TabExecutor {
     @Override
     public boolean onCommand(
             @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (command.getName().equalsIgnoreCase("/bc")) {
-            if (sender instanceof Player) {
-                BcCommand argument = new BcCommand(args, adapt((Player) sender));
-                if (argument.success) {
-                    new BcEdit(adapt((Player) sender), argument);
-                    return true;
-                }
-            } else {
-                sender.sendMessage(getMessage(Message.NON_PLAYER_EXECUTION));
-                return true;
-            }
+        // An error was already shown, so Bukkit should not add the usage from plugin.yml
+        if (sender instanceof Player player) {
+            bcCommand(adapt(player), args);
+        } else {
+            sender.sendMessage(getMessage(Message.NON_PLAYER_EXECUTION));
         }
-
-        return false;
+        return true;
     }
 
     @Override
