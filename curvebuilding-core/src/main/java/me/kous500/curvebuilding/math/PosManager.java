@@ -1,50 +1,47 @@
 package me.kous500.curvebuilding.math;
 
 import com.sk89q.worldedit.entity.Player;
+import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.Chat;
 import me.kous500.curvebuilding.commands.pos.Direction;
 import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.math.CurvePoint.Part;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
 
-/**
- * プレイヤーごとに PosData を紐づけて管理・操作する静的マネージャークラス。
- */
+/** The curve of each player, changed by {@code //bcpos} with a reply to the player. */
 public final class PosManager {
-
-    /**
-     * プレイヤーごとのPosDataを保持するマップ。
-     */
+    // Concurrent, as a client in single player clears it on its own thread while the server in the same game runs
     private static final Map<UUID, PosData> POS_MAP = new ConcurrentHashMap<>();
 
-    // ユーティリティクラスとしてインスタンス化を防止
     private PosManager() {
-        throw new UnsupportedOperationException("Manager class cannot be instantiated");
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
-    public static void addPos(Player player, int n, int h) {
-        if (h < 0 || h > 2) {
-            throw new IllegalArgumentException("The value of h must be in the range 0 to 2.");
-        }
+    /** The curve of {@code player}, or null when they have not set any point. */
+    public static PosData get(Player player) {
+        return POS_MAP.get(player.getUniqueId());
+    }
 
+    /** Sets {@code part} of point {@code n} where {@code player} stands. A point in another world starts a new curve. */
+    public static void addPos(Player player, int n, Part part) {
         Vector3 location = adapt(player.getLocation().toVector()).floor();
         World world = player.getWorld();
-        UUID uuid = player.getUniqueId();
 
-        PosData posData = POS_MAP.computeIfAbsent(uuid, k -> new PosData());
-
-        // クラス名を明記して名前衝突を回避
-        if (!Objects.equals(posData.getWorldId(), me.kous500.curvebuilding.WorldeditAdapter.getWorldId(world))) {
+        PosData posData = POS_MAP.computeIfAbsent(player.getUniqueId(), k -> new PosData());
+        if (!posData.isIn(world)) {
             posData.reset(world);
         }
 
-        posData.updatePos(n, h, location);
-        Chat.info(player, Message.POS_SET, posToString(n, h), location);
+        posData.set(n, part, location);
+        Chat.info(player, Message.POS_SET, posToString(n, part), location);
     }
 
     public static void clearPos(Player player) {
@@ -53,87 +50,44 @@ public final class PosManager {
         }
     }
 
-    public static void clearPos(Player player, int n, int h) {
-        if (h < 0 || h > 2) {
-            throw new IllegalArgumentException("h must be in the range 0 to 2.");
-        }
-
-        PosData posData = POS_MAP.get(player.getUniqueId());
-        if (posData == null) return;
-
-        if (posData.clearSpecificPos(n, h)) {
-            Chat.info(player, Message.POS_CLEAR, posToString(n, h));
+    public static void clearPos(Player player, int n, Part part) {
+        PosData posData = get(player);
+        if (posData != null && posData.clear(n, part)) {
+            Chat.info(player, Message.POS_CLEAR, posToString(n, part));
         }
     }
 
+    /** Inserts a new point {@code n} where {@code player} stands, before the point that had that number. */
     public static void insert(Player player, int n) {
-        PosData posData = POS_MAP.get(player.getUniqueId());
-        if (posData == null || !posData.containsPos(n)) {
+        PosData posData = get(player);
+        if (posData == null || !posData.contains(n)) {
             Chat.error(player, Message.POS_NOT_EXIST, n);
             return;
         }
 
-        posData.insertNodeAt(n);
-        addPos(player, n, 0);
+        posData.insertAt(n);
+        addPos(player, n, Part.POINT);
     }
 
     public static void remove(Player player, int n) {
-        PosData posData = POS_MAP.get(player.getUniqueId());
-        if (posData == null || !posData.containsPos(n)) {
+        PosData posData = get(player);
+        if (posData == null || !posData.contains(n)) {
             Chat.error(player, Message.POS_NOT_EXIST, n);
             return;
         }
 
-        posData.removeNodeAt(n);
+        posData.removeAt(n);
         Chat.info(player, Message.POS_REMOVE, n);
     }
 
-    public static void shift(Player player, int n, Direction shiftDirection) {
-        char direction = shiftDirection.label.charAt(0);
-
-        PosData posData = POS_MAP.get(player.getUniqueId());
+    /** Moves the whole curve of {@code player} by {@code length} blocks in {@code direction}, seen from the player. */
+    public static void shift(Player player, int length, Direction direction) {
+        PosData posData = get(player);
         if (posData == null) return;
 
-        double pitch = player.getLocation().getPitch();
-        double yaw = player.getLocation().getYaw();
-        switch (direction) {
-            case 'r' -> yaw += 90;
-            case 'l' -> yaw -= 90;
-            case 'b' -> yaw += 180;
-        }
-
-        if (yaw < -180) yaw += 360;
-        else if (yaw > 180) yaw -= 360;
-
-        boolean notPitch = String.valueOf(direction).matches("[frlb]");
-        boolean notYaw = String.valueOf(direction).matches("[snew]");
-        Vector3 shiftVec = Vector3.at(0, 0, 0);
-        if (pitch > 67.5 && !notPitch && direction == 'm' || direction == 'd') shiftVec = Vector3.at(0, -n, 0);
-        else if (pitch < -67.5 && !notPitch && direction == 'm' || direction == 'u') shiftVec = Vector3.at(0, n, 0);
-        else {
-            if (Math.abs(yaw) < 67.5 && !notYaw || direction == 's') shiftVec = shiftVec.add(0, 0, n);
-            if (-Math.abs(yaw) + 180 < 67.5 && !notYaw || direction == 'n') shiftVec = shiftVec.add(0, 0, -n);
-            if (Math.abs(yaw + 90) < 67.5 && !notYaw || direction == 'e') shiftVec = shiftVec.add(n, 0, 0);
-            if (Math.abs(yaw - 90) < 67.5 && !notYaw || direction == 'w') shiftVec = shiftVec.add(-n, 0, 0);
-        }
-
-        for (int i : posData.getMap().keySet()) {
-            Vector3[] vec = posData.getMap().get(i);
-            for (int j = 0; j < 3; j++) {
-                if (vec != null && vec[j] != null) vec[j] = vec[j].add(shiftVec);
-            }
-        }
+        Location location = player.getLocation();
+        posData.move(direction.offset(length, location.getYaw(), location.getPitch()));
         Chat.info(player, Message.POS_SHIFT);
-    }
-
-    public static NavigableMap<Integer, Vector3[]> getPos(Player player) {
-        PosData data = POS_MAP.get(player.getUniqueId());
-        return data != null ? data.getMap() : null;
-    }
-
-    public static World getWorld(Player player) {
-        PosData data = POS_MAP.get(player.getUniqueId());
-        return data != null ? data.getWorld() : null;
     }
 
     public static Map<UUID, PosData> getPosMap() {
@@ -144,11 +98,11 @@ public final class PosManager {
         POS_MAP.clear();
     }
 
-    private static String posToString(int n, int h) {
-        return switch (h) {
-            case 1 -> getMessage(Message.POS_NF, n);
-            case 2 -> getMessage(Message.POS_NB, n);
-            default -> getMessage(Message.POS_N, n);
+    private static String posToString(int n, Part part) {
+        return switch (part) {
+            case F -> getMessage(Message.POS_NF, n);
+            case B -> getMessage(Message.POS_NB, n);
+            case POINT -> getMessage(Message.POS_N, n);
         };
     }
 }

@@ -3,6 +3,7 @@ package me.kous500.curvebuilding.commands.pos;
 import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.math.CurvePoint.Part;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,9 +15,9 @@ import static me.kous500.curvebuilding.CurveBuilding.config;
  * handle and {@code 2b} its back handle. The first point has no front handle.
  *
  * @param n the point number, from 1 to the {@code max-pos-value} of the config
- * @param h 0 for the point, 1 for its front handle, 2 for its back handle
+ * @param part the point or one of its handles
  */
-public record PosPoint(int n, int h) {
+public record PosPoint(int n, Part part) {
     private static final Pattern POS = Pattern.compile("([0-9]+)([fb]?)");
 
     public static PosPoint parse(String text) throws ArgumentException {
@@ -29,10 +30,10 @@ public record PosPoint(int n, int h) {
         return switch (matcher.group(2)) {
             case "f" -> {
                 if (n == 1) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);
-                yield new PosPoint(n, 1);
+                yield new PosPoint(n, Part.F);
             }
-            case "b" -> new PosPoint(n, 2);
-            default -> new PosPoint(n, 0);
+            case "b" -> new PosPoint(n, Part.B);
+            default -> new PosPoint(n, Part.POINT);
         };
     }
 

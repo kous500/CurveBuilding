@@ -28,11 +28,11 @@ public final class PosCommand {
                 case CLEARALL -> clearPos(player);
                 case CLEAR -> {
                     PosPoint point = read(args, 1, PosPoint::parse);
-                    clearPos(player, point.n(), point.h());
+                    clearPos(player, point.n(), point.part());
                 }
                 case SET -> {
                     PosPoint point = read(args, 1, PosPoint::parse);
-                    addPos(player, point.n(), point.h());
+                    addPos(player, point.n(), point.part());
                 }
                 case INSERT -> insert(player, read(args, 1, PosPoint::parseNumber));
                 case REMOVE -> remove(player, read(args, 1, PosPoint::parseNumber));

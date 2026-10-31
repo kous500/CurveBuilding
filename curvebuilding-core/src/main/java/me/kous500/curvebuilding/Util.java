@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding;
 
+import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.Vector3;
 
 import java.util.ArrayList;
@@ -97,27 +98,27 @@ public final class Util {
 
     /**
      * Splits the curve through positions 1, 2, ... into cubic Bézier segments, one per pair of consecutive positions.
-     * The segment from position n - 1 to n is {position n - 1, handle 2 of n - 1, handle 1 of n, position n}; a missing
+     * The segment from position n - 1 to n is {position n - 1, handle b of n - 1, handle f of n, position n}; a missing
      * handle is replaced by its position. Stops at the first missing position.
      *
-     * @param posMap positions by number; each value is {position, handle 1, handle 2}
+     * @param posMap the points by number
      * @return the segments in order, empty when there are fewer than two positions or {@code posMap} is null
      */
-    public static List<Vector3[]> bezierSegments(NavigableMap<Integer, Vector3[]> posMap) {
+    public static List<Vector3[]> bezierSegments(NavigableMap<Integer, CurvePoint> posMap) {
         List<Vector3[]> segments = new ArrayList<>();
         if (posMap == null || posMap.isEmpty()) return segments;
 
         for (int n = 1; n <= posMap.lastKey(); n++) {
-            Vector3[] p = posMap.get(n);
-            if (p == null || p[0] == null) break;
+            CurvePoint p = posMap.get(n);
+            if (p == null || p.point() == null) break;
 
             if (n > 1) {
-                Vector3[] bp = posMap.get(n - 1);
+                CurvePoint bp = posMap.get(n - 1);
                 segments.add(new Vector3[]{
-                        bp[0],
-                        bp[2] != null ? bp[2] : bp[0],
-                        p[1] != null ? p[1] : p[0],
-                        p[0]
+                        bp.point(),
+                        bp.b() != null ? bp.b() : bp.point(),
+                        p.f() != null ? p.f() : p.point(),
+                        p.point()
                 });
             }
         }

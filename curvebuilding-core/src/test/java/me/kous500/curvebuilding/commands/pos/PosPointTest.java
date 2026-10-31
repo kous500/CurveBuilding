@@ -5,6 +5,7 @@ import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.config.Config;
 import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.math.CurvePoint.Part;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,19 +30,18 @@ class PosPointTest {
         CurveBuilding.config = previousConfig;
     }
 
-    // h: 0 = connection point, 1 = control point f, 2 = control point b
     @ParameterizedTest
     @CsvSource({
-            "3,    3,   0",
-            "3f,   3,   1",
-            "3b,   3,   2",
-            "1b,   1,   2",
-            "2f,   2,   1",
-            "100,  100, 0",
-            "100b, 100, 2",
+            "3,    3,   POINT",
+            "3f,   3,   F",
+            "3b,   3,   B",
+            "1b,   1,   B",
+            "2f,   2,   F",
+            "100,  100, POINT",
+            "100b, 100, B",
     })
-    void parsesValidPos(String input, int n, int h) throws ArgumentException {
-        assertEquals(new PosPoint(n, h), PosPoint.parse(input));
+    void parsesValidPos(String input, int n, Part part) throws ArgumentException {
+        assertEquals(new PosPoint(n, part), PosPoint.parse(input));
     }
 
     @ParameterizedTest

@@ -8,6 +8,8 @@ import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.Chat;
 import me.kous500.curvebuilding.config.Message;
 import me.kous500.curvebuilding.math.BlockVector3;
+import me.kous500.curvebuilding.math.PosData;
+import me.kous500.curvebuilding.math.PosManager;
 import me.kous500.curvebuilding.math.Vector3;
 
 import java.util.*;
@@ -15,8 +17,6 @@ import java.util.*;
 import static me.kous500.curvebuilding.CurveBuilding.*;
 import static me.kous500.curvebuilding.WorldeditAdapter.*;
 import static me.kous500.curvebuilding.Util.*;
-import static me.kous500.curvebuilding.math.PosManager.getPos;
-import static me.kous500.curvebuilding.math.PosManager.getWorld;
 
 public final class BcEdit {
     private int width;
@@ -61,12 +61,11 @@ public final class BcEdit {
             else if (width <= length) direction = Direction.x;
             else direction = Direction.z;
 
-            NavigableMap<Integer, Vector3[]> posMap = getPos(player);
-            World posWorld = getWorld(player);
-
-            if (posMap == null || posMap.get(1) == null || posMap.get(1)[0] == null) throw new IncompletePosException();
-
-            if (posWorld == null || !posWorld.equals(world)) throw new IncompleteRegionException();
+            PosData posData = PosManager.get(player);
+            if (posData == null || posData.points().get(1) == null || posData.points().get(1).point() == null) {
+                throw new IncompletePosException();
+            }
+            if (!posData.isIn(world)) throw new IncompleteRegionException();
 
             maxChangeLimit = session.getBlockChangeLimit();
             int configLimit = config.defaultMaxChangeLimit;
@@ -80,7 +79,7 @@ public final class BcEdit {
 
             RegionBlocks regionBlocks = new RegionBlocks(editSession, region);
 
-            for (Vector3[] segment : bezierSegments(posMap)) {
+            for (Vector3[] segment : bezierSegments(posData.points())) {
                 editBC(segment);
             }
 

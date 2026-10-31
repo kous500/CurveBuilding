@@ -2,6 +2,8 @@ package me.kous500.curvebuilding.bukkit;
 
 import com.github.fierioziy.particlenativeapi.api.particle.type.ParticleTypeMotion;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.math.Vector3;
@@ -17,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
 import java.util.UUID;
 
 import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.particles_1_13;
@@ -27,8 +28,8 @@ import static me.kous500.curvebuilding.math.PosManager.getPosMap;
 import static org.bukkit.Bukkit.getPlayer;
 
 /**
- * Shows the curve positions of each player with particles. The positions are copied on the server thread, where the
- * commands change them, and the particles are sent from an asynchronous task.
+ * Shows the curve positions of each player with particles. The players and their positions are taken on the server
+ * thread, and the particles are sent from an asynchronous task.
  */
 public class SendParticles {
     private static final long PERIOD_TICKS = 4;
@@ -48,8 +49,8 @@ public class SendParticles {
         }
     }
 
-    /** The positions of a player and where the player is, copied on the server thread. */
-    private record Target(Player player, World world, NavigableMap<Integer, Vector3[]> positions, Vector3 playerPosition) {}
+    /** The positions of a player and where the player is, taken on the server thread. */
+    private record Target(Player player, World world, NavigableMap<Integer, CurvePoint> positions, Vector3 playerPosition) {}
 
     private final Plugin plugin;
     private final BukkitConfig config;
@@ -65,11 +66,10 @@ public class SendParticles {
         for (Map.Entry<UUID, PosData> entry : getPosMap().entrySet()) {
             PosData posData = entry.getValue();
             Player player = getPlayer(entry.getKey());
-            if (player == null || posData.getWorld() == null) continue;
-            if (!posData.getWorld().getName().equals(player.getWorld().getName())) continue;
+            if (player == null || !posData.isIn(BukkitAdapter.adapt(player.getWorld()))) continue;
 
-            NavigableMap<Integer, Vector3[]> positions = new TreeMap<>();
-            posData.getMap().forEach((n, p) -> positions.put(n, p.clone()));
+            // Never changed, so it can be read from the asynchronous task
+            NavigableMap<Integer, CurvePoint> positions = posData.points();
             if (positions.isEmpty()) continue;
 
             Location location = player.getLocation();
@@ -89,28 +89,28 @@ public class SendParticles {
     }
 
     private void sendParticlePlayer(Target target, int r) {
-        NavigableMap<Integer, Vector3[]> positions = target.positions();
+        NavigableMap<Integer, CurvePoint> positions = target.positions();
         int lastN = positions.lastKey();
 
         for (int n = 1; n <= lastN; n++) {
-            Vector3[] p = positions.get(n);
+            CurvePoint p = positions.get(n);
             if (p != null) {
-                for (int h = 0; h <= 2; h++) {
-                    if (p[h] != null) {
-                        Color color;
-                        if (h == 1) color = config.fColor;
-                        else if (h == 2) color = config.bColor;
-                        else if (n == 1) color = config.startColor;
-                        else if (n == lastN) color = config.endColor;
-                        else color = config.posColor;
+                for (CurvePoint.Part part : CurvePoint.Part.values()) {
+                    Vector3 position = p.get(part);
+                    if (position != null) {
+                        Color color = switch (part) {
+                            case F -> config.fColor;
+                            case B -> config.bColor;
+                            case POINT -> n == 1 ? config.startColor : n == lastN ? config.endColor : config.posColor;
+                        };
 
-                        if (h == 0) sendCube(p[h], target, color);
-                        else sendCross(p[h], target, color);
+                        if (part == CurvePoint.Part.POINT) sendCube(position, target, color);
+                        else sendCross(position, target, color);
                     }
                 }
 
-                sendLine(p[0], p[1], target, particles_1_13.SOUL_FIRE_FLAME, r);
-                sendLine(p[0], p[2], target, particles_1_13.SOUL_FIRE_FLAME, r);
+                sendLine(p.point(), p.f(), target, particles_1_13.SOUL_FIRE_FLAME, r);
+                sendLine(p.point(), p.b(), target, particles_1_13.SOUL_FIRE_FLAME, r);
             }
         }
 
