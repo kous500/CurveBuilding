@@ -17,12 +17,7 @@ public final class BukkitConfig extends Config {
     public final int lineMaxLength;
 
     public BukkitConfig(YamlConfig config) {
-        messageFilePath = config.getString("message-file");
-        fineness = Math.max(1, config.getInteger("curve.fineness"));
-        maxSetLength = Math.max(0, config.getInteger("curve.max-set-length"));
-        maxPosValue = Math.max(1, config.getInteger("curve.max-pos-value"));
-        tCenter = config.getBoolean("curve.thicken-center");
-        defaultMaxChangeLimit = Math.max(-1, config.getInteger("curve.default-max-change-limit"));
+        super(config);
 
         posColor = fromRGB(getIntInRange(config, "particles.pos.color.pos", 0x000000, 0xFFFFFF));
         startColor = fromRGB(getIntInRange(config, "particles.pos.color.start_pos", 0x000000, 0xFFFFFF));

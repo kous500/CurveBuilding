@@ -10,14 +10,8 @@ import me.kous500.curvebuilding.bukkit.commands.CurveBuildingCommand;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.config.Message;
-import me.kous500.curvebuilding.config.Messages;
-import me.kous500.curvebuilding.config.ResourceFiles;
-import me.kous500.curvebuilding.config.ResourceType;
-import me.kous500.curvebuilding.config.YamlConfig;
 import me.kous500.curvebuilding.math.PosManager;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.File;
 
 import static java.util.Objects.requireNonNull;
 import static me.kous500.curvebuilding.CurveBuilding.*;
@@ -59,18 +53,7 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
         SendParticles.stop();
         PosManager.clearPosMap();
 
-        ResourceFiles.setup(this);
-
-        File configFile = new File(this.getConfigPass(), "config.yml");
-        YamlConfig yamlConfig = YamlConfig.loadConfiguration(configFile, ResourceType.config, this);
-
-        BukkitConfig bukkitConfig = new BukkitConfig(yamlConfig);
-
-        String messageFileName = bukkitConfig.messageFilePath.replace("%datafolder%", this.getConfigPass());
-        File messageFile = new File(messageFileName);
-        YamlConfig messagesConfig = YamlConfig.loadConfiguration(messageFile, ResourceType.message, this);
-
-        setResources(bukkitConfig, new Messages(messagesConfig));
+        BukkitConfig bukkitConfig = loadResources(this, BukkitConfig::new);
 
         SendParticles.start(this, bukkitConfig);
     }
