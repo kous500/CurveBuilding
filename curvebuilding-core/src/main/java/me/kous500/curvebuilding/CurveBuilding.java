@@ -4,10 +4,9 @@ import me.kous500.curvebuilding.config.Config;
 import me.kous500.curvebuilding.config.Message;
 import me.kous500.curvebuilding.config.Messages;
 import me.kous500.curvebuilding.config.ResourceFiles;
-import me.kous500.curvebuilding.config.ResourceType;
 import me.kous500.curvebuilding.config.YamlConfig;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -22,17 +21,17 @@ public class CurveBuilding {
      * Copies the default files that are missing into the data folder, then reads config.yml and the message file it
      * names, and uses them from now on.
      *
+     * @param jar the class loader that has the default files
      * @param readConfig makes the config of the platform from config.yml
      * @return the config read
      */
-    public static <C extends Config> C loadResources(MainInitializer initializer, Function<YamlConfig, C> readConfig) {
-        ResourceFiles.setup(initializer);
+    public static <C extends Config> C loadResources(Path dataFolder, ClassLoader jar, Function<YamlConfig, C> readConfig) {
+        ResourceFiles.copyDefaults(dataFolder, jar);
 
-        File configFile = new File(initializer.getConfigPass(), "config.yml");
-        C loadedConfig = readConfig.apply(YamlConfig.loadConfiguration(configFile, ResourceType.config, initializer));
+        C loadedConfig = readConfig.apply(YamlConfig.load(dataFolder.resolve("config.yml"), jar, "config.yml"));
 
-        File messageFile = new File(loadedConfig.messageFilePath.replace("%datafolder%", initializer.getConfigPass()));
-        messages = new Messages(YamlConfig.loadConfiguration(messageFile, ResourceType.message, initializer));
+        Path messageFile = Path.of(loadedConfig.messageFilePath.replace("%datafolder%", dataFolder.toString()));
+        messages = Messages.load(messageFile, jar);
         config = loadedConfig;
         return loadedConfig;
     }

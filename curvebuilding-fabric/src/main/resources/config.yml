@@ -1,4 +1,4 @@
-# ResourceFiles file path
+# Message file path
 message-file: "%datafolder%/messages/en-US.yml"
 
 curve:

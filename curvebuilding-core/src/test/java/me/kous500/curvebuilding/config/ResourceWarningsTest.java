@@ -2,7 +2,6 @@ package me.kous500.curvebuilding.config;
 
 import me.kous500.curvebuilding.Console;
 import me.kous500.curvebuilding.CurveBuilding;
-import me.kous500.curvebuilding.MainInitializer;
 import me.kous500.curvebuilding.RecordingConsole;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +53,7 @@ class ResourceWarningsTest {
 
         YamlConfig config;
         try (URLClassLoader classLoader = classLoader()) {
-            config = YamlConfig.loadConfiguration(configFile.toFile(), ResourceType.config, initializer(classLoader));
+            config = YamlConfig.load(configFile, classLoader, "config.yml");
         }
 
         assertEquals(3, config.getInteger("curve.fineness"));
@@ -69,7 +68,7 @@ class ResourceWarningsTest {
     void missingDefaultFilesInTheJarAreLogged() throws IOException {
         // The jar has config.yml but no messages folder
         try (URLClassLoader classLoader = classLoader()) {
-            ResourceFiles.setup(initializer(classLoader));
+            ResourceFiles.copyDefaults(dataFolder, classLoader);
         }
 
         assertTrue(Files.exists(dataFolder.resolve("config.yml")), "the files that exist are still copied");
@@ -82,19 +81,5 @@ class ResourceWarningsTest {
 
     private URLClassLoader classLoader() throws IOException {
         return new URLClassLoader(new URL[]{jar.toUri().toURL()}, null);
-    }
-
-    private MainInitializer initializer(ClassLoader classLoader) {
-        return new MainInitializer() {
-            @Override
-            public ClassLoader getMainClassLoader() {
-                return classLoader;
-            }
-
-            @Override
-            public String getConfigPass() {
-                return dataFolder.toString();
-            }
-        };
     }
 }
