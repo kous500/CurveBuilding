@@ -1,6 +1,7 @@
 messages:
   non-player-execution: "コンソールからそのコマンドは実行できません。"
   incorrect-argument: "コマンドの引数が正しくありません。"
+  reloaded: "CurveBuilding を再読み込みしました。"
   pos-not-exist: "接続点 {0} は存在しません。"
   pos-N: "接続点 {0}"
   pos-Nf: "制御点 {0}f"

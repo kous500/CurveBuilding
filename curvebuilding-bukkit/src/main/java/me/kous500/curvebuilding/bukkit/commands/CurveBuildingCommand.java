@@ -30,18 +30,17 @@ public class CurveBuildingCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length >= 1 && args[0].equalsIgnoreCase("reload")) {
             plugin.reloadConfigAndResources();
-            String message = "Reloaded curvebuilding.";
-            if (sender instanceof Player) {
-                sender.sendMessage(message);
+            if (sender instanceof Player player) {
+                Chat.info(adapt(player), Message.RELOADED);
             } else {
-                plugin.getLogger().info(message);
+                sender.sendMessage(getMessage(Message.RELOADED));
             }
             return true;
         } else {
             if (sender instanceof Player player) {
                 Chat.error(adapt(player), GameMessage.INCORRECT_ARGUMENT);
             } else {
-                plugin.getLogger().info(getMessage(Message.INCORRECT_ARGUMENT));
+                sender.sendMessage(getMessage(Message.INCORRECT_ARGUMENT));
             }
             return false;
         }

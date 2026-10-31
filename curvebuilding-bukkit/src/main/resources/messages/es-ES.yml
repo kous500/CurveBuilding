@@ -1,6 +1,7 @@
 messages:
   non-player-execution: "No se ha podido ejecutar este comando desde la consola."
   incorrect-argument: "Argumento inválido para el comando."
+  reloaded: "Se ha recargado CurveBuilding."
   pos-not-exist: "El punto de conexión {0} no existe."
   pos-N: "Posición de conexión {0}"
   pos-Nf: "Posición de control {0}f"

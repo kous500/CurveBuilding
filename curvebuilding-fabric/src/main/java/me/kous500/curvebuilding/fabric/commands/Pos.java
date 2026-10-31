@@ -3,6 +3,7 @@ package me.kous500.curvebuilding.fabric.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,7 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
-import static me.kous500.curvebuilding.fabric.commands.RunCommand.debugRun;
+import static me.kous500.curvebuilding.fabric.commands.RunCommand.runLogged;
 import static me.kous500.curvebuilding.fabric.network.PacketSender.sendPosPacket;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
@@ -45,15 +46,15 @@ public class Pos implements RunCommand{
             String label = subcommand.label;
             LiteralArgumentBuilder<CommandSourceStack> builder = literal(label);
             switch (subcommand.arguments) {
-                case NONE -> builder.executes(context -> debugRun(new Pos(context, label)));
+                case NONE -> builder.executes(context -> runLogged(new Pos(context, label)));
                 case POS_TYPE, POINT -> builder.then(argument(T, string())
                         .suggests(suggestions)
-                        .executes(context -> debugRun(new Pos(context, label, T))));
+                        .executes(context -> runLogged(new Pos(context, label, T))));
                 case LENGTH_AND_DIRECTION -> builder.then(argument(L, integer(0))
                         .suggests(suggestions)
-                        .executes(context -> debugRun(new Pos(context, label, L)))
+                        .executes(context -> runLogged(new Pos(context, label, L)))
                         .then(argument(D, string())
-                                .executes(context -> debugRun(new Pos(context, label, L, D)))));
+                                .executes(context -> runLogged(new Pos(context, label, L, D)))));
             }
             pos.then(builder);
         }
@@ -73,11 +74,8 @@ public class Pos implements RunCommand{
     }
 
     @Override
-    public int run() {
-        ServerPlayer sender = context.getSource().getPlayer();
-        if (sender == null) {
-            return 0;
-        }
+    public int run() throws CommandSyntaxException {
+        ServerPlayer sender = context.getSource().getPlayerOrException();
 
         boolean result = posCommand(adaptPlayer(sender), posCommandName, arg);
         sendPosPacket(sender);
@@ -86,7 +84,7 @@ public class Pos implements RunCommand{
     }
 
     @Override
-    public CommandSourceStack getSource() {
-        return context.getSource();
+    public CommandContext<CommandSourceStack> getContext() {
+        return context;
     }
 }

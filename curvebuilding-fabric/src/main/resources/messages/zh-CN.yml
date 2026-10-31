@@ -1,6 +1,7 @@
 messages:
   non-player-execution: "无法在控制台执行该命令。"
   incorrect-argument: "无效的指令参数。"
+  reloaded: "已重新加载 CurveBuilding。"
   pos-not-exist: "连接点 {0} 并不存在。"
   pos-N: "连接位置 {0}"
   pos-Nf: "控制位置 {0}f"

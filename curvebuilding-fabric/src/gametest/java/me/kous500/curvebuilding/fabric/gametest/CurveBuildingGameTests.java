@@ -2,6 +2,7 @@ package me.kous500.curvebuilding.fabric.gametest;
 
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -71,6 +72,22 @@ public class CurveBuildingGameTests {
         String applied = back.apply(command);
         helper.assertTrue(applied.equals("//bcpos shift 5 back"), Component.literal("\"5 back\" gave " + applied));
         helper.assertTrue(!parse(helper, applied).getReader().canRead(), Component.literal(applied + " does not parse"));
+        helper.succeed();
+    }
+
+    @GameTest
+    public void commandsFromTheConsoleNeedAPlayer(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        for (String command : new String[]{"//bcpos clearall", "//bc"}) {
+            CommandSyntaxException error = null;
+            try {
+                server.getCommands().getDispatcher().execute(parse(helper, command));
+            } catch (CommandSyntaxException e) {
+                error = e;
+            }
+            helper.assertTrue(error != null && error.getType() == CommandSourceStack.ERROR_NOT_PLAYER,
+                    Component.literal(command + " from the console gave " + error));
+        }
         helper.succeed();
     }
 

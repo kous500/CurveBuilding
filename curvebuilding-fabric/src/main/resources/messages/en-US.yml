@@ -1,6 +1,7 @@
 messages:
   non-player-execution: "Can not execute this command from console."
   incorrect-argument: "Invalid argument for command."
+  reloaded: "Reloaded CurveBuilding."
   pos-not-exist: "Connection point {0} does not exist."
   pos-N: "Connection position {0}"
   pos-Nf: "Control position {0}f"

@@ -1,29 +1,25 @@
 package me.kous500.curvebuilding.fabric.commands;
 
-import java.util.Arrays;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
 
-import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.debugMode;
+import static me.kous500.curvebuilding.CurveBuilding.console;
 
 public interface RunCommand {
-    int run();
+    int run() throws CommandSyntaxException;
 
-    CommandSourceStack getSource();
+    CommandContext<CommandSourceStack> getContext();
 
-    static int debugRun(RunCommand command) {
-        if (!debugMode) return command.run();
-
+    /**
+     * Runs {@code command} and logs an unexpected exception with its stack trace. The game then only tells the sender
+     * that the command failed, and logs the exception itself only when run from an IDE or with debug logging.
+     */
+    static int runLogged(RunCommand command) throws CommandSyntaxException {
         try {
             return command.run();
-        } catch (Exception e) {
-            CommandSourceStack source = command.getSource();
-
-            source.sendSystemMessage(Component.literal(String.valueOf(e)));
-            Arrays.stream(e.getStackTrace())
-                    .map(stack -> Component.literal(String.valueOf(stack)))
-                    .forEach(source::sendSystemMessage);
-
+        } catch (RuntimeException e) {
+            console.warning("Could not run /" + command.getContext().getInput(), e);
             throw e;
         }
     }
