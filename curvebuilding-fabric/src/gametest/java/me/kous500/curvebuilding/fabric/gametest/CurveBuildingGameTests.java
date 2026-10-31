@@ -293,7 +293,7 @@ public class CurveBuildingGameTests {
         /** Builds the curve, as //bc without arguments does. */
         void build(String... arguments) {
             try {
-                new BcEdit(player, BcArguments.parse(arguments));
+                BcEdit.build(player, BcArguments.parse(arguments));
             } catch (ArgumentException e) {
                 helper.fail(Component.literal("invalid arguments: " + String.join(" ", arguments)));
             }

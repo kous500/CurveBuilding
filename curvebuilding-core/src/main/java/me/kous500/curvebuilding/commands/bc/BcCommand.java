@@ -22,7 +22,7 @@ public final class BcCommand {
             e.show(player, "bc", args);
             return false;
         }
-        new BcEdit(player, arguments);
+        BcEdit.build(player, arguments);
         return true;
     }
 }

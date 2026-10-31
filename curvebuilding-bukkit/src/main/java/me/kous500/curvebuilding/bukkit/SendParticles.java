@@ -3,6 +3,7 @@ package me.kous500.curvebuilding.bukkit;
 import com.github.fierioziy.particlenativeapi.api.particle.type.ParticleTypeMotion;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import me.kous500.curvebuilding.math.BezierSegment;
 import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
@@ -22,7 +23,6 @@ import java.util.NavigableMap;
 import java.util.UUID;
 
 import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.particles_1_13;
-import static me.kous500.curvebuilding.Util.*;
 import static java.lang.Math.sqrt;
 import static me.kous500.curvebuilding.math.PosManager.getPosMap;
 import static org.bukkit.Bukkit.getPlayer;
@@ -115,7 +115,7 @@ public class SendParticles {
         }
 
         double curveLength = 0;
-        for (Vector3[] segment : bezierSegments(positions)) {
+        for (BezierSegment segment : BezierSegment.through(positions)) {
             curveLength = sendBezier(segment, target, particles_1_13.FLAME, curveLength, r);
         }
     }
@@ -220,16 +220,16 @@ public class SendParticles {
         }
     }
 
-    private double sendBezier(Vector3[] p, Target target, ParticleTypeMotion particleType, double totalLength, int r) {
-        if (totalLength > config.lineMaxLength || !isBezierSegmentWithin(p, config.lineMaxLength)) return config.lineMaxLength + 1;
+    private double sendBezier(BezierSegment p, Target target, ParticleTypeMotion particleType, double totalLength, int r) {
+        if (totalLength > config.lineMaxLength || !p.isWithin(config.lineMaxLength)) return config.lineMaxLength + 1;
 
-        double length = totalLength + bezierLength(p, bezierFineness(p, 20));
+        double length = totalLength + p.length(p.fineness(20));
         if (length > config.lineMaxLength) return length;
 
         int cnt = 0;
         Vector3 PlayerVec = target.playerPosition();
-        Vector3 bVec = bezierCoordinate(p, 0);
-        for (Vector3 vec : bezierPoints(p, Math.max(1, (int) Math.ceil(length * config.lineDensity)))) {
+        Vector3 bVec = p.blockCenter(0);
+        for (Vector3 vec : p.blockCenters(Math.max(1, (int) Math.ceil(length * config.lineDensity)))) {
             if ((PlayerVec.distance(vec) / 3000 * config.lineDensity) + (0.8 / config.lineDensity) < vec.distance(bVec)) {
                 Location location = getLocation(target.world(), vec);
                 if (cnt % INTERVAL == r) {
