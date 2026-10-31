@@ -1,6 +1,7 @@
 package me.kous500.curvebuilding.bukkit.commands;
 
 import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
+import me.kous500.curvebuilding.config.Message;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -34,7 +35,7 @@ public class CurveBuildingCommand implements TabExecutor {
             }
             return true;
         } else {
-            String errorMessage = getMessage("messages.incorrect-argument");
+            String errorMessage = getMessage(Message.INCORRECT_ARGUMENT);
             if (sender instanceof Player) {
                 sender.sendMessage("§c" + errorMessage);
             } else {

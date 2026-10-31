@@ -1,9 +1,8 @@
 package me.kous500.curvebuilding.commands.bc;
 
 import com.sk89q.worldedit.entity.Player;
-import com.sk89q.worldedit.util.formatting.text.TextComponent;
-
-import static me.kous500.curvebuilding.CurveBuilding.getMessage;
+import me.kous500.curvebuilding.Chat;
+import me.kous500.curvebuilding.config.Message;
 
 public final class BcCommand {
     /** Option letters after {@code -}: replace only air blocks. */
@@ -74,20 +73,19 @@ public final class BcCommand {
                 Integer.parseInt(arg);
                 return true;
             } catch (NumberFormatException e) {
-                player.printError(TextComponent.of(getMessage("messages.invalid-integer", arg)));
+                Chat.error(player, Message.INVALID_INTEGER, arg);
             }
         } else if (NumberCount > 1) {
-            player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
+            Chat.error(player, Message.INCORRECT_ARGUMENT);
         } else if (arg.matches("^-[0-9]+$")) {
-            player.printError(TextComponent.of(getMessage("messages.integer-less", 0, arg)));
+            Chat.error(player, Message.INTEGER_LESS, 0, arg);
         } else if (arg.matches("[+-]?\\d*(\\.\\d+)?")) {
-            player.printError(TextComponent.of(getMessage("messages.invalid-integer", arg)));
+            Chat.error(player, Message.INVALID_INTEGER, arg);
         } else {
-            player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
+            Chat.error(player, Message.INCORRECT_ARGUMENT);
         }
 
-        if (beforeArg.equals("")) beforeArg = "bc";
-        player.printInfo(TextComponent.of("§7..."+beforeArg+"§c §c§n"+arg+"§c§o" + getMessage("messages.problem-here")));
+        Chat.problemHere(player, beforeArg.isEmpty() ? "bc" : beforeArg, arg);
 
         success = false;
         return false;

@@ -1,11 +1,11 @@
 package me.kous500.curvebuilding.fabric;
 
 import me.kous500.curvebuilding.MainInitializer;
+import me.kous500.curvebuilding.config.Messages;
 import me.kous500.curvebuilding.config.ResourceFiles;
 import me.kous500.curvebuilding.config.ResourceType;
 import me.kous500.curvebuilding.config.YamlConfig;
 import me.kous500.curvebuilding.fabric.config.FabricConfig;
-import me.kous500.curvebuilding.fabric.config.FabricResources;
 import me.kous500.curvebuilding.fabric.network.PacketSender;
 import me.kous500.curvebuilding.fabric.network.PosDataPayload;
 import net.fabricmc.api.ModInitializer;
@@ -37,8 +37,7 @@ public class CurveBuildingFabric implements ModInitializer, MainInitializer {
         File messageFile = new File(messageFileName);
         YamlConfig messagesConfig = YamlConfig.loadConfiguration(messageFile, ResourceType.message, this);
 
-        FabricResources resources = new FabricResources(loadedConfig, messagesConfig);
-        setResources(resources);
+        setResources(loadedConfig, new Messages(messagesConfig));
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             setPosBuilder(dispatcher);

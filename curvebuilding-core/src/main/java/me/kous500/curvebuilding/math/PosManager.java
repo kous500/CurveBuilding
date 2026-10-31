@@ -1,8 +1,9 @@
 package me.kous500.curvebuilding.math;
 
 import com.sk89q.worldedit.entity.Player;
-import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
+import me.kous500.curvebuilding.Chat;
+import me.kous500.curvebuilding.config.Message;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,12 +46,12 @@ public final class PosManager {
         }
 
         posData.updatePos(n, h, location);
-        player.printInfo(TextComponent.of(getMessage("messages.pos-set", posToString(n, h), location)));
+        Chat.info(player, Message.POS_SET, posToString(n, h), location);
     }
 
     public static void clearPos(Player player) {
         if (POS_MAP.remove(player.getUniqueId()) != null) {
-            player.printInfo(TextComponent.of(getMessage("messages.pos-clear-all")));
+            Chat.info(player, Message.POS_CLEAR_ALL);
         }
     }
 
@@ -63,14 +64,14 @@ public final class PosManager {
         if (posData == null) return;
 
         if (posData.clearSpecificPos(n, h)) {
-            player.printInfo(TextComponent.of(getMessage("messages.pos-clear", posToString(n, h))));
+            Chat.info(player, Message.POS_CLEAR, posToString(n, h));
         }
     }
 
     public static void insert(Player player, int n) {
         PosData posData = POS_MAP.get(player.getUniqueId());
         if (posData == null || !posData.containsPos(n)) {
-            player.printError(TextComponent.of(getMessage("messages.pos-not-exist", n)));
+            Chat.error(player, Message.POS_NOT_EXIST, n);
             return;
         }
 
@@ -81,12 +82,12 @@ public final class PosManager {
     public static void remove(Player player, int n) {
         PosData posData = POS_MAP.get(player.getUniqueId());
         if (posData == null || !posData.containsPos(n)) {
-            player.printError(TextComponent.of(getMessage("messages.pos-not-exist", n)));
+            Chat.error(player, Message.POS_NOT_EXIST, n);
             return;
         }
 
         posData.removeNodeAt(n);
-        player.printInfo(TextComponent.of(getMessage("messages.pos-remove", n)));
+        Chat.info(player, Message.POS_REMOVE, n);
     }
 
     public static void shift(Player player, int n, char direction) {
@@ -124,7 +125,7 @@ public final class PosManager {
                 if (vec != null && vec[j] != null) vec[j] = vec[j].add(shiftVec);
             }
         }
-        player.printInfo(TextComponent.of(getMessage("messages.pos-shift")));
+        Chat.info(player, Message.POS_SHIFT);
     }
 
     public static NavigableMap<Integer, Vector3[]> getPos(Player player) {
@@ -147,9 +148,9 @@ public final class PosManager {
 
     private static String posToString(int n, int h) {
         return switch (h) {
-            case 1 -> getMessage("messages.pos-Nf", n);
-            case 2 -> getMessage("messages.pos-Nb", n);
-            default -> getMessage("messages.pos-N", n);
+            case 1 -> getMessage(Message.POS_NF, n);
+            case 2 -> getMessage(Message.POS_NB, n);
+            default -> getMessage(Message.POS_N, n);
         };
     }
 }

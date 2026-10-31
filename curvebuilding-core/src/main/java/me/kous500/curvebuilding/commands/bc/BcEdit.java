@@ -4,8 +4,9 @@ import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.SessionManager;
-import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.world.World;
+import me.kous500.curvebuilding.Chat;
+import me.kous500.curvebuilding.config.Message;
 import me.kous500.curvebuilding.math.BlockVector3;
 import me.kous500.curvebuilding.math.Vector3;
 
@@ -89,16 +90,16 @@ public final class BcEdit {
                 editSession.setBlock(adapt(entry.getKey()), regionBlocks.get(maxBlockVec));
             }
 
-            player.printInfo(TextComponent.of(getMessage("messages.bc-changed", editSession.size())));
-            player.printInfo(TextComponent.of(getMessage("messages.bc-length", (double) Math.round((float) nowLength * 100) / 100)));
+            Chat.info(player, Message.BC_CHANGED, editSession.size());
+            Chat.info(player, Message.BC_LENGTH, (double) Math.round((float) nowLength * 100) / 100);
         } catch (IncompleteRegionException e) {
-            player.printError(TextComponent.of(getMessage("messages.incomplete-region")));
+            Chat.error(player, Message.INCOMPLETE_REGION);
         } catch (IncompletePosException e) {
-            player.printError(TextComponent.of(getMessage("messages.incomplete-pos")));
+            Chat.error(player, Message.INCOMPLETE_POS);
         } catch (MaxChangedBlocksException e) {
-            player.printError(TextComponent.of(getMessage("messages.max-changed-blocks", maxChangeLimit)));
+            Chat.error(player, Message.MAX_CHANGED_BLOCKS, maxChangeLimit);
         } catch (MaxSetLengthException e) {
-            player.printError(TextComponent.of(getMessage("messages.max-set-length", config.maxSetLength)));
+            Chat.error(player, Message.MAX_SET_LENGTH, config.maxSetLength);
         } finally {
             session.remember(editSession);
         }

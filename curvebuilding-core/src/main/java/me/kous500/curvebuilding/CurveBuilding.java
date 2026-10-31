@@ -1,17 +1,18 @@
 package me.kous500.curvebuilding;
 
 import me.kous500.curvebuilding.config.Config;
-import me.kous500.curvebuilding.config.Resources;
+import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.config.Messages;
 
 public class CurveBuilding {
     public static boolean fawe = false;
     public static Config config;
     public static Console console;
-    private static Resources resources;
+    private static Messages messages;
 
-    public static void setResources(Resources resources) {
-        CurveBuilding.resources = resources;
-        config = resources.getConfig();
+    public static void setResources(Config config, Messages messages) {
+        CurveBuilding.config = config;
+        CurveBuilding.messages = messages;
     }
 
     public static void setConsole(Console console) {
@@ -19,14 +20,10 @@ public class CurveBuilding {
     }
 
     /**
-     * 要求された文字列をパスで取得。
-     * {0}から順番に引数の値が挿入されます。
-     *
-     * @param path 文字列を取得するためのパス
-     * @param args 文字列に挿入する値
-     * @return 結果の文字列
+     * The message from the message file set in the config, with {@code {0}}, {@code {1}}, ... replaced with {@code args}.
+     * Before the files are loaded, its path instead.
      */
-    public static String getMessage(String path, Object... args) {
-        return resources != null ? resources.getMessage(path, args) : path;
+    public static String getMessage(Message message, Object... args) {
+        return messages != null ? messages.get(message, args) : message.path;
     }
 }
