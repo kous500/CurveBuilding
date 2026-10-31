@@ -1,6 +1,7 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
 
+import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.Vector3;
 
 import java.awt.*;
@@ -9,33 +10,33 @@ import java.util.NavigableMap;
 import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.fabricConfig;
 
 public class PosVector {
-    public static PosVector getInstance(NavigableMap<Integer, Vector3[]> p, int n, int h) {
-        if (p == null || n <= 0 || h < 0 || h > 2) return null;
+    public static PosVector getInstance(NavigableMap<Integer, CurvePoint> p, int n, CurvePoint.Part part) {
+        if (p == null || n <= 0) return null;
 
-        Vector3[] vector3s = p.get(n);
-        if (vector3s == null || vector3s.length != 3 || vector3s[h] == null) return null;
+        CurvePoint point = p.get(n);
+        if (point == null || point.get(part) == null) return null;
 
-        return new PosVector(p, n, h);
+        return new PosVector(p, n, part);
     }
 
     public final Vector3 vector;
     public final boolean isStartPos;
     public final boolean isEndPos;
     public final int n;
-    public final int h;
+    public final CurvePoint.Part part;
 
-    private PosVector(NavigableMap<Integer, Vector3[]> p, int n, int h) {
-        vector = p.get(n)[h];
+    private PosVector(NavigableMap<Integer, CurvePoint> p, int n, CurvePoint.Part part) {
+        vector = p.get(n).get(part);
         isStartPos = n == 1;
         isEndPos = n == p.lastEntry().getKey();
         this.n = n;
-        this.h = h;
+        this.part = part;
     }
 
     public Color getLineColor() {
-        if (h == 1) {
+        if (part == CurvePoint.Part.F) {
             return fabricConfig.posFLineColor;
-        } else if (h == 2) {
+        } else if (part == CurvePoint.Part.B) {
             return fabricConfig.posBLineColor;
         } else {
             if (isStartPos) {
@@ -49,9 +50,9 @@ public class PosVector {
     }
 
     public Color getFillColor() {
-        if (h == 1) {
+        if (part == CurvePoint.Part.F) {
             return fabricConfig.posFFilledColor;
-        } else if (h == 2) {
+        } else if (part == CurvePoint.Part.B) {
             return fabricConfig.posBFilledColor;
         } else {
             if (isStartPos) {

@@ -3,143 +3,144 @@ package me.kous500.curvebuilding.math;
 import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.WorldeditAdapter;
 
+import me.kous500.curvebuilding.math.CurvePoint.Part;
+
+import java.util.Collections;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.TreeMap;
 
 import static me.kous500.curvebuilding.Util.changeR;
 
 /**
- * ひとつの曲線（複数の制御点群）の座標データを保持・操作するためのクラス。
- * プレイヤーに依存せず、独立してインスタンス化して使用できます。
+ * The points of one curve by their number, from 1, and the world they are in. Each change replaces the points with a
+ * new map that is never changed, so {@link #points()} can be read on any thread, such as for particles or packets.
  */
 public class PosData {
-
-    private World world;
-    private String worldId;
-    private volatile NavigableMap<Integer, Vector3[]> p;
+    private volatile String worldId;
+    private volatile NavigableMap<Integer, CurvePoint> points;
 
     public PosData() {
-        this.p = new ConcurrentSkipListMap<>();
+        this(new TreeMap<>());
     }
 
-    public PosData(NavigableMap<Integer, Vector3[]> p) {
-        this.p = p;
+    public PosData(NavigableMap<Integer, CurvePoint> points) {
+        this.points = Collections.unmodifiableNavigableMap(new TreeMap<>(points));
     }
 
+    /** The points, which this never changes. */
+    public NavigableMap<Integer, CurvePoint> points() {
+        return points;
+    }
+
+    public boolean isIn(World world) {
+        return worldId != null && worldId.equals(WorldeditAdapter.getWorldId(world));
+    }
+
+    /** Removes every point, and keeps the next ones in {@code world}. */
     public void reset(World world) {
-        this.world = world;
-        this.worldId = WorldeditAdapter.getWorldId(world);
-        this.p.clear();
+        worldId = WorldeditAdapter.getWorldId(world);
+        replace(new TreeMap<>());
     }
 
-    public void updatePos(int n, int h, Vector3 location) {
-        Vector3[] l = p.computeIfAbsent(n, k -> new Vector3[3]);
-        Vector3[] la = p.get(n + 1);
-        Vector3[] lb = p.get(n - 1);
-
-        if (h == 0 && l[h] != null) {
-            double dx = location.x() - l[h].x();
-            double dy = location.y() - l[h].y();
-            double dz = location.z() - l[h].z();
-
-            if (l[1] != null) l[1] = l[1].add(dx, dy, dz);
-            if (l[2] != null) l[2] = l[2].add(dx, dy, dz);
-        }
-
-        l[h] = location;
-
-        if (h == 1 && la != null && la[0] != null && l[0] != null) {
-            l[2] = posAutocompletion(l[0], l[1], l[2]);
-        } else if (h == 2 && lb != null && lb[0] != null && l[0] != null) {
-            l[1] = posAutocompletion(l[0], l[2], l[1]);
-        }
-
-        p.put(n, l);
-
-        if (h == 0 && lb != null && lb[0] != null && lb[1] != null && lb[2] == null) {
-            lb[2] = posAutocompletion(lb[0], lb[1], null);
-            p.put(n - 1, lb);
-        }
+    public boolean contains(int n) {
+        return points.containsKey(n);
     }
 
-    public boolean clearSpecificPos(int n, int h) {
-        Vector3[] l = p.get(n);
-        if (l == null) return false;
+    /**
+     * Sets {@code part} of point {@code n} to {@code position}. Moving a point moves its handles with it. Setting a handle
+     * of a point between two others points the other handle the opposite way, so that the curve goes through smoothly;
+     * the same is done for the handle of the previous point when its next point is set.
+     */
+    public void set(int n, Part part, Vector3 position) {
+        NavigableMap<Integer, CurvePoint> next = new TreeMap<>(points);
+        CurvePoint current = next.getOrDefault(n, CurvePoint.EMPTY);
+        CurvePoint after = next.get(n + 1);
+        CurvePoint before = next.get(n - 1);
 
-        if (h == 0) {
-            p.put(n, new Vector3[3]);
-        } else {
-            l[h] = null;
+        if (part == Part.POINT && current.point() != null) {
+            current = current.moved(position.subtract(current.point()));
         }
+        current = current.with(part, position);
+
+        if (part == Part.F && hasPoint(after) && current.point() != null) {
+            current = current.with(Part.B, opposite(current.point(), current.f(), current.b()));
+        } else if (part == Part.B && hasPoint(before) && current.point() != null) {
+            current = current.with(Part.F, opposite(current.point(), current.b(), current.f()));
+        }
+        next.put(n, current);
+
+        if (part == Part.POINT && hasPoint(before) && before.f() != null && before.b() == null) {
+            next.put(n - 1, before.with(Part.B, opposite(before.point(), before.f(), null)));
+        }
+        replace(next);
+    }
+
+    /**
+     * Clears {@code part} of point {@code n}. Clearing the point clears its handles too, and keeps its number.
+     *
+     * @return whether point {@code n} was there
+     */
+    public boolean clear(int n, Part part) {
+        CurvePoint current = points.get(n);
+        if (current == null) return false;
+
+        NavigableMap<Integer, CurvePoint> next = new TreeMap<>(points);
+        next.put(n, part == Part.POINT ? CurvePoint.EMPTY : current.with(part, null));
+        replace(next);
         return true;
     }
 
-    public void insertNodeAt(int n) {
-        NavigableMap<Integer, Vector3[]> newMap = new ConcurrentSkipListMap<>();
-        for (Map.Entry<Integer, Vector3[]> entry : p.entrySet()) {
-            int key = entry.getKey();
-            if (key < n) {
-                newMap.put(key, entry.getValue());
-            } else {
-                newMap.put(key + 1, entry.getValue());
+    /** Makes room for a new point {@code n}: the points from {@code n} on get the next numbers. */
+    public void insertAt(int n) {
+        NavigableMap<Integer, CurvePoint> next = new TreeMap<>();
+        for (Map.Entry<Integer, CurvePoint> entry : points.entrySet()) {
+            next.put(entry.getKey() < n ? entry.getKey() : entry.getKey() + 1, entry.getValue());
+        }
+        replace(next);
+    }
+
+    /** Removes point {@code n}: the points after it get the numbers before. */
+    public void removeAt(int n) {
+        NavigableMap<Integer, CurvePoint> next = new TreeMap<>();
+        for (Map.Entry<Integer, CurvePoint> entry : points.entrySet()) {
+            if (entry.getKey() < n) {
+                next.put(entry.getKey(), entry.getValue());
+            } else if (entry.getKey() > n) {
+                next.put(entry.getKey() - 1, entry.getValue());
             }
         }
-        this.p = newMap;
+        replace(next);
     }
 
-    public void removeNodeAt(int n) {
-        p.remove(n);
-        NavigableMap<Integer, Vector3[]> newMap = new ConcurrentSkipListMap<>();
-        for (Map.Entry<Integer, Vector3[]> entry : p.entrySet()) {
-            int key = entry.getKey();
-            if (key < n) {
-                newMap.put(key, entry.getValue());
-            } else if (key > n) {
-                newMap.put(key - 1, entry.getValue());
-            }
+    /** Moves every point and handle by {@code offset}. */
+    public void move(Vector3 offset) {
+        NavigableMap<Integer, CurvePoint> next = new TreeMap<>();
+        points.forEach((n, point) -> next.put(n, point.moved(offset)));
+        replace(next);
+    }
+
+    private void replace(NavigableMap<Integer, CurvePoint> next) {
+        points = Collections.unmodifiableNavigableMap(next);
+    }
+
+    private static boolean hasPoint(CurvePoint point) {
+        return point != null && point.point() != null;
+    }
+
+    /**
+     * The handle opposite to {@code handle} around {@code point}: as far as {@code current}, the handle it replaces, or
+     * as far as {@code handle} when there is none.
+     */
+    private static Vector3 opposite(Vector3 point, Vector3 handle, Vector3 current) {
+        double dx = handle.x() - point.x();
+        double dy = handle.y() - point.y();
+        double dz = handle.z() - point.z();
+
+        if (current == null) {
+            return point.add(-dx, -dy, -dz);
         }
-        this.p = newMap;
-    }
-
-    public void applyShift(Vector3 shiftVec) {
-        for (Vector3[] vec : p.values()) {
-            if (vec != null) {
-                for (int j = 0; j < 3; j++) {
-                    if (vec[j] != null) {
-                        vec[j] = vec[j].add(shiftVec);
-                    }
-                }
-            }
-        }
-    }
-
-    public boolean containsPos(int n) {
-        return p.containsKey(n);
-    }
-
-    public String getWorldId() {
-        return worldId;
-    }
-
-    public World getWorld() {
-        return world;
-    }
-
-    public NavigableMap<Integer, Vector3[]> getMap() {
-        return p;
-    }
-
-    private static Vector3 posAutocompletion(Vector3 h0, Vector3 hIN, Vector3 hOUT) {
-        double dx = hIN.x() - h0.x();
-        double dy = hIN.y() - h0.y();
-        double dz = hIN.z() - h0.z();
-
-        if (hOUT == null) {
-            return h0.add(-dx, -dy, -dz);
-        } else {
-            double[] newH = changeR(dx, dy, dz, -1 * h0.distance(hOUT));
-            return h0.add(newH[0], newH[1], newH[2]);
-        }
+        double[] scaled = changeR(dx, dy, dz, -1 * point.distance(current));
+        return point.add(scaled[0], scaled[1], scaled[2]);
     }
 }

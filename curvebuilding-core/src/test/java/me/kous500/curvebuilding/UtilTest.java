@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding;
 
+import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.Vector3;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -152,9 +153,9 @@ class UtilTest {
 
         @Test
         void connectsConsecutivePositionsThroughTheirHandles() {
-            NavigableMap<Integer, Vector3[]> posMap = new TreeMap<>();
-            posMap.put(1, new Vector3[]{a, null, aBack});
-            posMap.put(2, new Vector3[]{b, bFront, null});
+            NavigableMap<Integer, CurvePoint> posMap = new TreeMap<>();
+            posMap.put(1, new CurvePoint(a, null, aBack));
+            posMap.put(2, new CurvePoint(b, bFront, null));
 
             List<Vector3[]> segments = Util.bezierSegments(posMap);
 
@@ -164,10 +165,10 @@ class UtilTest {
 
         @Test
         void missingHandlesFallBackToTheirPositions() {
-            NavigableMap<Integer, Vector3[]> posMap = new TreeMap<>();
-            posMap.put(1, new Vector3[]{a, null, null});
-            posMap.put(2, new Vector3[]{b, null, null});
-            posMap.put(3, new Vector3[]{c, null, null});
+            NavigableMap<Integer, CurvePoint> posMap = new TreeMap<>();
+            posMap.put(1, new CurvePoint(a, null, null));
+            posMap.put(2, new CurvePoint(b, null, null));
+            posMap.put(3, new CurvePoint(c, null, null));
 
             List<Vector3[]> segments = Util.bezierSegments(posMap);
 
@@ -178,29 +179,29 @@ class UtilTest {
 
         @Test
         void stopsAtTheFirstMissingPosition() {
-            NavigableMap<Integer, Vector3[]> posMap = new TreeMap<>();
-            posMap.put(1, new Vector3[]{a, null, null});
-            posMap.put(2, new Vector3[]{b, null, null});
-            posMap.put(4, new Vector3[]{c, null, null});
-            posMap.put(5, new Vector3[]{a, null, null});
+            NavigableMap<Integer, CurvePoint> posMap = new TreeMap<>();
+            posMap.put(1, new CurvePoint(a, null, null));
+            posMap.put(2, new CurvePoint(b, null, null));
+            posMap.put(4, new CurvePoint(c, null, null));
+            posMap.put(5, new CurvePoint(a, null, null));
 
             assertEquals(1, Util.bezierSegments(posMap).size());
 
-            posMap.put(3, new Vector3[]{null, bFront, null});
+            posMap.put(3, new CurvePoint(null, bFront, null));
             assertEquals(1, Util.bezierSegments(posMap).size());
         }
 
         @Test
         void hasNoSegmentsWithoutTwoPositions() {
-            NavigableMap<Integer, Vector3[]> posMap = new TreeMap<>();
+            NavigableMap<Integer, CurvePoint> posMap = new TreeMap<>();
             assertTrue(Util.bezierSegments(null).isEmpty());
             assertTrue(Util.bezierSegments(posMap).isEmpty());
 
-            posMap.put(1, new Vector3[]{a, null, null});
+            posMap.put(1, new CurvePoint(a, null, null));
             assertTrue(Util.bezierSegments(posMap).isEmpty());
 
             posMap.remove(1);
-            posMap.put(2, new Vector3[]{b, null, null});
+            posMap.put(2, new CurvePoint(b, null, null));
             assertTrue(Util.bezierSegments(posMap).isEmpty());
         }
     }

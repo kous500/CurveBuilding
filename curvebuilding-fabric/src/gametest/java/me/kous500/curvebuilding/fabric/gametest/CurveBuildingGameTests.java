@@ -16,6 +16,7 @@ import me.kous500.curvebuilding.commands.bc.BcEdit;
 import me.kous500.curvebuilding.commands.pos.PosCommand;
 import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
 import me.kous500.curvebuilding.fabric.FabricCompat;
+import me.kous500.curvebuilding.math.CurvePoint.Part;
 import me.kous500.curvebuilding.math.PosManager;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.commands.CommandSourceStack;
@@ -99,7 +100,7 @@ public class CurveBuildingGameTests {
         for (String[] args : new String[][]{{"set", "1", "extra"}, {"set", "3fx"}, {"insert", "1f"}}) {
             helper.assertTrue(!PosCommand.posCommand(player, args), Component.literal(String.join(" ", args) + " was used"));
         }
-        helper.assertTrue(PosManager.getPos(player) == null, Component.literal("a position was set"));
+        helper.assertTrue(PosManager.get(player) == null, Component.literal("a position was set"));
         helper.succeed();
     }
 
@@ -124,8 +125,8 @@ public class CurveBuildingGameTests {
     public void straightCurveCopiesTheSelection(GameTestHelper helper) {
         Curve curve = new Curve(helper);
         curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
-        curve.pos(1, 0, new BlockPos(1, 1, 3));
-        curve.pos(2, 0, new BlockPos(6, 1, 3));
+        curve.pos(1, Part.POINT, new BlockPos(1, 1, 3));
+        curve.pos(2, Part.POINT, new BlockPos(6, 1, 3));
         curve.build();
 
         // The selection itself, then one block at each position from the start to the end
@@ -141,10 +142,10 @@ public class CurveBuildingGameTests {
     public void bentCurveFollowsTheControlPoints(GameTestHelper helper) {
         Curve curve = new Curve(helper);
         curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
-        curve.pos(1, 0, new BlockPos(1, 1, 1));
-        curve.pos(1, 2, new BlockPos(6, 1, 1));
-        curve.pos(2, 0, new BlockPos(6, 1, 6));
-        curve.pos(2, 1, new BlockPos(6, 1, 1));
+        curve.pos(1, Part.POINT, new BlockPos(1, 1, 1));
+        curve.pos(1, Part.B, new BlockPos(6, 1, 1));
+        curve.pos(2, Part.POINT, new BlockPos(6, 1, 6));
+        curve.pos(2, Part.F, new BlockPos(6, 1, 1));
         curve.build();
 
         // A quarter-circle-like arc from (1, 1, 1) to (6, 1, 6), bending towards the shared control point (6, 1, 1)
@@ -161,9 +162,9 @@ public class CurveBuildingGameTests {
     public void segmentBetweenPositionsAtTheSamePlaceIsSkipped(GameTestHelper helper) {
         Curve curve = new Curve(helper);
         curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
-        curve.pos(1, 0, new BlockPos(1, 1, 3));
-        curve.pos(2, 0, new BlockPos(1, 1, 3));
-        curve.pos(3, 0, new BlockPos(6, 1, 3));
+        curve.pos(1, Part.POINT, new BlockPos(1, 1, 3));
+        curve.pos(2, Part.POINT, new BlockPos(1, 1, 3));
+        curve.pos(3, Part.POINT, new BlockPos(6, 1, 3));
         curve.build();
 
         // Nothing from position 1 to 2, then the same blocks as a straight curve from 2 to 3
@@ -179,10 +180,10 @@ public class CurveBuildingGameTests {
     public void loopWithItsEndsAtTheSamePlaceIsBuilt(GameTestHelper helper) {
         Curve curve = new Curve(helper);
         curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
-        curve.pos(1, 0, new BlockPos(1, 1, 1));
-        curve.pos(1, 2, new BlockPos(1, 1, 6));
-        curve.pos(2, 0, new BlockPos(1, 1, 1));
-        curve.pos(2, 1, new BlockPos(6, 1, 1));
+        curve.pos(1, Part.POINT, new BlockPos(1, 1, 1));
+        curve.pos(1, Part.B, new BlockPos(1, 1, 6));
+        curve.pos(2, Part.POINT, new BlockPos(1, 1, 1));
+        curve.pos(2, Part.F, new BlockPos(6, 1, 1));
         curve.build();
 
         // The loop goes out along the control points and back, so it places more than its two ends
@@ -196,9 +197,9 @@ public class CurveBuildingGameTests {
     public void curveLongerThanTheLimitIsNotBuilt(GameTestHelper helper) {
         Curve curve = new Curve(helper);
         curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
-        curve.pos(1, 0, new BlockPos(1, 1, 3));
+        curve.pos(1, Part.POINT, new BlockPos(1, 1, 3));
         // Beyond curve.max-set-length (10000 by default)
-        curve.pos(2, 0, new BlockPos(1 + 20000, 1, 3));
+        curve.pos(2, Part.POINT, new BlockPos(1 + 20000, 1, 3));
         curve.build();
 
         assertBlocks(helper, Blocks.STONE, List.of(new BlockPos(0, 1, 0)));
@@ -209,8 +210,8 @@ public class CurveBuildingGameTests {
     public void builtCurveCanBeUndone(GameTestHelper helper) {
         Curve curve = new Curve(helper);
         curve.select(Blocks.STONE, new BlockPos(0, 1, 0));
-        curve.pos(1, 0, new BlockPos(1, 1, 3));
-        curve.pos(2, 0, new BlockPos(6, 1, 3));
+        curve.pos(1, Part.POINT, new BlockPos(1, 1, 3));
+        curve.pos(2, Part.POINT, new BlockPos(6, 1, 3));
         curve.build();
         curve.undo();
 
@@ -282,11 +283,11 @@ public class CurveBuildingGameTests {
             selector.selectSecondary(vector, ActorSelectorLimits.forActor(player));
         }
 
-        /** Sets curve position {@code n} (h: 0 the point, 1 and 2 its control points) where the player stands, as //bcpos does. */
-        void pos(int n, int h, BlockPos pos) {
+        /** Sets {@code part} of curve position {@code n} where the player stands, as //bcpos does. */
+        void pos(int n, Part part, BlockPos pos) {
             BlockPos absolute = helper.absolutePos(pos);
             serverPlayer.setPos(absolute.getX() + 0.5, absolute.getY(), absolute.getZ() + 0.5);
-            PosManager.addPos(player, n, h);
+            PosManager.addPos(player, n, part);
         }
 
         /** Builds the curve, as //bc without arguments does. */
