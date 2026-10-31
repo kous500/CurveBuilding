@@ -33,7 +33,8 @@ and the GitHub Actions workflows.
 
 ## Git and GitHub
 
-- Follow CONTRIBUTING.md for branch names, commit messages and pull request titles.
+- Follow CONTRIBUTING.md for branch names, commit messages and pull request titles and descriptions.
+  Write the description with the headings of `.github/PULL_REQUEST_TEMPLATE.md`.
 - Never push to `main` or force-push. Pull requests are squash-merged.
 - When reusing code from someone else's pull request, credit them with a `Co-authored-by:` trailer
   at the end of the pull request description, which becomes the squash commit message.
