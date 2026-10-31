@@ -1,97 +1,62 @@
 package me.kous500.curvebuilding.commands.pos;
 
 import com.sk89q.worldedit.entity.Player;
-import me.kous500.curvebuilding.Chat;
 import me.kous500.curvebuilding.GameMessage;
-import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.commands.ArgumentException;
+import me.kous500.curvebuilding.commands.IntegerArgument;
 
-import java.util.regex.Pattern;
-
-import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.math.PosManager.*;
 
-public class PosCommand {
-    public static boolean posCommand(Player player, String command, String[] args) {
-        if (!command.equalsIgnoreCase("/bcpos")) return false;
+public final class PosCommand {
+    private PosCommand() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
-        PosSubcommand subcommand = args.length >= 1 ? PosSubcommand.of(args[0]) : null;
-        if (subcommand == null || (subcommand.arguments != PosSubcommand.Arguments.NONE && args.length < 2)) {
-            Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
-            if (args.length >= 1) Chat.problemHere(player, "bcpos", args[0]);
-            else Chat.problemHere(player, "pos", "");
+    /**
+     * Runs {@code //bcpos} with {@code args}, or shows the error of the first argument that cannot be used.
+     *
+     * @return whether the arguments could be used
+     */
+    public static boolean posCommand(Player player, String[] args) {
+        // The argument being read, for the error
+        int index = 0;
+        try {
+            PosSubcommand subcommand = PosSubcommand.of(argument(args, 0));
+            if (subcommand == null) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);
+
+            index = 1 + subcommand.arguments.max;
+            if (args.length > index) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);
+
+            index = 1;
+            switch (subcommand) {
+                case CLEARALL -> clearPos(player);
+                case CLEAR -> {
+                    PosPoint point = PosPoint.parse(argument(args, 1));
+                    clearPos(player, point.n(), point.h());
+                }
+                case SET -> {
+                    PosPoint point = PosPoint.parse(argument(args, 1));
+                    addPos(player, point.n(), point.h());
+                }
+                case INSERT -> insert(player, PosPoint.parseNumber(argument(args, 1)));
+                case REMOVE -> remove(player, PosPoint.parseNumber(argument(args, 1)));
+                case SHIFT -> {
+                    int length = IntegerArgument.parse(argument(args, 1), 0);
+                    index = 2;
+                    Direction direction = args.length > 2 ? Direction.parse(args[2]) : Direction.ME;
+                    shift(player, length, direction);
+                }
+            }
+            return true;
+        } catch (ArgumentException e) {
+            e.show(player, "bcpos", args, index);
             return false;
         }
-
-        switch (subcommand) {
-            case CLEARALL -> {
-                clearPos(player);
-                return true;
-            }
-            case SHIFT -> {
-                int n = toInt(args[1]);
-                if (n < 0) {
-                    Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
-                    Chat.problemHere(player, args[0], args[1]);
-                    return false;
-                }
-
-                String direction = args.length >= 3 ? args[2] : "me";
-                Pattern regex = Pattern.compile("^[bdeflmnrsuw]", Pattern.CASE_INSENSITIVE);
-                if (!regex.matcher(direction).find()) {
-                    Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
-                    Chat.problemHere(player, args[1], args[2]);
-                    return false;
-                }
-
-                shift(player, n, direction.charAt(0));
-                return true;
-            }
-            default -> {
-                PosType posType = PosType.get(args[1]);
-                if (!argIsError(player, args, posType)) return false;
-
-                switch (subcommand) {
-                    case CLEAR -> clearPos(player, posType.n, posType.h);
-                    case INSERT -> insert(player, posType.n);
-                    case REMOVE -> remove(player, posType.n);
-                    case SET -> addPos(player, posType.n, posType.h);
-                    default -> throw new IllegalStateException("Unexpected subcommand: " + subcommand);
-                }
-                return true;
-            }
-        }
     }
 
-    private static int toInt(String string) {
-        int result;
-        try {
-            result = Integer.parseInt(string);
-        } catch (NumberFormatException e) {
-            result = -1;
-        }
-        return result;
-    }
-
-    public static boolean argIsError(Player player, String[] args, PosType posType) {
-        PosType.ErrorType errorType = posType.errorType;
-        if (errorType == null) return true;
-
-        switch (errorType) {
-            case integerLess -> {
-                Chat.error(player, GameMessage.INTEGER_TOO_LOW, 1, args[1]);
-                Chat.problemHere(player, args[0], args[1]);
-            } case incorrectArgument -> {
-                Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
-                Chat.problemHere(player, args[0], args[1]);
-            } case invalidInteger -> {
-                Chat.error(player, GameMessage.INVALID_INTEGER, args[1]);
-                Chat.problemHere(player, args[0], args[1]);
-            } case maxPosValue -> {
-                Chat.error(player, Message.MAX_POS_VALUE, config.maxPosValue);
-                Chat.problemHere(player, args[0], args[1]);
-            }
-        }
-
-        return false;
+    /** {@code args[index]}, which must be there. */
+    private static String argument(String[] args, int index) throws ArgumentException {
+        if (index >= args.length) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);
+        return args[index];
     }
 }
