@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static me.kous500.curvebuilding.CurveBuilding.console;
+
 public class YamlConfig {
     private final File configFile;
     private final Map<String, Object> configMap;
@@ -25,7 +27,7 @@ public class YamlConfig {
             try (InputStream inputStream = new FileInputStream(file)) {
                 return new YamlConfig(file, inputStream, defaultConfig);
             } catch (IOException e) {
-                e.fillInStackTrace();
+                console.warning("Could not read " + file + ", so the defaults are used", e);
                 return new YamlConfig(file, new LinkedHashMap<>(), defaultConfig);
             }
         } else {
@@ -142,7 +144,7 @@ public class YamlConfig {
         try (Writer writer = new FileWriter(this.configFile, StandardCharsets.UTF_8)) {
             yaml.dump(this.configMap, writer);
         } catch (IOException e) {
-            e.fillInStackTrace();
+            console.warning("Could not save " + this.configFile, e);
         }
     }
 

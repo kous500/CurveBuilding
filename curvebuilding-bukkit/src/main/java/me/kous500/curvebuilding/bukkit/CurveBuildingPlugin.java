@@ -4,12 +4,12 @@ import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
 import com.github.fierioziy.particlenativeapi.api.particle.ParticleList_1_13;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
+import me.kous500.curvebuilding.Console;
 import me.kous500.curvebuilding.MainInitializer;
 import me.kous500.curvebuilding.bukkit.commands.Bc;
 import me.kous500.curvebuilding.bukkit.commands.CurveBuildingCommand;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
-import me.kous500.curvebuilding.config.Message;
 import me.kous500.curvebuilding.math.PosManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,18 +22,19 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
 
     @Override
     public void onEnable() {
+        setConsole(Console.of(getLogger()));
+
         if (getServer().getPluginManager().isPluginEnabled("FastAsyncWorldEdit")){
             fawe = true;
         }
 
         reloadConfigAndResources();
-        setConsole((new BukkitConsole(this)));
 
         try {
             ParticleNativeAPI api = ParticleNativeCore.loadAPI(this);
             particles_1_13 = api.LIST_1_13;
         } catch (ParticleException e) {
-            getLogger().warning(getMessage(Message.PLUGIN_LOAD_ERROR, "ParticleNativeAPI") + e);
+            console.warning("Could not load ParticleNativeAPI", e);
         }
 
         Bc bc = new Bc(this);

@@ -6,7 +6,7 @@ import me.kous500.curvebuilding.config.Message;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 
-/** Sends messages to a player through WorldEdit, the same way on Bukkit and Fabric. */
+/** Sends messages to a player through WorldEdit. */
 public final class Chat {
     private Chat() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");

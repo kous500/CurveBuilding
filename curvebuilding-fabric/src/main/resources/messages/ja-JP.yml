@@ -1,5 +1,4 @@
 messages:
-  plugin-load-error: "{0}の読み込み中にエラーが発生しました: "
   non-player-execution: "コンソールからそのコマンドは実行できません。"
   incorrect-argument: "コマンドの引数が正しくありません。"
   integer-less: "この整数は{0}以上でなくてはならないため、{1}は適しません。"

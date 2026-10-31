@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static me.kous500.curvebuilding.CurveBuilding.console;
+
 public class ResourceFiles {
     public static void setup(MainInitializer mainInitializer) {
         ResourceFiles resourceFiles = new ResourceFiles(mainInitializer);
@@ -67,8 +69,7 @@ public class ResourceFiles {
                 }
             }
         } catch (IOException | URISyntaxException | NullPointerException e) {
-            System.err.println("Failed to copy resource directory: " + resourceDir);
-            e.fillInStackTrace();
+            console.warning("Could not copy the default files in " + resourceDir + " from the jar", e);
         }
     }
 
@@ -86,10 +87,9 @@ public class ResourceFiles {
                 inputStream.close();
             }
         } catch (IOException e) {
-            System.err.println("Failed to create resource file: " + resourcePath);
-            e.fillInStackTrace();
+            console.warning("Could not copy the default " + resourcePath + " from the jar into " + DATA_FOLDER, e);
         } catch (NullPointerException e) {
-            System.err.println(e.getMessage());
+            console.warning(e.getMessage());
         }
     }
 }

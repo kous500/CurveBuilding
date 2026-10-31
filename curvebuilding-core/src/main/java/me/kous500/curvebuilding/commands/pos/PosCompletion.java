@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Suggestions for the arguments of {@code //bcpos}, for the Bukkit tab completion and the Fabric command suggestions.
+ * Suggestions for the arguments of {@code //bcpos}, for the command suggestions of every platform.
  */
 public final class PosCompletion {
     private PosCompletion() {

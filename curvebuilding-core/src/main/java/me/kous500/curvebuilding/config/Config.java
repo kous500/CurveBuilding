@@ -12,7 +12,7 @@ public class Config {
     public Config() {
     }
 
-    /** Reads the settings that Bukkit and Fabric share from config.yml. */
+    /** Reads the settings that every platform shares from config.yml. */
     public Config(YamlConfig config) {
         messageFilePath = config.getString("message-file");
 
