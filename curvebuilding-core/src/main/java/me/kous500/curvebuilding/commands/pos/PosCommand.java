@@ -2,6 +2,7 @@ package me.kous500.curvebuilding.commands.pos;
 
 import com.sk89q.worldedit.entity.Player;
 import me.kous500.curvebuilding.Chat;
+import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.config.Message;
 
 import java.util.regex.Pattern;
@@ -15,7 +16,7 @@ public class PosCommand {
 
         PosSubcommand subcommand = args.length >= 1 ? PosSubcommand.of(args[0]) : null;
         if (subcommand == null || (subcommand.arguments != PosSubcommand.Arguments.NONE && args.length < 2)) {
-            Chat.error(player, Message.INCORRECT_ARGUMENT);
+            Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
             if (args.length >= 1) Chat.problemHere(player, "bcpos", args[0]);
             else Chat.problemHere(player, "pos", "");
             return false;
@@ -29,7 +30,7 @@ public class PosCommand {
             case SHIFT -> {
                 int n = toInt(args[1]);
                 if (n < 0) {
-                    Chat.error(player, Message.INCORRECT_ARGUMENT);
+                    Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
                     Chat.problemHere(player, args[0], args[1]);
                     return false;
                 }
@@ -37,7 +38,7 @@ public class PosCommand {
                 String direction = args.length >= 3 ? args[2] : "me";
                 Pattern regex = Pattern.compile("^[bdeflmnrsuw]", Pattern.CASE_INSENSITIVE);
                 if (!regex.matcher(direction).find()) {
-                    Chat.error(player, Message.INCORRECT_ARGUMENT);
+                    Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
                     Chat.problemHere(player, args[1], args[2]);
                     return false;
                 }
@@ -77,13 +78,13 @@ public class PosCommand {
 
         switch (errorType) {
             case integerLess -> {
-                Chat.error(player, Message.INTEGER_LESS, 1, args[1]);
+                Chat.error(player, GameMessage.INTEGER_TOO_LOW, 1, args[1]);
                 Chat.problemHere(player, args[0], args[1]);
             } case incorrectArgument -> {
-                Chat.error(player, Message.INCORRECT_ARGUMENT);
+                Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
                 Chat.problemHere(player, args[0], args[1]);
             } case invalidInteger -> {
-                Chat.error(player, Message.INVALID_INTEGER, args[1]);
+                Chat.error(player, GameMessage.INVALID_INTEGER, args[1]);
                 Chat.problemHere(player, args[0], args[1]);
             } case maxPosValue -> {
                 Chat.error(player, Message.MAX_POS_VALUE, config.maxPosValue);

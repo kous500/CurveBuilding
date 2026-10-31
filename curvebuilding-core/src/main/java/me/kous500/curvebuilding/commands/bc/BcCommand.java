@@ -2,7 +2,7 @@ package me.kous500.curvebuilding.commands.bc;
 
 import com.sk89q.worldedit.entity.Player;
 import me.kous500.curvebuilding.Chat;
-import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.GameMessage;
 
 public final class BcCommand {
     /** Option letters after {@code -}: replace only air blocks. */
@@ -73,16 +73,16 @@ public final class BcCommand {
                 Integer.parseInt(arg);
                 return true;
             } catch (NumberFormatException e) {
-                Chat.error(player, Message.INVALID_INTEGER, arg);
+                Chat.error(player, GameMessage.INVALID_INTEGER, arg);
             }
         } else if (NumberCount > 1) {
-            Chat.error(player, Message.INCORRECT_ARGUMENT);
+            Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
         } else if (arg.matches("^-[0-9]+$")) {
-            Chat.error(player, Message.INTEGER_LESS, 0, arg);
+            Chat.error(player, GameMessage.INTEGER_TOO_LOW, 0, arg);
         } else if (arg.matches("[+-]?\\d*(\\.\\d+)?")) {
-            Chat.error(player, Message.INVALID_INTEGER, arg);
+            Chat.error(player, GameMessage.INVALID_INTEGER, arg);
         } else {
-            Chat.error(player, Message.INCORRECT_ARGUMENT);
+            Chat.error(player, GameMessage.INCORRECT_ARGUMENT);
         }
 
         Chat.problemHere(player, beforeArg.isEmpty() ? "bc" : beforeArg, arg);

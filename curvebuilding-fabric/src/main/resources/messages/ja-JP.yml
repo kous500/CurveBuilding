@@ -1,10 +1,7 @@
 messages:
   non-player-execution: "コンソールからそのコマンドは実行できません。"
   incorrect-argument: "コマンドの引数が正しくありません。"
-  integer-less: "この整数は{0}以上でなくてはならないため、{1}は適しません。"
-  invalid-integer: "「{0}」は無効な整数です。"
   pos-not-exist: "接続点 {0} は存在しません。"
-  problem-here: "←［問題箇所］"
   pos-N: "接続点 {0}"
   pos-Nf: "制御点 {0}f"
   pos-Nb: "制御点 {0}b"

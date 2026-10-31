@@ -1,5 +1,7 @@
 package me.kous500.curvebuilding.bukkit.commands;
 
+import me.kous500.curvebuilding.Chat;
+import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
 import me.kous500.curvebuilding.config.Message;
 import org.bukkit.command.Command;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 
 public class CurveBuildingCommand implements TabExecutor {
@@ -35,11 +38,10 @@ public class CurveBuildingCommand implements TabExecutor {
             }
             return true;
         } else {
-            String errorMessage = getMessage(Message.INCORRECT_ARGUMENT);
-            if (sender instanceof Player) {
-                sender.sendMessage("§c" + errorMessage);
+            if (sender instanceof Player player) {
+                Chat.error(adapt(player), GameMessage.INCORRECT_ARGUMENT);
             } else {
-                plugin.getLogger().info(errorMessage);
+                plugin.getLogger().info(getMessage(Message.INCORRECT_ARGUMENT));
             }
             return false;
         }

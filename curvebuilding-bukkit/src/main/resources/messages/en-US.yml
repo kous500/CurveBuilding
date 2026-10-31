@@ -1,10 +1,7 @@
 messages:
   non-player-execution: "Can not execute this command from console."
   incorrect-argument: "Invalid argument for command."
-  integer-less: "Integer must not be less than {0}, found {1}."
-  invalid-integer: "Invalid integer '{0}'."
   pos-not-exist: "Connection point {0} does not exist."
-  problem-here: "<--[HERE]"
   pos-N: "Connection position {0}"
   pos-Nf: "Control position {0}f"
   pos-Nb: "Control position {0}b"

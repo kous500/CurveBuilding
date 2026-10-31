@@ -1,10 +1,7 @@
 messages:
   non-player-execution: "无法在控制台执行该命令。"
   incorrect-argument: "无效的指令参数。"
-  integer-less: "整数不能小于 {0}，而输入值为 {1}。"
-  invalid-integer: "无效的整数 '{0}'。"
   pos-not-exist: "连接点 {0} 并不存在。"
-  problem-here: "<--[此处]"
   pos-N: "连接位置 {0}"
   pos-Nf: "控制位置 {0}f"
   pos-Nb: "控制位置 {0}b"

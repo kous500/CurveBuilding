@@ -7,10 +7,7 @@ package me.kous500.curvebuilding.config;
 public enum Message {
     NON_PLAYER_EXECUTION("non-player-execution"),
     INCORRECT_ARGUMENT("incorrect-argument"),
-    INTEGER_LESS("integer-less"),
-    INVALID_INTEGER("invalid-integer"),
     POS_NOT_EXIST("pos-not-exist"),
-    PROBLEM_HERE("problem-here"),
     POS_N("pos-N"),
     POS_NF("pos-Nf"),
     POS_NB("pos-Nb"),
