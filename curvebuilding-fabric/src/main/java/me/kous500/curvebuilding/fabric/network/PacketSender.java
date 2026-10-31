@@ -15,23 +15,28 @@ public class PacketSender {
     private static final int RESEND_INTERVAL_TICKS = 20;
     private static boolean started;
 
-    /** Resends the positions once a second, on the server thread. */
+    /** Resends the positions of the players who have any once a second, on the server thread. */
     public static void start() {
         if (started) return;
         started = true;
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getTickCount() % RESEND_INTERVAL_TICKS != 0) return;
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                sendPosPacket(player);
+                if (PosManager.getPosMap().containsKey(player.getUUID())) {
+                    sendPosPacket(player);
+                }
             }
         });
     }
 
+    /**
+     * Sends the positions of {@code player} in their current world. With none, it sends no positions, so that the client
+     * stops drawing the ones it has, for example after all of them were cleared.
+     */
     public static void sendPosPacket(ServerPlayer player) {
         PosData posData = PosManager.getPosMap().get(player.getUUID());
-        if (posData == null) return;
-
-        if (posData.getWorldId() != null && posData.getWorldId().equals(FabricCompat.adaptWorld(player.level()).id())) {
+        if (posData != null && posData.getWorldId() != null
+                && posData.getWorldId().equals(FabricCompat.adaptWorld(player.level()).id())) {
             ServerPlayNetworking.send(player, new PosDataPayload(posData.getMap()));
         } else {
             ServerPlayNetworking.send(player, new PosDataPayload(new TreeMap<>()));
