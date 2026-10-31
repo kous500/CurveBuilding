@@ -29,22 +29,22 @@ public final class FabricConfig extends Config {
         super(config);
 
         posRenderThroughWalls = config.getBoolean("render-preview.pos.render-through-walls");
-        posLineColor = new Color(config.getInteger("render-preview.pos.format.pos.line-color"), true);
-        posFilledColor = new Color(config.getInteger("render-preview.pos.format.pos.filled-color"), true);
-        posStartLineColor = new Color(config.getInteger("render-preview.pos.format.start-pos.line-color"), true);
-        posStartFilledColor = new Color(config.getInteger("render-preview.pos.format.start-pos.filled-color"), true);
-        posEndLineColor = new Color(config.getInteger("render-preview.pos.format.end-pos.line-color"), true);
-        posEndFilledColor = new Color(config.getInteger("render-preview.pos.format.end-pos.filled-color"), true);
-        posFLineColor = new Color(config.getInteger("render-preview.pos.format.f.line-color"), true);
-        posFFilledColor = new Color(config.getInteger("render-preview.pos.format.f.filled-color"), true);
-        posBLineColor = new Color(config.getInteger("render-preview.pos.format.b.line-color"), true);
-        posBFilledColor = new Color(config.getInteger("render-preview.pos.format.b.filled-color"), true);
+        posLineColor = new Color(config.getArgb("render-preview.pos.format.pos.line-color"), true);
+        posFilledColor = new Color(config.getArgb("render-preview.pos.format.pos.filled-color"), true);
+        posStartLineColor = new Color(config.getArgb("render-preview.pos.format.start-pos.line-color"), true);
+        posStartFilledColor = new Color(config.getArgb("render-preview.pos.format.start-pos.filled-color"), true);
+        posEndLineColor = new Color(config.getArgb("render-preview.pos.format.end-pos.line-color"), true);
+        posEndFilledColor = new Color(config.getArgb("render-preview.pos.format.end-pos.filled-color"), true);
+        posFLineColor = new Color(config.getArgb("render-preview.pos.format.f.line-color"), true);
+        posFFilledColor = new Color(config.getArgb("render-preview.pos.format.f.filled-color"), true);
+        posBLineColor = new Color(config.getArgb("render-preview.pos.format.b.line-color"), true);
+        posBFilledColor = new Color(config.getArgb("render-preview.pos.format.b.filled-color"), true);
 
         lineRenderThroughWalls = config.getBoolean("render-preview.line.render-through-walls");
         lineRenderAccuracy = Math.max(1, config.getInteger("render-preview.line.accuracy"));
         lineRenderLength = Math.max(0, config.getInteger("render-preview.line.maxLength"));
-        lineFColor = new Color(config.getInteger("render-preview.line.format.line-f-color"), true);
-        lineBColor = new Color(config.getInteger("render-preview.line.format.line-b-color"), true);
-        lineCurveColor = new Color(config.getInteger("render-preview.line.format.curve-color"), true);
+        lineFColor = new Color(config.getArgb("render-preview.line.format.line-f-color"), true);
+        lineBColor = new Color(config.getArgb("render-preview.line.format.line-b-color"), true);
+        lineCurveColor = new Color(config.getArgb("render-preview.line.format.curve-color"), true);
     }
 }
