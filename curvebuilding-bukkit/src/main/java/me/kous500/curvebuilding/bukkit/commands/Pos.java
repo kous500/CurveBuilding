@@ -19,12 +19,13 @@ public class Pos implements TabExecutor {
     @Override
     public boolean onCommand(
             @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (sender instanceof Player) {
-            return posCommand(adapt((Player) sender), command.getName(), args);
+        // An error was already shown, so Bukkit should not add the usage from plugin.yml
+        if (sender instanceof Player player) {
+            posCommand(adapt(player), args);
         } else {
             sender.sendMessage(getMessage(Message.NON_PLAYER_EXECUTION));
-            return true;
         }
+        return true;
     }
 
     @Nullable

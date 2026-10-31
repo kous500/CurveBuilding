@@ -13,13 +13,20 @@ public enum PosSubcommand {
     SHIFT("shift", Arguments.LENGTH_AND_DIRECTION);
 
     public enum Arguments {
-        NONE,
-        /** A point or one of its handles, such as {@code 2}, {@code 2f} or {@code 2b} (see {@link PosType}). */
-        POS_TYPE,
+        NONE(0),
+        /** A point or one of its handles, such as {@code 2}, {@code 2f} or {@code 2b} (see {@link PosPoint}). */
+        POS_TYPE(1),
         /** A point number only, such as {@code 2}. */
-        POINT,
-        /** A length, then an optional direction from {@code PosManager.directionOptions}. */
-        LENGTH_AND_DIRECTION
+        POINT(1),
+        /** A length, then an optional {@link Direction}. */
+        LENGTH_AND_DIRECTION(2);
+
+        /** The most arguments after the subcommand. */
+        public final int max;
+
+        Arguments(int max) {
+            this.max = max;
+        }
     }
 
     public final String label;

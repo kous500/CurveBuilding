@@ -3,6 +3,7 @@ package me.kous500.curvebuilding.math;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.Chat;
+import me.kous500.curvebuilding.commands.pos.Direction;
 import me.kous500.curvebuilding.config.Message;
 
 import java.util.*;
@@ -15,9 +16,6 @@ import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
  * プレイヤーごとに PosData を紐づけて管理・操作する静的マネージャークラス。
  */
 public final class PosManager {
-    public static final String[] directionOptions = new String[] {
-            "back", "down", "east", "forward", "left", "me", "north", "right", "south", "up"
-    };
 
     /**
      * プレイヤーごとのPosDataを保持するマップ。
@@ -90,8 +88,8 @@ public final class PosManager {
         Chat.info(player, Message.POS_REMOVE, n);
     }
 
-    public static void shift(Player player, int n, char direction) {
-        if ('A' <= direction && direction <= 'Z') direction += 32;
+    public static void shift(Player player, int n, Direction shiftDirection) {
+        char direction = shiftDirection.label.charAt(0);
 
         PosData posData = POS_MAP.get(player.getUniqueId());
         if (posData == null) return;

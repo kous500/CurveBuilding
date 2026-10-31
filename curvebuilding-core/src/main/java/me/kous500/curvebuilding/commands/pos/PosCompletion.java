@@ -1,7 +1,5 @@
 package me.kous500.curvebuilding.commands.pos;
 
-import me.kous500.curvebuilding.math.PosManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +32,7 @@ public final class PosCompletion {
                     case POINT -> addPositions(typed, candidates, new String[0]);
                     case LENGTH_AND_DIRECTION -> {
                         if (typed.matches("[0-9]+")) {
-                            for (String direction : PosManager.directionOptions) candidates.add(typed + " " + direction);
+                            for (Direction direction : Direction.values()) candidates.add(typed + " " + direction.label);
                         }
                     }
                     case NONE -> { }

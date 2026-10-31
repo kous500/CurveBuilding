@@ -77,7 +77,7 @@ public class Pos implements RunCommand{
     public int run() throws CommandSyntaxException {
         ServerPlayer sender = context.getSource().getPlayerOrException();
 
-        boolean result = posCommand(adaptPlayer(sender), posCommandName, arg);
+        boolean result = posCommand(adaptPlayer(sender), arg);
         sendPosPacket(sender);
 
         return result ? 1 : 0;

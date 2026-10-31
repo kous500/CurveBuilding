@@ -12,6 +12,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.RegionSelector;
 import me.kous500.curvebuilding.commands.bc.BcCommand;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
+import me.kous500.curvebuilding.commands.pos.PosCommand;
 import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
 import me.kous500.curvebuilding.fabric.FabricCompat;
 import me.kous500.curvebuilding.math.PosManager;
@@ -88,6 +89,16 @@ public class CurveBuildingGameTests {
             helper.assertTrue(error != null && error.getType() == CommandSourceStack.ERROR_NOT_PLAYER,
                     Component.literal(command + " from the console gave " + error));
         }
+        helper.succeed();
+    }
+
+    @GameTest
+    public void bcposRejectsArgumentsItDoesNotTake(GameTestHelper helper) {
+        Player player = FabricCompat.adaptPlayer(helper.makeMockServerPlayerInLevel());
+        for (String[] args : new String[][]{{"set", "1", "extra"}, {"set", "3fx"}, {"insert", "1f"}}) {
+            helper.assertTrue(!PosCommand.posCommand(player, args), Component.literal(String.join(" ", args) + " was used"));
+        }
+        helper.assertTrue(PosManager.getPos(player) == null, Component.literal("a position was set"));
         helper.succeed();
     }
 
