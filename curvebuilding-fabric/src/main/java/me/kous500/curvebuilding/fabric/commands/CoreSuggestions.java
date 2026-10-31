@@ -29,10 +29,8 @@ final class CoreSuggestions {
     /** The arguments after the command name; the last is the one being typed, up to the cursor. */
     private static String[] arguments(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         int commandEnd = context.getNodes().get(0).getRange().getEnd();
-        String before = builder.getInput().substring(commandEnd, builder.getStart()).trim();
-
-        List<String> args = new ArrayList<>();
-        if (!before.isEmpty()) args.addAll(Arrays.asList(before.split(" +")));
+        List<String> args = new ArrayList<>(Arrays.asList(
+                CommandInput.split(builder.getInput().substring(commandEnd, builder.getStart()))));
         args.add(builder.getRemaining());
         return args.toArray(String[]::new);
     }

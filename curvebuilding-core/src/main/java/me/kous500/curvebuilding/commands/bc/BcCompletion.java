@@ -18,43 +18,17 @@ public final class BcCompletion {
      * @param args the arguments typed so far; the last one may be empty
      */
     public static List<String> complete(String[] args) {
-        boolean airUsed = false;
-        boolean directionUsed = false;
+        BcOptions options = new BcOptions();
         List<String> completions = List.of();
 
         for (String arg : args) {
             List<String> candidates = new ArrayList<>();
-            if (arg.startsWith("-")) {
-                boolean valid = true;
-                // The first character is the "-"
-                for (String letter : arg.substring(1).split("")) {
-                    if (letter.isEmpty()) continue;
-                    if (letter.equals(BcCommand.AIR_OPTION) && !airUsed && valid) {
-                        airUsed = true;
-                    } else if (isDirection(letter) && !directionUsed && valid) {
-                        directionUsed = true;
-                    } else {
-                        valid = false;
-                    }
-                }
-
-                if (valid) {
-                    if (!airUsed) candidates.add(arg + BcCommand.AIR_OPTION);
-                    if (!directionUsed) {
-                        for (String direction : BcCommand.DIRECTION_OPTIONS) candidates.add(arg + direction);
-                    }
-                }
+            if (arg.startsWith("-") && options.read(arg.substring(1))) {
+                for (String letter : options.unusedLetters()) candidates.add(arg + letter);
             }
             completions = startingWith(arg, candidates);
         }
         return completions;
-    }
-
-    private static boolean isDirection(String letter) {
-        for (String direction : BcCommand.DIRECTION_OPTIONS) {
-            if (direction.equals(letter)) return true;
-        }
-        return false;
     }
 
     private static List<String> startingWith(String typed, List<String> candidates) {

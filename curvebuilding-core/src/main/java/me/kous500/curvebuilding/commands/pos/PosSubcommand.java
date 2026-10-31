@@ -1,5 +1,8 @@
 package me.kous500.curvebuilding.commands.pos;
 
+import me.kous500.curvebuilding.GameMessage;
+import me.kous500.curvebuilding.commands.ArgumentException;
+
 /**
  * The subcommands of {@code //bcpos} and the arguments each takes. The command and its suggestions on every
  * platform are built from this list.
@@ -43,5 +46,11 @@ public enum PosSubcommand {
             if (subcommand.label.equals(label)) return subcommand;
         }
         return null;
+    }
+
+    public static PosSubcommand parse(String label) throws ArgumentException {
+        PosSubcommand subcommand = of(label);
+        if (subcommand == null) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);
+        return subcommand;
     }
 }
