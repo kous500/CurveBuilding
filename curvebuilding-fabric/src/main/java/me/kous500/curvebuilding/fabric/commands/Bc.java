@@ -22,17 +22,15 @@ public class Bc implements RunCommand {
     private static final Command<CommandSourceStack> RUN = context -> runLogged(new Bc(context));
 
     public static void setBcBuilder(CommandDispatcher<CommandSourceStack> dispatcher) {
-        RequiredArgumentBuilder<CommandSourceStack, Integer> builderN = argument("n", integer())
-                .then(argument("m", integer()).executes(RUN))
-                .executes(RUN);
+        RequiredArgumentBuilder<CommandSourceStack, Integer> offset = argument("offset", integer()).executes(RUN);
 
         dispatcher.register(literal(bcCommandName)
                 .then(argument("options", word())
-                        // Only here: the options come before the numbers in this command tree
+                        // Only here: the options come before the offset in this command tree
                         .suggests(CoreSuggestions.of(BcCompletion::complete))
-                        .then(builderN)
+                        .then(offset)
                         .executes(RUN))
-                .then(builderN)
+                .then(offset)
                 .executes(RUN)
                 .requires(FabricCompat::isGameMaster));
     }

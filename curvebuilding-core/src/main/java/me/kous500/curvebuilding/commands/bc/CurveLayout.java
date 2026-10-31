@@ -16,7 +16,8 @@ import java.util.function.Predicate;
 /**
  * Where {@code //bc} places which block of the selection along a curve, without touching the world. The selection is
  * read along one axis: its cross section across that axis is laid along the curve, turned with it, and the selection
- * repeats along the curve. A block that several blocks of the selection fall on gets the one that falls on it most.
+ * repeats along the curve, starting {@code offset} blocks into it. A block that several blocks of the selection fall
+ * on gets the one that falls on it most.
  */
 final class CurveLayout {
     /** The size of the selection, as WorldEdit gives it, and its center. */
@@ -36,8 +37,7 @@ final class CurveLayout {
 
     private final Selection selection;
     private final BcOptions.Axis axis;
-    private final int every;
-    private final int after;
+    private final int offset;
     private final boolean airOnly;
     private final Predicate<BlockVector3> isAir;
     private final int maxBlocks;
@@ -46,7 +46,7 @@ final class CurveLayout {
 
     /** For each block to place, how often each block of the selection fell on it. */
     private final NavigableMap<BlockVector3, NavigableMap<BlockVector3, Integer>> votes = new TreeMap<>();
-    /** The length of the segments laid so far, each counted in whole blocks, which the spacing of {@code -n} uses. */
+    /** The length of the segments laid so far, each counted in whole blocks, where the selection goes on from. */
     private int length;
     private double exactLength;
 
@@ -64,8 +64,7 @@ final class CurveLayout {
         } else {
             this.axis = selection.width() <= selection.length() ? BcOptions.Axis.X : BcOptions.Axis.Z;
         }
-        this.every = arguments.n();
-        this.after = arguments.m();
+        this.offset = arguments.offset();
         this.airOnly = arguments.air();
         this.isAir = isAir;
         this.maxBlocks = maxBlocks;
@@ -134,21 +133,21 @@ final class CurveLayout {
         Vector3 sideB = middle;
         if (axis == BcOptions.Axis.X) {
             int across = selection.length();
-            for (int offset = 0; offset <= across / 2; offset++) {
-                if (offset != across / 2 || across % 2 != 0) {
-                    layColumn(samples, offset, y, sideA);
+            for (int side = 0; side <= across / 2; side++) {
+                if (side != across / 2 || across % 2 != 0) {
+                    layColumn(samples, side, y, sideA);
                     sideA = sideA.add(0, 0, -1);
                 }
-                layColumn(samples, -offset, y, sideB);
+                layColumn(samples, -side, y, sideB);
                 sideB = sideB.add(0, 0, 1);
             }
         } else {
             int across = selection.width();
-            for (int offset = 0; offset <= across / 2; offset++) {
-                layColumn(samples, offset, y, sideA);
+            for (int side = 0; side <= across / 2; side++) {
+                layColumn(samples, side, y, sideA);
                 sideA = sideA.add(1, 0, 0);
-                if (offset != across / 2 || across % 2 != 0) {
-                    layColumn(samples, -offset, y, sideB);
+                if (side != across / 2 || across % 2 != 0) {
+                    layColumn(samples, -side, y, sideB);
                     sideB = sideB.add(-1, 0, 0);
                 }
             }
@@ -156,26 +155,24 @@ final class CurveLayout {
     }
 
     /**
-     * Lays one column of the cross section, {@code offset} blocks beside the curve and {@code y} blocks up, from the
+     * Lays one column of the cross section, {@code side} blocks beside the curve and {@code y} blocks up, from the
      * blocks of the selection along the axis through {@code column}.
      */
-    private void layColumn(List<Sample> samples, int offset, int y, Vector3 column) throws MaxChangedBlocksException {
-        // With -n, the planes keep their spacing from one segment to the next
-        int next = after;
-        if (length != 0 && every != 0) next += length % every;
-
+    private void layColumn(List<Sample> samples, int side, int y, Vector3 column) throws MaxChangedBlocksException {
         BlockVector3 before = null;
         for (Sample sample : samples) {
             BlockVector3 target = BlockVector3.round(sample.point().add(
-                    offset * Math.cos(-sample.angle()), y, offset * Math.sin(-sample.angle())));
+                    side * Math.cos(-sample.angle()), y, side * Math.sin(-sample.angle())));
 
-            if (!target.equals(before) && sample.distance() >= next) {
+            if (!target.equals(before)) {
+                // How far into the repeating selection this block is
+                double into = sample.distance() + length + offset + 0.5;
                 BlockVector3 source;
                 if (axis == BcOptions.Axis.X) {
-                    double along = ((sample.distance() + length + 0.5) % selection.width()) - (selection.width() / 2.0);
+                    double along = (into % selection.width()) - (selection.width() / 2.0);
                     source = BlockVector3.floor(column.add(along + 0.5, 0, 0));
                 } else {
-                    double along = ((sample.distance() + length + 0.5) % selection.length()) - (selection.length() / 2.0);
+                    double along = (into % selection.length()) - (selection.length() / 2.0);
                     source = BlockVector3.floor(column.add(0, 0, along + 0.5));
                 }
 
@@ -185,8 +182,6 @@ final class CurveLayout {
                 if (0 < maxBlocks && maxBlocks < votes.size()) {
                     throw new MaxChangedBlocksException(maxBlocks);
                 }
-
-                next += every;
             }
             before = target;
         }
