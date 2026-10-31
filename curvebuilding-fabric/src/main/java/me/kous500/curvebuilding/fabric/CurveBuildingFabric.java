@@ -1,19 +1,13 @@
 package me.kous500.curvebuilding.fabric;
 
 import me.kous500.curvebuilding.MainInitializer;
-import me.kous500.curvebuilding.config.Messages;
-import me.kous500.curvebuilding.config.ResourceFiles;
-import me.kous500.curvebuilding.config.ResourceType;
-import me.kous500.curvebuilding.config.YamlConfig;
 import me.kous500.curvebuilding.fabric.config.FabricConfig;
 import me.kous500.curvebuilding.fabric.network.PacketSender;
 import me.kous500.curvebuilding.fabric.network.PosDataPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
-import java.io.File;
-
-import static me.kous500.curvebuilding.CurveBuilding.setResources;
+import static me.kous500.curvebuilding.CurveBuilding.loadResources;
 import static me.kous500.curvebuilding.fabric.commands.Bc.setBcBuilder;
 import static me.kous500.curvebuilding.fabric.commands.Pos.setPosBuilder;
 
@@ -25,19 +19,7 @@ public class CurveBuildingFabric implements ModInitializer, MainInitializer {
 
     @Override
     public void onInitialize() {
-        ResourceFiles.setup(this);
-
-        File configFile = new File(this.getConfigPass(), "config.yml");
-        YamlConfig yamlConfig = YamlConfig.loadConfiguration(configFile, ResourceType.config, this);
-
-        FabricConfig loadedConfig = new FabricConfig(yamlConfig);
-        fabricConfig = loadedConfig;
-
-        String messageFileName = loadedConfig.messageFilePath.replace("%datafolder%", this.getConfigPass());
-        File messageFile = new File(messageFileName);
-        YamlConfig messagesConfig = YamlConfig.loadConfiguration(messageFile, ResourceType.message, this);
-
-        setResources(loadedConfig, new Messages(messagesConfig));
+        fabricConfig = loadResources(this, FabricConfig::new);
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             setPosBuilder(dispatcher);

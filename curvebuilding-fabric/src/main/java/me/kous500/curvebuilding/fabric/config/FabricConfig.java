@@ -26,13 +26,7 @@ public final class FabricConfig extends Config {
     public final Color lineCurveColor;
 
     public FabricConfig(YamlConfig config) {
-        messageFilePath = config.getString("message-file");
-
-        fineness = Math.max(1, config.getInteger("curve.fineness"));
-        maxSetLength = Math.max(0, config.getInteger("curve.max-set-length"));
-        maxPosValue = Math.max(1, config.getInteger("curve.max-pos-value"));
-        tCenter = config.getBoolean("curve.thicken-center");
-        defaultMaxChangeLimit = Math.max(-1, config.getInteger("curve.default-max-change-limit"));
+        super(config);
 
         posRenderThroughWalls = config.getBoolean("render-preview.pos.render-through-walls");
         posLineColor = new Color(config.getInteger("render-preview.pos.format.pos.line-color"), true);

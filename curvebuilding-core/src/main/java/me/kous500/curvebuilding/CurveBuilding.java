@@ -3,6 +3,12 @@ package me.kous500.curvebuilding;
 import me.kous500.curvebuilding.config.Config;
 import me.kous500.curvebuilding.config.Message;
 import me.kous500.curvebuilding.config.Messages;
+import me.kous500.curvebuilding.config.ResourceFiles;
+import me.kous500.curvebuilding.config.ResourceType;
+import me.kous500.curvebuilding.config.YamlConfig;
+
+import java.io.File;
+import java.util.function.Function;
 
 public class CurveBuilding {
     public static boolean fawe = false;
@@ -10,9 +16,23 @@ public class CurveBuilding {
     public static Console console;
     private static Messages messages;
 
-    public static void setResources(Config config, Messages messages) {
-        CurveBuilding.config = config;
-        CurveBuilding.messages = messages;
+    /**
+     * Copies the default files that are missing into the data folder, then reads config.yml and the message file it
+     * names, and uses them from now on.
+     *
+     * @param readConfig makes the config of the platform from config.yml
+     * @return the config read
+     */
+    public static <C extends Config> C loadResources(MainInitializer initializer, Function<YamlConfig, C> readConfig) {
+        ResourceFiles.setup(initializer);
+
+        File configFile = new File(initializer.getConfigPass(), "config.yml");
+        C loadedConfig = readConfig.apply(YamlConfig.loadConfiguration(configFile, ResourceType.config, initializer));
+
+        File messageFile = new File(loadedConfig.messageFilePath.replace("%datafolder%", initializer.getConfigPass()));
+        messages = new Messages(YamlConfig.loadConfiguration(messageFile, ResourceType.message, initializer));
+        config = loadedConfig;
+        return loadedConfig;
     }
 
     public static void setConsole(Console console) {
