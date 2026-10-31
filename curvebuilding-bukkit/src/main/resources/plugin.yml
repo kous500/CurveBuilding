@@ -17,8 +17,7 @@ commands:
       Example: /<command> -x - Read the region in X-direction.
       Example: /<command> -z - Read the region in Z-direction.
       Example: /<command> 2 - Start the curve 2 blocks into the region.
-      offset: 0 or more. The region repeats along the curve,
-      and the curve starts with what comes offset blocks into it.
+      offset: Where in the region the curve starts. May be negative.
   /bcpos:
     description: Set your pos.
     permission: CurveBuilding.pos

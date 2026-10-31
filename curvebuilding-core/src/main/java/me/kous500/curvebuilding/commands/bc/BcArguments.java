@@ -9,8 +9,7 @@ import static me.kous500.curvebuilding.commands.CommandArguments.read;
 /**
  * The arguments of {@code //bc}: options such as {@code -a} (see {@link BcOptions}) and an offset, in any order.
  *
- * @param offset how many blocks further along the selection the curve starts: the selection repeats along the curve,
- *               and with an offset of 2 the curve starts with what would come 2 blocks on, or 0
+ * @param offset how many blocks into the repeating selection the curve starts, counting back when negative
  * @param air whether only air blocks are replaced
  * @param axis the axis to read the selection along, or null to choose it from the selection
  */
@@ -27,7 +26,7 @@ public record BcArguments(int offset, boolean air, BcOptions.Axis axis) {
                 }
             } else {
                 if (offset != null) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT).at(i);
-                offset = read(args, i, text -> IntegerArgument.parse(text, 0));
+                offset = read(args, i, text -> IntegerArgument.parse(text, Integer.MIN_VALUE));
             }
         }
         return new BcArguments(offset != null ? offset : 0, options.air(), options.axis());

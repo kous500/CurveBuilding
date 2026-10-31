@@ -94,8 +94,11 @@ class CurveLayoutTest {
 
         assertEquals(List.of(0, 1, 2, 3, 0, 1, 2, 3, 0, 1), blocksUsed(0, line));
         assertEquals(List.of(2, 3, 0, 1, 2, 3, 0, 1, 2, 3), blocksUsed(2, line));
-        // An offset of the whole selection or more goes around it
+        assertEquals(List.of(3, 0, 1, 2, 3, 0, 1, 2, 3, 0), blocksUsed(-1, line));
+        // An offset of the whole selection or more goes around it, either way
         assertEquals(blocksUsed(1, line), blocksUsed(5, line));
+        assertEquals(blocksUsed(-1, line), blocksUsed(-5, line));
+        assertEquals(blocksUsed(-1, line), blocksUsed(3, line));
     }
 
     @Test

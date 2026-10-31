@@ -169,10 +169,10 @@ final class CurveLayout {
                 double into = sample.distance() + length + offset + 0.5;
                 BlockVector3 source;
                 if (axis == BcOptions.Axis.X) {
-                    double along = (into % selection.width()) - (selection.width() / 2.0);
+                    double along = wrap(into, selection.width()) - (selection.width() / 2.0);
                     source = BlockVector3.floor(column.add(along + 0.5, 0, 0));
                 } else {
-                    double along = (into % selection.length()) - (selection.length() / 2.0);
+                    double along = wrap(into, selection.length()) - (selection.length() / 2.0);
                     source = BlockVector3.floor(column.add(0, 0, along + 0.5));
                 }
 
@@ -185,5 +185,14 @@ final class CurveLayout {
             }
             before = target;
         }
+    }
+
+    /**
+     * {@code into} brought into the range 0 to {@code size}, as the selection repeats, also when a negative offset
+     * makes it below 0.
+     */
+    private static double wrap(double into, int size) {
+        double wrapped = into % size;
+        return wrapped < 0 ? wrapped + size : wrapped;
     }
 }
