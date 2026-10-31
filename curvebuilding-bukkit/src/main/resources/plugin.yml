@@ -12,16 +12,12 @@ commands:
     permission: CurveBuilding.bc
     permission-message: You do not have <permission>.
     usage: |
-      /<command> [-options] [n] [m]
+      /<command> [-options] [offset]
       Example: /<command> -a - Replace only air blocks with the curve.
       Example: /<command> -x - Read the region in X-direction.
       Example: /<command> -z - Read the region in Z-direction.
-      Example: /<command> n
-      Example: /<command> n m
-      n: Input a integral number or 0.
-      Set the plane every n blocks the curve goes.
-      m: Input a integral number or 0.
-      Set the plane after m blocks the curve goes.
+      Example: /<command> 2 - Start the curve 2 blocks into the region.
+      offset: Where in the region the curve starts. May be negative.
   /bcpos:
     description: Set your pos.
     permission: CurveBuilding.pos

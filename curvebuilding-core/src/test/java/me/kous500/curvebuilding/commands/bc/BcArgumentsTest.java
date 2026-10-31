@@ -15,11 +15,13 @@ class BcArgumentsTest {
     }
 
     @Test
-    void readsOptionsAndNumbersInAnyOrder() throws ArgumentException {
-        assertEquals(new BcArguments(0, 0, false, null), parse(""));
-        assertEquals(new BcArguments(5, 0, false, null), parse("5"));
-        assertEquals(new BcArguments(5, 2, true, BcOptions.Axis.X), parse("-ax 5 2"));
-        assertEquals(new BcArguments(5, 2, true, BcOptions.Axis.Z), parse("5 -z 2 -a"));
+    void readsOptionsAndAnOffsetInAnyOrder() throws ArgumentException {
+        assertEquals(new BcArguments(0, false, null), parse(""));
+        assertEquals(new BcArguments(5, false, null), parse("5"));
+        assertEquals(new BcArguments(5, true, BcOptions.Axis.X), parse("-ax 5"));
+        assertEquals(new BcArguments(5, true, BcOptions.Axis.Z), parse("5 -z -a"));
+        // A "-" before a number is a negative offset, not options
+        assertEquals(new BcArguments(-5, true, null), parse("-a -5"));
     }
 
     // index: the argument the error points at
@@ -27,8 +29,8 @@ class BcArgumentsTest {
     @CsvSource({
             "abc def,  INCORRECT_ARGUMENT, 0",
             "5 abc,    INCORRECT_ARGUMENT, 1",
-            "1 2 3,    INCORRECT_ARGUMENT, 2",
-            "-5,       INTEGER_TOO_LOW,    0",
+            "1 2,      INCORRECT_ARGUMENT, 1",
+            "0 5 -a,   INCORRECT_ARGUMENT, 1",
             "-2.5,     INVALID_INTEGER,    0",
             "2.5,      INVALID_INTEGER,    0",
             "-,        INCORRECT_ARGUMENT, 0",
@@ -37,6 +39,8 @@ class BcArgumentsTest {
             "-q,       INCORRECT_ARGUMENT, 0",
             "-A,       INCORRECT_ARGUMENT, 0",
             "-x 5 -z,  INCORRECT_ARGUMENT, 2",
+            "-1 -2,    INCORRECT_ARGUMENT, 1",
+            "-99999999999, INVALID_INTEGER, 0",
     })
     void stopsAtTheFirstArgumentThatCannotBeUsed(String args, GameMessage expected, int index) {
         ArgumentException e = assertThrows(ArgumentException.class, () -> parse(args));
