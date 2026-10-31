@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
+import me.kous500.curvebuilding.math.BezierSegment;
 import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.math.Vector3;
@@ -8,7 +9,6 @@ import net.minecraft.world.phys.Vec3;
 import java.awt.*;
 import java.util.NavigableMap;
 
-import static me.kous500.curvebuilding.Util.*;
 import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.fabricConfig;
 
 public class RenderPreview {
@@ -38,15 +38,15 @@ public class RenderPreview {
 
     private static void renderBezier(NavigableMap<Integer, CurvePoint> pos, Color color, PreviewLayer render) {
         double totalLen = 0;
-        for (Vector3[] segment : bezierSegments(pos)) {
-            if (!isBezierSegmentWithin(segment, fabricConfig.lineRenderLength)) return;
+        for (BezierSegment segment : BezierSegment.through(pos)) {
+            if (!segment.isWithin(fabricConfig.lineRenderLength)) return;
 
-            double length = bezierLength(segment, bezierFineness(segment, 5));
+            double length = segment.length(segment.fineness(5));
             totalLen += length;
             if (totalLen > fabricConfig.lineRenderLength) return;
 
             Vec3 bc = null;
-            for (Vector3 point : bezierPoints(segment, Math.max(1, (int) Math.ceil(length * fabricConfig.lineRenderAccuracy)))) {
+            for (Vector3 point : segment.blockCenters(Math.max(1, (int) Math.ceil(length * fabricConfig.lineRenderAccuracy)))) {
                 Vec3 c = adaptVec(point);
                 if (bc != null) render.addLine(color, bc, c);
                 bc = c;

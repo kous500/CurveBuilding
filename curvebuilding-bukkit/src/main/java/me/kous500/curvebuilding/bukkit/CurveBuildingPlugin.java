@@ -25,10 +25,6 @@ public final class CurveBuildingPlugin extends JavaPlugin {
     public void onEnable() {
         setConsole(Console.of(getLogger()));
 
-        if (getServer().getPluginManager().isPluginEnabled("FastAsyncWorldEdit")){
-            fawe = true;
-        }
-
         reloadConfigAndResources();
 
         try {

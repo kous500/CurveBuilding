@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 public class CurveBuilding {
-    public static boolean fawe = false;
     public static Config config;
     /** The log of the platform. Set it first, as reading the files can already write to it. */
     public static Console console = Console.of(Logger.getLogger("CurveBuilding"));

@@ -7,9 +7,7 @@ import me.kous500.curvebuilding.math.BlockVector3;
 
 import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
 
-/**
- * 選択範囲内にあるブロックの情報を３次元配列として保存する
- */
+/** The blocks of a selection, read once before the curve is built over them. */
 public class RegionBlocks {
     private final int minX;
     private final int minY;
@@ -42,11 +40,7 @@ public class RegionBlocks {
         }
     }
 
-    /**
-     * 選択範囲の指定した座標のブロックを取得する
-     * @param vec ブロックの座標
-     * @return ブロックの情報
-     */
+    /** The block at {@code vec}. A position outside the selection wraps around into it, so the selection repeats. */
     public BaseBlock get(BlockVector3 vec) {
         int x = Math.floorMod(vec.x() - minX, regionWidth);
         int y = Math.floorMod(vec.y() - minY, regionHeight);
