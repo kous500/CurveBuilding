@@ -1,6 +1,5 @@
 package me.kous500.curvebuilding.bukkit.commands;
 
-import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
 import me.kous500.curvebuilding.commands.bc.BcCommand;
 import me.kous500.curvebuilding.commands.bc.BcCompletion;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
@@ -17,13 +16,6 @@ import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 
 public class Bc implements TabExecutor {
-    private final CurveBuildingPlugin plugin;
-
-
-    public Bc(CurveBuildingPlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @Override
     public boolean onCommand(
             @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -35,7 +27,7 @@ public class Bc implements TabExecutor {
                     return true;
                 }
             } else {
-                plugin.getLogger().info(getMessage(Message.NON_PLAYER_EXECUTION));
+                sender.sendMessage(getMessage(Message.NON_PLAYER_EXECUTION));
                 return true;
             }
         }

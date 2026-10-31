@@ -37,11 +37,11 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
             console.warning("Could not load ParticleNativeAPI", e);
         }
 
-        Bc bc = new Bc(this);
+        Bc bc = new Bc();
         requireNonNull(this.getCommand("/bc")).setExecutor(bc);
         requireNonNull(this.getCommand("/bc")).setTabCompleter(bc);
 
-        Pos pos = new Pos(this);
+        Pos pos = new Pos();
         requireNonNull(this.getCommand("/bcpos")).setExecutor(pos);
         requireNonNull(this.getCommand("/bcpos")).setTabCompleter(pos);
 

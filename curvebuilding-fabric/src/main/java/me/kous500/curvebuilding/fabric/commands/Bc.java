@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sk89q.worldedit.entity.Player;
 import me.kous500.curvebuilding.fabric.FabricCompat;
 import me.kous500.curvebuilding.commands.bc.BcCommand;
@@ -11,7 +12,6 @@ import me.kous500.curvebuilding.commands.bc.BcCompletion;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.level.ServerPlayer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +19,7 @@ import java.util.Map;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
-import static me.kous500.curvebuilding.fabric.commands.RunCommand.debugRun;
+import static me.kous500.curvebuilding.fabric.commands.RunCommand.runLogged;
 import static net.minecraft.commands.Commands.literal;
 
 public class Bc implements RunCommand {
@@ -39,24 +39,24 @@ public class Bc implements RunCommand {
     public static void setBcBuilder(CommandDispatcher<CommandSourceStack> dispatcher) {
         RequiredArgumentBuilder<CommandSourceStack, Integer> builderM = Commands
                 .argument(m, integer())
-                .executes(context -> debugRun(new Bc(context, options, n, m)));
+                .executes(context -> runLogged(new Bc(context, options, n, m)));
 
         RequiredArgumentBuilder<CommandSourceStack, Integer> builderN = Commands
                 .argument(n, integer())
                 .then(builderM)
-                .executes(context -> debugRun(new Bc(context, options, n)));
+                .executes(context -> runLogged(new Bc(context, options, n)));
 
         RequiredArgumentBuilder<CommandSourceStack, String> builderOption = Commands
                 .argument(options, string())
                 // Only here: the options come before the numbers in this command tree
                 .suggests(CoreSuggestions.of(BcCompletion::complete))
                 .then(builderN)
-                .executes(context -> debugRun(new Bc(context, options)));
+                .executes(context -> runLogged(new Bc(context, options)));
 
         LiteralArgumentBuilder<CommandSourceStack> builder = literal(bcCommandName)
                 .then(builderOption)
                 .then(builderN)
-                .executes(context -> debugRun(new Bc(context)))
+                .executes(context -> runLogged(new Bc(context)))
                 .requires(FabricCompat::isGameMaster);
 
         dispatcher.register(builder);
@@ -75,11 +75,8 @@ public class Bc implements RunCommand {
     }
 
     @Override
-    public int run() {
-        ServerPlayer serverPlayer = context.getSource().getPlayer();
-        if (serverPlayer == null) return 0;
-
-        Player player = adaptPlayer(serverPlayer);
+    public int run() throws CommandSyntaxException {
+        Player player = adaptPlayer(context.getSource().getPlayerOrException());
         BcCommand argument = new BcCommand(arg, player);
 
         if (!argument.success) return 0;
@@ -89,7 +86,7 @@ public class Bc implements RunCommand {
     }
 
     @Override
-    public CommandSourceStack getSource() {
-        return context.getSource();
+    public CommandContext<CommandSourceStack> getContext() {
+        return context;
     }
 }

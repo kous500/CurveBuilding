@@ -429,7 +429,8 @@ jobs:
             echo "::error::CurveBuilding was not enabled."
             exit 1
           fi
-          if ! grep -q '\[CurveBuilding\] Reloaded curvebuilding.' server.log; then
+          # The reply to the console, from en-US.yml
+          if ! grep -q 'INFO\]: Reloaded CurveBuilding\.$' server.log; then
             echo "::error::The curvebuilding reload command did not work."
             exit 1
           fi

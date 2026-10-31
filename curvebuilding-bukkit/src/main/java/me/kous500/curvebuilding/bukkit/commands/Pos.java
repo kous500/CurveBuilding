@@ -1,6 +1,5 @@
 package me.kous500.curvebuilding.bukkit.commands;
 
-import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
 import me.kous500.curvebuilding.commands.pos.PosCompletion;
 import me.kous500.curvebuilding.config.Message;
 import org.bukkit.command.Command;
@@ -17,17 +16,13 @@ import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
 
 public class Pos implements TabExecutor {
-    private final CurveBuildingPlugin plugin;
-
-    public Pos(CurveBuildingPlugin plugin) { this.plugin = plugin; }
-
     @Override
     public boolean onCommand(
             @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (sender instanceof Player) {
             return posCommand(adapt((Player) sender), command.getName(), args);
         } else {
-            plugin.getLogger().info(getMessage(Message.NON_PLAYER_EXECUTION));
+            sender.sendMessage(getMessage(Message.NON_PLAYER_EXECUTION));
             return true;
         }
     }
