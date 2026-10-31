@@ -1,7 +1,9 @@
 package me.kous500.curvebuilding.config;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static me.kous500.curvebuilding.CurveBuilding.console;
 import static me.kous500.curvebuilding.Util.messageReplace;
 
 /**
@@ -17,7 +19,11 @@ public class Messages {
 
     public static Messages load(Path file, ClassLoader jar) {
         String sameName = "messages/" + file.getFileName();
-        return new Messages(YamlConfig.load(file, jar, jar.getResource(sameName) != null ? sameName : "messages/en-US.yml"));
+        String defaults = jar.getResource(sameName) != null ? sameName : "messages/en-US.yml";
+        if (!Files.exists(file)) {
+            console.warning("The message file " + file + " does not exist, so the messages of " + defaults + " in the jar are used");
+        }
+        return new Messages(YamlConfig.load(file, jar, defaults));
     }
 
     /** {@code message} with {@code {0}}, {@code {1}}, ... replaced with {@code args}. */

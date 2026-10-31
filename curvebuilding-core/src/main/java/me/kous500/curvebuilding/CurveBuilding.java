@@ -6,6 +6,7 @@ import me.kous500.curvebuilding.config.Messages;
 import me.kous500.curvebuilding.config.ResourceFiles;
 import me.kous500.curvebuilding.config.YamlConfig;
 
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -30,10 +31,19 @@ public class CurveBuilding {
 
         C loadedConfig = readConfig.apply(YamlConfig.load(dataFolder.resolve("config.yml"), jar, "config.yml"));
 
-        Path messageFile = Path.of(loadedConfig.messageFilePath.replace("%datafolder%", dataFolder.toString()));
-        messages = Messages.load(messageFile, jar);
+        messages = Messages.load(messageFile(loadedConfig.messageFilePath, dataFolder), jar);
         config = loadedConfig;
         return loadedConfig;
+    }
+
+    private static Path messageFile(String setting, Path dataFolder) {
+        try {
+            return Path.of(setting.replace("%datafolder%", dataFolder.toString()));
+        } catch (InvalidPathException e) {
+            Path english = dataFolder.resolve("messages/en-US.yml");
+            console.warning("The message-file " + setting + " in config.yml is not a file path, so " + english + " is used");
+            return english;
+        }
     }
 
     public static void setConsole(Console console) {
