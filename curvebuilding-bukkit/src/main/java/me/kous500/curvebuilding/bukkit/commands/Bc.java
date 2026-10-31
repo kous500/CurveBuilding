@@ -4,6 +4,7 @@ import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
 import me.kous500.curvebuilding.commands.bc.BcCommand;
 import me.kous500.curvebuilding.commands.bc.BcCompletion;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
+import me.kous500.curvebuilding.config.Message;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -34,7 +35,7 @@ public class Bc implements TabExecutor {
                     return true;
                 }
             } else {
-                plugin.getLogger().info(getMessage("messages.non-player-execution"));
+                plugin.getLogger().info(getMessage(Message.NON_PLAYER_EXECUTION));
                 return true;
             }
         }

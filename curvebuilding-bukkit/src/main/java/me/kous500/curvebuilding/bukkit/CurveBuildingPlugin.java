@@ -9,7 +9,8 @@ import me.kous500.curvebuilding.bukkit.commands.Bc;
 import me.kous500.curvebuilding.bukkit.commands.CurveBuildingCommand;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
-import me.kous500.curvebuilding.bukkit.config.BukkitResources;
+import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.config.Messages;
 import me.kous500.curvebuilding.config.ResourceFiles;
 import me.kous500.curvebuilding.config.ResourceType;
 import me.kous500.curvebuilding.config.YamlConfig;
@@ -38,7 +39,7 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
             ParticleNativeAPI api = ParticleNativeCore.loadAPI(this);
             particles_1_13 = api.LIST_1_13;
         } catch (ParticleException e) {
-            getLogger().warning(getMessage("messages.plugin-load-error", "ParticleNativeAPI") + e);
+            getLogger().warning(getMessage(Message.PLUGIN_LOAD_ERROR, "ParticleNativeAPI") + e);
         }
 
         Bc bc = new Bc(this);
@@ -69,7 +70,7 @@ public final class CurveBuildingPlugin extends JavaPlugin implements MainInitial
         File messageFile = new File(messageFileName);
         YamlConfig messagesConfig = YamlConfig.loadConfiguration(messageFile, ResourceType.message, this);
 
-        setResources(new BukkitResources(bukkitConfig, messagesConfig));
+        setResources(bukkitConfig, new Messages(messagesConfig));
 
         SendParticles.start(this, bukkitConfig);
     }

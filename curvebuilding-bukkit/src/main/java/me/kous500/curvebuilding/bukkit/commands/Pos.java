@@ -2,6 +2,7 @@ package me.kous500.curvebuilding.bukkit.commands;
 
 import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
 import me.kous500.curvebuilding.commands.pos.PosCompletion;
+import me.kous500.curvebuilding.config.Message;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -26,7 +27,7 @@ public class Pos implements TabExecutor {
         if (sender instanceof Player) {
             return posCommand(adapt((Player) sender), command.getName(), args);
         } else {
-            plugin.getLogger().info(getMessage("messages.non-player-execution"));
+            plugin.getLogger().info(getMessage(Message.NON_PLAYER_EXECUTION));
             return true;
         }
     }

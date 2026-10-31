@@ -1,26 +1,23 @@
 package me.kous500.curvebuilding.commands.pos;
 
 import com.sk89q.worldedit.entity.Player;
-import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import me.kous500.curvebuilding.Chat;
+import me.kous500.curvebuilding.config.Message;
 
 import java.util.regex.Pattern;
 
 import static me.kous500.curvebuilding.CurveBuilding.config;
-import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.math.PosManager.*;
 
 public class PosCommand {
-    public static StringBuilder log = new StringBuilder();
-
     public static boolean posCommand(Player player, String command, String[] args) {
         if (!command.equalsIgnoreCase("/bcpos")) return false;
-        if (!log.isEmpty()) player.printInfo(TextComponent.of(log.toString()));
 
         PosSubcommand subcommand = args.length >= 1 ? PosSubcommand.of(args[0]) : null;
         if (subcommand == null || (subcommand.arguments != PosSubcommand.Arguments.NONE && args.length < 2)) {
-            player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-            if (args.length >= 1) problemHere(player, "bcpos", args[0]);
-            else problemHere(player, "pos", "");
+            Chat.error(player, Message.INCORRECT_ARGUMENT);
+            if (args.length >= 1) Chat.problemHere(player, "bcpos", args[0]);
+            else Chat.problemHere(player, "pos", "");
             return false;
         }
 
@@ -32,16 +29,16 @@ public class PosCommand {
             case SHIFT -> {
                 int n = toInt(args[1]);
                 if (n < 0) {
-                    player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-                    problemHere(player, args[0], args[1]);
+                    Chat.error(player, Message.INCORRECT_ARGUMENT);
+                    Chat.problemHere(player, args[0], args[1]);
                     return false;
                 }
 
                 String direction = args.length >= 3 ? args[2] : "me";
                 Pattern regex = Pattern.compile("^[bdeflmnrsuw]", Pattern.CASE_INSENSITIVE);
                 if (!regex.matcher(direction).find()) {
-                    player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-                    problemHere(player, args[1], args[2]);
+                    Chat.error(player, Message.INCORRECT_ARGUMENT);
+                    Chat.problemHere(player, args[1], args[2]);
                     return false;
                 }
 
@@ -80,25 +77,20 @@ public class PosCommand {
 
         switch (errorType) {
             case integerLess -> {
-                player.printError(TextComponent.of(getMessage("messages.integer-less", 1, args[1])));
-                problemHere(player, args[0], args[1]);
+                Chat.error(player, Message.INTEGER_LESS, 1, args[1]);
+                Chat.problemHere(player, args[0], args[1]);
             } case incorrectArgument -> {
-                player.printError(TextComponent.of(getMessage("messages.incorrect-argument")));
-                problemHere(player, args[0], args[1]);
+                Chat.error(player, Message.INCORRECT_ARGUMENT);
+                Chat.problemHere(player, args[0], args[1]);
             } case invalidInteger -> {
-                player.printError(TextComponent.of(getMessage("messages.invalid-integer", args[1])));
-                problemHere(player, args[0], args[1]);
+                Chat.error(player, Message.INVALID_INTEGER, args[1]);
+                Chat.problemHere(player, args[0], args[1]);
             } case maxPosValue -> {
-                player.printError(TextComponent.of(getMessage("messages.max-pos-value", config.maxPosValue)));
-                problemHere(player, args[0], args[1]);
+                Chat.error(player, Message.MAX_POS_VALUE, config.maxPosValue);
+                Chat.problemHere(player, args[0], args[1]);
             }
         }
 
         return false;
-    }
-
-    public static void problemHere(Player player, String beforeArg, String arg) {
-        player.printInfo(TextComponent.of(
-                "§7..."+beforeArg+"§c §c§n"+arg+"§c§o" + getMessage("messages.problem-here")));
     }
 }
