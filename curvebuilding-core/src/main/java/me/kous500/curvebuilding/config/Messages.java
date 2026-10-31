@@ -1,5 +1,7 @@
 package me.kous500.curvebuilding.config;
 
+import java.nio.file.Path;
+
 import static me.kous500.curvebuilding.Util.messageReplace;
 
 /**
@@ -9,8 +11,13 @@ import static me.kous500.curvebuilding.Util.messageReplace;
 public class Messages {
     private final YamlConfig file;
 
-    public Messages(YamlConfig file) {
+    private Messages(YamlConfig file) {
         this.file = file;
+    }
+
+    public static Messages load(Path file, ClassLoader jar) {
+        String sameName = "messages/" + file.getFileName();
+        return new Messages(YamlConfig.load(file, jar, jar.getResource(sameName) != null ? sameName : "messages/en-US.yml"));
     }
 
     /** {@code message} with {@code {0}}, {@code {1}}, ... replaced with {@code args}. */

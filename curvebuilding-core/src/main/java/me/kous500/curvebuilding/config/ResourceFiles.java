@@ -1,95 +1,85 @@
 package me.kous500.curvebuilding.config;
 
-import me.kous500.curvebuilding.MainInitializer;
-
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.*;
-import java.util.Collections;
-import java.util.Objects;
+import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static me.kous500.curvebuilding.CurveBuilding.console;
 
-public class ResourceFiles {
-    public static void setup(MainInitializer mainInitializer) {
-        ResourceFiles resourceFiles = new ResourceFiles(mainInitializer);
-        resourceFiles.copyResourceDirectory("messages");
-        resourceFiles.create("config.yml");
+/** Copies the default files that the data folder does not have yet out of the jar. */
+public final class ResourceFiles {
+    private ResourceFiles() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
-    private final String DATA_FOLDER;
-    private final ClassLoader classLoader;
-
-    private ResourceFiles(MainInitializer mainInitializer) {
-        this.DATA_FOLDER = mainInitializer.getConfigPass();
-        this.classLoader = mainInitializer.getMainClassLoader();
+    public static void copyDefaults(Path dataFolder, ClassLoader jar) {
+        copyDirectory(dataFolder, jar, "messages");
+        copy(dataFolder, jar, "config.yml");
     }
 
-    private void copyResourceDirectory(String resourceDir) {
+    private static void copyDirectory(Path dataFolder, ClassLoader jar, String directory) {
         try {
-            URI uri = Objects.requireNonNull(classLoader.getResource(resourceDir), "Resource directory not found: " + resourceDir).toURI();
-            Path resourcePath;
-
-            if ("jar".equals(uri.getScheme())) {
-                FileSystem fileSystem;
-                boolean opened;
-                try {
-                    fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
-                    opened = true;
-                } catch (FileSystemAlreadyExistsException e) {
-                    // Fabric Loader keeps the mod jar open. Reuse it and leave it open, or the loader breaks.
-                    fileSystem = FileSystems.getFileSystem(uri);
-                    opened = false;
-                }
-
-                try {
-                    resourcePath = fileSystem.getPath(resourceDir);
-                    try (Stream<Path> walk = Files.walk(resourcePath, 1)) {
-                        walk.filter(Files::isRegularFile)
-                                .forEach(path -> {
-                                    String relativePath = resourceDir + "/" + path.getFileName().toString();
-                                    create(relativePath);
-                                });
-                    }
-                } finally {
-                    if (opened) fileSystem.close();
-                }
-            } else {
-                resourcePath = Paths.get(uri);
-                try (Stream<Path> walk = Files.walk(resourcePath, 1)) {
-                    walk.filter(Files::isRegularFile)
-                            .forEach(path -> {
-                                String relativePath = resourceDir + "/" + path.getFileName().toString();
-                                create(relativePath);
-                            });
-                }
+            URL url = jar.getResource(directory);
+            if (url == null) {
+                throw new FileNotFoundException(directory + " is not in the jar");
             }
-        } catch (IOException | URISyntaxException | NullPointerException e) {
-            console.warning("Could not copy the default files in " + resourceDir + " from the jar", e);
+            URI uri = url.toURI();
+            if (!"jar".equals(uri.getScheme())) {
+                copyFiles(dataFolder, jar, directory, Path.of(uri));
+                return;
+            }
+
+            FileSystem fileSystem;
+            boolean opened;
+            try {
+                fileSystem = FileSystems.newFileSystem(uri, Map.of());
+                opened = true;
+            } catch (FileSystemAlreadyExistsException e) {
+                // Fabric Loader keeps the mod jar open. Reuse it and leave it open, or the loader breaks.
+                fileSystem = FileSystems.getFileSystem(uri);
+                opened = false;
+            }
+            try {
+                copyFiles(dataFolder, jar, directory, fileSystem.getPath(directory));
+            } finally {
+                if (opened) fileSystem.close();
+            }
+        } catch (IOException | URISyntaxException e) {
+            console.warning("Could not copy the default files in " + directory + " from the jar", e);
         }
     }
 
-    private void create(String resourcePath) {
-        try {
-            File destinationFile = new File(DATA_FOLDER, resourcePath);
-            if (!destinationFile.exists()) {
-                InputStream inputStream = classLoader.getResourceAsStream(resourcePath);
-                Objects.requireNonNull(inputStream, "Resource not found in JAR: " + resourcePath);
-                File parentDir = destinationFile.getParentFile();
-                if (parentDir != null) {
-                    parentDir.mkdirs();
-                }
-                Files.copy(inputStream, destinationFile.toPath());
-                inputStream.close();
+    /** Copies the files in {@code path}, the directory {@code directory} of the jar. */
+    private static void copyFiles(Path dataFolder, ClassLoader jar, String directory, Path path) throws IOException {
+        try (Stream<Path> files = Files.list(path)) {
+            files.filter(Files::isRegularFile)
+                    .forEach(file -> copy(dataFolder, jar, directory + "/" + file.getFileName()));
+        }
+    }
+
+    private static void copy(Path dataFolder, ClassLoader jar, String resource) {
+        Path destination = dataFolder.resolve(resource);
+        if (Files.exists(destination)) {
+            return;
+        }
+        try (InputStream stream = jar.getResourceAsStream(resource)) {
+            if (stream == null) {
+                throw new FileNotFoundException(resource + " is not in the jar");
             }
+            Files.createDirectories(destination.getParent());
+            Files.copy(stream, destination);
         } catch (IOException e) {
-            console.warning("Could not copy the default " + resourcePath + " from the jar into " + DATA_FOLDER, e);
-        } catch (NullPointerException e) {
-            console.warning(e.getMessage());
+            console.warning("Could not copy the default " + resource + " from the jar into " + dataFolder, e);
         }
     }
 }

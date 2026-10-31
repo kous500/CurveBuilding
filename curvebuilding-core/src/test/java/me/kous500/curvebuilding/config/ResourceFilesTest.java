@@ -1,6 +1,5 @@
 package me.kous500.curvebuilding.config;
 
-import me.kous500.curvebuilding.MainInitializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -49,7 +48,7 @@ class ResourceFilesTest {
     @Test
     void copiesFilesFromJar() throws IOException {
         try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jar.toUri().toURL()}, null)) {
-            ResourceFiles.setup(initializer(classLoader));
+            ResourceFiles.copyDefaults(dataFolder, classLoader);
         }
 
         assertCopied();
@@ -62,7 +61,7 @@ class ResourceFilesTest {
         // Fabric Loader keeps the zip file system of the mod jar open while the game runs
         try (FileSystem loaderFileSystem = FileSystems.newFileSystem(jarUri(), Collections.emptyMap());
              URLClassLoader classLoader = new URLClassLoader(new URL[]{jar.toUri().toURL()}, null)) {
-            ResourceFiles.setup(initializer(classLoader));
+            ResourceFiles.copyDefaults(dataFolder, classLoader);
 
             assertCopied();
             assertTrue(loaderFileSystem.isOpen(), "the file system opened by the loader must stay open");
@@ -77,20 +76,6 @@ class ResourceFilesTest {
 
     private URI jarUri() {
         return URI.create("jar:" + jar.toUri());
-    }
-
-    private MainInitializer initializer(ClassLoader classLoader) {
-        return new MainInitializer() {
-            @Override
-            public ClassLoader getMainClassLoader() {
-                return classLoader;
-            }
-
-            @Override
-            public String getConfigPass() {
-                return dataFolder.toString();
-            }
-        };
     }
 
     private static void write(ZipOutputStream out, String name, String content) throws IOException {

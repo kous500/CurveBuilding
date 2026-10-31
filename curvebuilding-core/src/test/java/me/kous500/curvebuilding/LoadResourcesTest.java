@@ -49,7 +49,7 @@ class LoadResourcesTest {
 
         Config config;
         try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jar.toUri().toURL()}, null)) {
-            config = CurveBuilding.loadResources(initializer(classLoader), Config::new);
+            config = CurveBuilding.loadResources(dataFolder, classLoader, Config::new);
         }
 
         assertSame(config, CurveBuilding.config);
@@ -59,18 +59,17 @@ class LoadResourcesTest {
         assertEquals("2 を削除", CurveBuilding.getMessage(Message.POS_REMOVE, 2));
     }
 
-    private MainInitializer initializer(ClassLoader classLoader) {
-        return new MainInitializer() {
-            @Override
-            public ClassLoader getMainClassLoader() {
-                return classLoader;
-            }
+    @Test
+    void messagesMissingFromAFileTheJarDoesNotHaveComeFromEnUs() throws IOException {
+        write(dataFolder.resolve("config.yml"), "message-file: \"%datafolder%/custom.yml\"\n");
+        write(dataFolder.resolve("custom.yml"), "messages:\n  pos-shift: Moved\n");
 
-            @Override
-            public String getConfigPass() {
-                return dataFolder.toString();
-            }
-        };
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jar.toUri().toURL()}, null)) {
+            CurveBuilding.loadResources(dataFolder, classLoader, Config::new);
+        }
+
+        assertEquals("Moved", CurveBuilding.getMessage(Message.POS_SHIFT));
+        assertEquals("Removed 2", CurveBuilding.getMessage(Message.POS_REMOVE, 2));
     }
 
     private static void write(Path file, String content) throws IOException {
