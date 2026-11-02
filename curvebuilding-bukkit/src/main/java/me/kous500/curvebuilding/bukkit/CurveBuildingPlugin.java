@@ -31,14 +31,15 @@ public final class CurveBuildingPlugin extends JavaPlugin {
     public void onEnable() {
         setConsole(Console.of(getLogger()));
 
-        reloadConfigAndResources();
-
+        // Before the files are read, which starts the particles when ParticleNativeAPI is loaded
         try {
             ParticleNativeAPI api = ParticleNativeCore.loadAPI(this);
             particles_1_13 = api.LIST_1_13;
         } catch (ParticleException e) {
-            console.warning("Could not load ParticleNativeAPI", e);
+            console.warning("Could not load ParticleNativeAPI, so the curves are not shown with particles", e);
         }
+
+        reloadConfigAndResources();
 
         Bc bc = new Bc();
         requireNonNull(this.getCommand("/bc")).setExecutor(bc);
