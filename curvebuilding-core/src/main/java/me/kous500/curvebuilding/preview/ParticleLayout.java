@@ -126,8 +126,9 @@ public final class ParticleLayout {
     }
 
     private void addCross(Vector3 block, Kind kind) {
-        // Each line of the cross goes from a corner of the block to its center, sqrt(3) / 2 blocks
-        int density = (int) (settings.pointDensity() * Math.sqrt(3) / 2);
+        // Each line of the cross goes from a corner of the block to its center, sqrt(3) / 2 blocks, and has at least
+        // its two ends
+        int density = Math.max(1, (int) (settings.pointDensity() * Math.sqrt(3) / 2));
 
         for (int x = 0; x <= 1; x++) {
             for (int y = 0; y <= 1; y++) {

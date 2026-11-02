@@ -69,6 +69,20 @@ class ParticleLayoutTest {
     }
 
     @Test
+    void crossWithTheLowestDensityHasItsCornersAndCenter() {
+        Vector3 point = Vector3.at(0, 64, 0);
+        ParticleLayout.Settings lowest = new ParticleLayout.Settings(1, 1, 10000);
+        List<Particle> particles = ParticleLayout.layout(
+                points(new CurvePoint(point, null, point.add(6, 0, 0))), VIEWER, 0, lowest);
+
+        List<Particle> cross = particles.stream().filter(particle -> particle.kind() == Kind.B).toList();
+        assertEquals(8 * 2, cross.size());
+        for (Particle particle : cross) {
+            assertTrue(Double.isFinite(particle.position().x()), particle.toString());
+        }
+    }
+
+    @Test
     void turnsSplitTheDotsOfTheLines() {
         Vector3 a = Vector3.at(0, 64, 0);
         NavigableMap<Integer, CurvePoint> curve = points(
