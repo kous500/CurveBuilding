@@ -8,6 +8,9 @@ import me.kous500.curvebuilding.commands.IntegerArgument;
 import static me.kous500.curvebuilding.commands.CommandArguments.read;
 import static me.kous500.curvebuilding.math.PosManager.*;
 
+/**
+ * Runs {@code //bcpos} on every platform.
+ */
 public final class PosCommand {
     private PosCommand() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
@@ -16,6 +19,8 @@ public final class PosCommand {
     /**
      * Runs {@code //bcpos} with {@code args}, or shows the error of the first argument that cannot be used.
      *
+     * @param player the player who ran the command
+     * @param args the arguments of the command
      * @return whether the arguments could be used
      */
     public static boolean posCommand(Player player, String[] args) {

@@ -18,6 +18,12 @@ public class RegionBlocks {
 
     private final BaseBlock[][][] regionBlocks;
 
+    /**
+     * Reads every block of {@code region}.
+     *
+     * @param editSession the edit session to read the blocks with
+     * @param region the selection
+     */
     public RegionBlocks(EditSession editSession, Region region) {
         BlockVector3 maxRegion = adapt(region.getMaximumPoint());
         BlockVector3 minRegion = adapt(region.getMinimumPoint());
@@ -40,7 +46,12 @@ public class RegionBlocks {
         }
     }
 
-    /** The block at {@code vec}. A position outside the selection wraps around into it, so the selection repeats. */
+    /**
+     * The block at {@code vec}. A position outside the selection wraps around into it, so the selection repeats.
+     *
+     * @param vec the position
+     * @return the block of the selection there
+     */
     public BaseBlock get(BlockVector3 vec) {
         int x = Math.floorMod(vec.x() - minX, regionWidth);
         int y = Math.floorMod(vec.y() - minY, regionHeight);

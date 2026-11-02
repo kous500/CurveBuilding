@@ -145,8 +145,9 @@ jobs:
             task: ":curvebuilding-fabric:1.21.10:runServer"
           - minecraft: "1.21.11"
             task: ":curvebuilding-fabric:1.21.11:runServer"
-            # WorldEdit 7.4.2, the newest for 1.21.11, leaves its WorldEdit-RecursiveDirectoryWatcher thread running
-            # after the server stops, so the server is killed once its worlds are saved.
+            # WorldEdit 7.4.2 for 1.21.11 leaves its WorldEdit-RecursiveDirectoryWatcher thread running after the
+            # server stops, so the server is killed once its worlds are saved. Remove this when a WorldEdit for 1.21.11
+            # stops the thread.
             kill-after-stop: true
           - minecraft: "26.3"
             task: ":curvebuilding-fabric:26.3:runServer"

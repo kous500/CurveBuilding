@@ -20,6 +20,13 @@ import static me.kous500.curvebuilding.CurveBuilding.config;
 public record PosPoint(int n, Part part) {
     private static final Pattern POS = Pattern.compile("([0-9]+)([fb]?)");
 
+    /**
+     * Reads a point or one of its handles, such as {@code 2}, {@code 2f} or {@code 2b}.
+     *
+     * @param text the argument as typed
+     * @return the point and the part of it
+     * @throws ArgumentException when it is not a point, or the point is out of range
+     */
     public static PosPoint parse(String text) throws ArgumentException {
         Matcher matcher = POS.matcher(text);
         if (!matcher.matches()) {
@@ -37,7 +44,13 @@ public record PosPoint(int n, Part part) {
         };
     }
 
-    /** A point number only, such as {@code 2}. */
+    /**
+     * Reads a point number only, such as {@code 2}.
+     *
+     * @param text the argument as typed
+     * @return the point number
+     * @throws ArgumentException when it is not a point number, or it is out of range
+     */
     public static int parseNumber(String text) throws ArgumentException {
         if (!text.matches("[0-9]+")) {
             throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);

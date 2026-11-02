@@ -26,6 +26,7 @@ public final class BcOptions {
      * Uses the option {@code letters}, typed after a {@code -}, up to the first letter that is not an option or was
      * already used.
      *
+     * @param letters the letters after the {@code -}
      * @return whether every letter could be used
      */
     public boolean read(String letters) {
@@ -42,16 +43,29 @@ public final class BcOptions {
         return true;
     }
 
+    /**
+     * Whether {@code a} was used, to replace only air blocks.
+     *
+     * @return whether only air blocks are replaced
+     */
     public boolean air() {
         return air;
     }
 
-    /** The axis set, or null to choose it from the selection. */
+    /**
+     * The axis that {@code x} or {@code z} set.
+     *
+     * @return the axis, or null to choose it from the selection
+     */
     public Axis axis() {
         return axis;
     }
 
-    /** The option letters that can still be used, in alphabetical order. */
+    /**
+     * The option letters that can still be used.
+     *
+     * @return the letters, in alphabetical order
+     */
     public List<String> unusedLetters() {
         List<String> letters = new ArrayList<>();
         if (!air) letters.add(AIR);

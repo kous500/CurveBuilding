@@ -16,6 +16,7 @@ public final class BcCompletion {
      * gets each option letter that no earlier argument used, added to its end; any other argument gets none.
      *
      * @param args the arguments typed so far; the last one may be empty
+     * @return the suggestions, or an empty list
      */
     public static List<String> complete(String[] args) {
         BcOptions options = new BcOptions();

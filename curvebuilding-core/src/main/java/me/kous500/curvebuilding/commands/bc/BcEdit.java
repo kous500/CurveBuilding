@@ -36,6 +36,9 @@ public final class BcEdit {
     /**
      * Builds the curve through the positions of {@code player} with the blocks of their selection, as one change that
      * {@code //undo} takes back.
+     *
+     * @param player the player who ran the command, whose positions and selection are used
+     * @param arguments the arguments of {@code //bc}
      */
     public static void build(Player player, BcArguments arguments) {
         LocalSession session = WorldEdit.getInstance().getSessionManager().get(player);
@@ -58,6 +61,8 @@ public final class BcEdit {
             }
             if (!posData.isIn(world)) throw new IncompleteRegionException();
 
+            // Every block of the selection is read before the curve is built; a huge selection would freeze the
+            // server, so the limit applies to it too
             if (0 < maxBlocks && maxBlocks < region.getVolume()) {
                 throw new MaxChangedBlocksException(maxBlocks);
             }

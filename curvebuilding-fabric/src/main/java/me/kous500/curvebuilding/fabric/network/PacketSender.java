@@ -21,6 +21,7 @@ public class PacketSender {
         started = true;
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getTickCount() % RESEND_INTERVAL_TICKS != 0) return;
+            // So that the preview follows a player into another world and back, and reaches them when they join again
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 if (PosManager.getPosMap().containsKey(player.getUUID())) {
                     sendPosPacket(player);
@@ -30,8 +31,10 @@ public class PacketSender {
     }
 
     /**
-     * Sends the positions of {@code player} in their current world. With none, it sends no positions, so that the client
-     * stops drawing the ones it has, for example after all of them were cleared.
+     * Sends the positions of {@code player} in their current world. With none, it sends no positions, so that the
+     * client stops drawing the ones it has, for example after all of them were cleared.
+     *
+     * @param player the player to send to
      */
     public static void sendPosPacket(ServerPlayer player) {
         PosData posData = PosManager.getPosMap().get(player.getUUID());

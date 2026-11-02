@@ -36,8 +36,13 @@ public class YamlConfig {
     }
 
     /**
-     * Reads {@code file}, with the resource {@code defaultResource} of {@code jar} for the values missing from it. A file
-     * that does not exist, or cannot be read, has no values of its own.
+     * Reads {@code file}, with the resource {@code defaultResource} of {@code jar} for the values missing from it. A
+     * file that does not exist, or cannot be read, has no values of its own.
+     *
+     * @param file the YAML file
+     * @param jar the class loader that has the default file
+     * @param defaultResource the name of the default file in the jar
+     * @return the values
      */
     public static YamlConfig load(Path file, ClassLoader jar, String defaultResource) {
         return new YamlConfig(file, readFile(file), readResource(jar, defaultResource));
@@ -78,19 +83,42 @@ public class YamlConfig {
         }
     }
 
+    /**
+     * A value as text.
+     *
+     * @param path the keys of the value, separated by dots
+     * @return the value, the default, or null when neither is there
+     */
     public String getString(String path) {
         return get(path, "text", YamlConfig::toText, null);
     }
 
+    /**
+     * A value as an integer.
+     *
+     * @param path the keys of the value, separated by dots
+     * @return the value, the default, or 0 when neither is there
+     */
     public int getInteger(String path) {
         return get(path, "an integer", YamlConfig::toInteger, 0);
     }
 
-    /** A color with its alpha, such as {@code 0x80FF0000}, which is above the range of an int as a number. */
+    /**
+     * A color with its alpha, such as {@code 0x80FF0000}, which is above the range of an int as a number.
+     *
+     * @param path the keys of the value, separated by dots
+     * @return the color as an int, the default, or 0 when neither is there
+     */
     public int getArgb(String path) {
         return get(path, "a color such as 0xFFFFFFFF", YamlConfig::toArgb, 0);
     }
 
+    /**
+     * A value as true or false.
+     *
+     * @param path the keys of the value, separated by dots
+     * @return the value, the default, or false when neither is there
+     */
     public boolean getBoolean(String path) {
         return get(path, "true or false", YamlConfig::toBoolean, false);
     }

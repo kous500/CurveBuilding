@@ -32,9 +32,11 @@ public final class PreviewBackends {
     }
 
     /**
-     * Sets up the backend so that every frame {@code renderer} adds the preview shapes, which are then drawn.
-     * If setting up or drawing fails, for example because the running Minecraft version is not compatible, the error
-     * is logged once and the preview stays off.
+     * Sets up the backend so that every frame {@code renderer} adds the preview shapes, which are then drawn. If
+     * setting up or drawing fails, for example because the running Minecraft version is not compatible, the error is
+     * logged once and the preview stays off.
+     *
+     * @param renderer adds the preview shapes of a frame
      */
     public static void init(Consumer<PreviewFrame> renderer) {
         try {

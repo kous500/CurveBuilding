@@ -1,26 +1,63 @@
 package me.kous500.curvebuilding.math;
 
 /**
- * This class is compatible with com.sk89q.worldedit.math.BlockVector3.
- * An immutable 3-dimensional vector.
+ * An immutable 3-dimensional vector of integers, with the methods of the {@code BlockVector3} of WorldEdit.
+ *
+ * @param x the X coordinate
+ * @param y the Y coordinate
+ * @param z the Z coordinate
  */
 public record BlockVector3(int x, int y, int z) implements Comparable<BlockVector3> {
+    /**
+     * Create a new {@code BlockVector3}, rounding each coordinate down.
+     *
+     * @param x the X coordinate
+     * @param y the Y coordinate
+     * @param z the Z coordinate
+     * @return a new vector
+     */
     public static BlockVector3 at(double x, double y, double z) {
         return at((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
     }
 
+    /**
+     * Create a new {@code BlockVector3}.
+     *
+     * @param x the X coordinate
+     * @param y the Y coordinate
+     * @param z the Z coordinate
+     * @return a new vector
+     */
     public static BlockVector3 at(int x, int y, int z) {
         return new BlockVector3(x, y, z);
     }
 
+    /**
+     * The block that contains {@code vector3}: each component rounded down.
+     *
+     * @param vector3 the vector
+     * @return a new vector
+     */
     public static BlockVector3 floor(Vector3 vector3) {
         return at(Math.floor(vector3.x()), Math.floor(vector3.y()), Math.floor(vector3.z()));
     }
 
+    /**
+     * Each component of {@code vector3} rounded to the closest integer, halves up.
+     *
+     * @param vector3 the vector
+     * @return a new vector
+     */
     public static BlockVector3 round(Vector3 vector3) {
         return at(Math.round(vector3.x()), Math.round(vector3.y()), Math.round(vector3.z()));
     }
 
+    /**
+     * Each component of {@code vector3} rounded up.
+     *
+     * @param vector3 the vector
+     * @return a new vector
+     */
     public static BlockVector3 ceil(Vector3 vector3) {
         return at(Math.ceil(vector3.x()), Math.ceil(vector3.y()), Math.ceil(vector3.z()));
     }
@@ -33,6 +70,13 @@ public record BlockVector3(int x, int y, int z) implements Comparable<BlockVecto
         return -WORLD_XZ_MINMAX <= h && h <= WORLD_XZ_MINMAX;
     }
 
+    /**
+     * Whether {@code location} is within the coordinates that fit in one long: 30,000,000 blocks to each side
+     * horizontally, and from -2048 to 2047 vertically.
+     *
+     * @param location the location
+     * @return whether it fits
+     */
     public static boolean isLongPackable(BlockVector3 location) {
         return isHorizontallyInBounds(location.x)
                 && isHorizontallyInBounds(location.z)
@@ -479,6 +523,11 @@ public record BlockVector3(int x, int y, int z) implements Comparable<BlockVecto
         );
     }
 
+    /**
+     * This vector as a {@link Vector3}.
+     *
+     * @return a new vector
+     */
     public Vector3 toVector3() {
         return Vector3.at(x, y, z);
     }

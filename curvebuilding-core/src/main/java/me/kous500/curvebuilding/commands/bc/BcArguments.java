@@ -14,7 +14,13 @@ import static me.kous500.curvebuilding.commands.CommandArguments.read;
  * @param axis the axis to read the selection along, or null to choose it from the selection
  */
 public record BcArguments(int offset, boolean air, BcOptions.Axis axis) {
-    /** Reads {@code args}, and stops at the first argument that cannot be used. */
+    /**
+     * Reads {@code args}, and stops at the first argument that cannot be used.
+     *
+     * @param args the arguments of the command
+     * @return the arguments read
+     * @throws ArgumentException for the first argument that cannot be used
+     */
     public static BcArguments parse(String[] args) throws ArgumentException {
         BcOptions options = new BcOptions();
         Integer offset = null;

@@ -11,7 +11,9 @@ import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+/** What the commands of every platform share: the config, the messages of the message file and the log. */
 public class CurveBuilding {
+    /** The config read by {@link #loadResources}, or null before it. */
     public static Config config;
     /** The log of the platform. Set it first, as reading the files can already write to it. */
     public static Console console = Console.of(Logger.getLogger("CurveBuilding"));
@@ -21,8 +23,10 @@ public class CurveBuilding {
      * Copies the default files that are missing into the data folder, then reads config.yml and the message file it
      * names, and uses them from now on.
      *
+     * @param dataFolder the folder of the config and the message files
      * @param jar the class loader that has the default files
      * @param readConfig makes the config of the platform from config.yml
+     * @param <C> the config of the platform
      * @return the config read
      */
     public static <C extends Config> C loadResources(Path dataFolder, ClassLoader jar, Function<YamlConfig, C> readConfig) {
@@ -45,13 +49,21 @@ public class CurveBuilding {
         }
     }
 
+    /**
+     * Makes {@code console} the log that everything is written to.
+     *
+     * @param console the log of the platform
+     */
     public static void setConsole(Console console) {
         CurveBuilding.console = console;
     }
 
     /**
-     * The message from the message file set in the config, with {@code {0}}, {@code {1}}, ... replaced with {@code args}.
-     * Before the files are loaded, its path instead.
+     * A message from the message file set in the config.
+     *
+     * @param message the message
+     * @param args the values for {@code {0}}, {@code {1}}, ... in the message
+     * @return the message with its values, or its path before the files are loaded
      */
     public static String getMessage(Message message, Object... args) {
         return messages != null ? messages.get(message, args) : message.path;

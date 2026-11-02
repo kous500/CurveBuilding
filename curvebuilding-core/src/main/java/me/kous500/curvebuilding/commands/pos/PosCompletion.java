@@ -16,6 +16,7 @@ public final class PosCompletion {
      * suggests the length with each direction (for example {@code 5 back}), so both are filled in at once.
      *
      * @param args the arguments typed so far; the last one may be empty
+     * @return the suggestions, or an empty list
      */
     public static List<String> complete(String[] args) {
         if (args.length == 0) return List.of();

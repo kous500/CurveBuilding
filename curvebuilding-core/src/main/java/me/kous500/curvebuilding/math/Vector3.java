@@ -1,10 +1,21 @@
 package me.kous500.curvebuilding.math;
 
 /**
- * This class is compatible with com.sk89q.worldedit.math.Vector3.
- * An immutable 3-dimensional vector.
+ * An immutable 3-dimensional vector, with the methods of the {@code Vector3} of WorldEdit.
+ *
+ * @param x the X coordinate
+ * @param y the Y coordinate
+ * @param z the Z coordinate
  */
 public record Vector3(double x, double y, double z) {
+    /**
+     * Create a new {@code Vector3}.
+     *
+     * @param x the X coordinate
+     * @param y the Y coordinate
+     * @param z the Z coordinate
+     * @return a new vector
+     */
     public static Vector3 at(double x, double y, double z) {
         return new Vector3(x, y, z);
     }

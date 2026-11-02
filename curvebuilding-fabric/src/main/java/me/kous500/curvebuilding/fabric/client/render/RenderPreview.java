@@ -11,10 +11,20 @@ import java.util.NavigableMap;
 
 import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.fabricConfig;
 
+/**
+ * Draws the curve, the points and the handles that the server sent last.
+ */
 public class RenderPreview {
+    /**
+     * The positions that the server sent last, set on the client thread, or null.
+     */
     public static PosData posData;
 
-    /** Draws the preview of the positions the server sent last. */
+    /**
+     * Draws the preview of the positions the server sent last.
+     *
+     * @param frame the frame to add the shapes to
+     */
     public static void render(PreviewFrame frame) {
         if (posData == null) return;
         NavigableMap<Integer, CurvePoint> positions = posData.points();

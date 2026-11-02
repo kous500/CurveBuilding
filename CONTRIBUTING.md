@@ -75,7 +75,14 @@ Please do not share built jars in issues or pull requests. Official builds are o
 
 ## Code comments
 
+These rules apply to the comments in the code, the Gradle build scripts and the GitHub Actions workflows.
+
 - Write code comments in English.
+- Give every public method a Javadoc, with `@param` for each parameter and `@return` for the result. Tell callers what they can rely on: what the method does and returns, and what they need to know to use it, such as when a result is null, units and ranges, side effects, what happens on failure, and threads. A method that overrides another takes its Javadoc, and needs its own only for what it adds.
+- A `//` comment tells what the code does not show: why it is written this way, and the assumptions and constraints behind it.
+- Remove a `//` comment that says nothing more than the code it is on.
+- Keep comments short, and leave the history of the work to the pull request description.
+- In `curvebuilding-core`, do not name a platform (Bukkit, Fabric); it is shared by all of them.
 - For a workaround, name the problem it avoids (the library and its version) and when it can be removed.
 - For version-specific code (Stonecutter conditions, `FabricCompat`, the preview backends), say which Minecraft version changed what.
 - Write a TODO only with an issue number, for example `TODO(#40)`.

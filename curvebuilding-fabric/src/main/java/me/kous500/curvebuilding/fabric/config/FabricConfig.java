@@ -5,6 +5,9 @@ import me.kous500.curvebuilding.config.YamlConfig;
 
 import java.awt.Color;
 
+/**
+ * The settings of config.yml for the preview on Fabric, with the shared ones.
+ */
 public final class FabricConfig extends Config {
     public final boolean posRenderThroughWalls;
     public final Color posLineColor;
@@ -25,6 +28,11 @@ public final class FabricConfig extends Config {
     public final Color lineBColor;
     public final Color lineCurveColor;
 
+    /**
+     * Reads the settings from config.yml.
+     *
+     * @param config the values of config.yml
+     */
     public FabricConfig(YamlConfig config) {
         super(config);
 

@@ -33,15 +33,25 @@ import static org.bukkit.Bukkit.getPlayer;
  */
 public class SendParticles {
     private static final long PERIOD_TICKS = 4;
+    // Each run sends every INTERVAL-th particle of the lines, starting one further each time
     private static final int INTERVAL = 3;
     private static BukkitTask task;
 
+    /**
+     * Starts showing the curves, after stopping what was started before.
+     *
+     * @param plugin the plugin to run the tasks for
+     * @param config the config for the particles
+     */
     public static synchronized void start(Plugin plugin, BukkitConfig config) {
         stop();
         SendParticles sendParticles = new SendParticles(plugin, config);
         task = Bukkit.getScheduler().runTaskTimer(plugin, sendParticles::copyAndSend, 0, PERIOD_TICKS);
     }
 
+    /**
+     * Stops showing the curves.
+     */
     public static synchronized void stop() {
         if (task != null) {
             task.cancel();
@@ -157,6 +167,7 @@ public class SendParticles {
     }
 
     private void sendCross(Vector3 pos, Target target, Color color) {
+        // Each line of the cross goes from a corner of the block to its center, sqrt(3) / 2 blocks
         int density = (int) (config.posDensity * sqrt(3) / 2);
 
         for (int x = 0; x <= 1; x++) {
