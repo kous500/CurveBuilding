@@ -1,6 +1,5 @@
 package me.kous500.curvebuilding.preview;
 
-import me.kous500.curvebuilding.math.BezierSegment;
 import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.Vector3;
 
@@ -160,17 +159,10 @@ public final class ParticleLayout {
         addDots(candidates, point, Kind.HANDLE_LINE);
     }
 
-    /** The curve up to where it would be longer than the maximum length. */
     private void addCurve(NavigableMap<Integer, CurvePoint> points) {
-        double length = 0;
-        for (BezierSegment segment : BezierSegment.through(points)) {
-            if (!segment.isWithin(settings.maxLength())) return;
-            double lengthAfter = length + segment.length(segment.fineness(20));
-            if (lengthAfter > settings.maxLength()) return;
-
-            int divisions = Math.max(1, (int) Math.ceil(lengthAfter * settings.lineDensity()));
-            addDots(segment.blockCenters(divisions), segment.blockCenter(0), Kind.CURVE);
-            length = lengthAfter;
+        for (PreviewCurve.ShownSegment shown : PreviewCurve.segments(points, settings.maxLength(), 20)) {
+            int divisions = Math.max(1, (int) Math.ceil(shown.lengthToEnd() * settings.lineDensity()));
+            addDots(shown.segment().blockCenters(divisions), shown.segment().blockCenter(0), Kind.CURVE);
         }
     }
 

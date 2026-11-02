@@ -1,9 +1,9 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
-import me.kous500.curvebuilding.math.BezierSegment;
 import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.math.Vector3;
+import me.kous500.curvebuilding.preview.PreviewCurve;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
@@ -47,16 +47,10 @@ public class RenderPreview {
     }
 
     private static void renderBezier(NavigableMap<Integer, CurvePoint> pos, Color color, PreviewLayer render) {
-        double totalLen = 0;
-        for (BezierSegment segment : BezierSegment.through(pos)) {
-            if (!segment.isWithin(fabricConfig.lineRenderLength)) return;
-
-            double length = segment.length(segment.fineness(5));
-            totalLen += length;
-            if (totalLen > fabricConfig.lineRenderLength) return;
-
+        for (PreviewCurve.ShownSegment shown : PreviewCurve.segments(pos, fabricConfig.lineRenderLength, 5)) {
+            int divisions = Math.max(1, (int) Math.ceil(shown.length() * fabricConfig.lineRenderAccuracy));
             Vec3 bc = null;
-            for (Vector3 point : segment.blockCenters(Math.max(1, (int) Math.ceil(length * fabricConfig.lineRenderAccuracy)))) {
+            for (Vector3 point : shown.segment().blockCenters(divisions)) {
                 Vec3 c = adaptVec(point);
                 if (bc != null) render.addLine(color, bc, c);
                 bc = c;
