@@ -1,7 +1,6 @@
 package me.kous500.curvebuilding.bukkit;
 
 import com.github.fierioziy.particlenativeapi.api.particle.type.ParticleTypeMotion;
-import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import me.kous500.curvebuilding.math.BezierSegment;
 import me.kous500.curvebuilding.math.CurvePoint;
@@ -38,13 +37,15 @@ public class SendParticles {
     private static BukkitTask task;
 
     /**
-     * Starts showing the curves, after stopping what was started before.
+     * Starts showing the curves, after stopping what was started before. Nothing is started when ParticleNativeAPI
+     * could not be loaded.
      *
      * @param plugin the plugin to run the tasks for
      * @param config the config for the particles
      */
     public static synchronized void start(Plugin plugin, BukkitConfig config) {
         stop();
+        if (particles_1_13 == null) return;
         SendParticles sendParticles = new SendParticles(plugin, config);
         task = Bukkit.getScheduler().runTaskTimer(plugin, sendParticles::copyAndSend, 0, PERIOD_TICKS);
     }
@@ -152,18 +153,9 @@ public class SendParticles {
                                 .sendTo(target.player());
                     }
                 }
-                Location location = getLocation(target.world(), pos.add(0.5, 0.5, 0.5));
-                try {
-                    particles_1_13.SOUL_FIRE_FLAME
-                            .packet(true, location)
-                            .sendTo(target.player());
-                } catch (ParticleException e) {
-                    particles_1_13.HAPPY_VILLAGER
-                            .packet(true, location)
-                            .sendTo(target.player());
-                }
             }
         }
+        sendCenter(pos, target);
     }
 
     private void sendCross(Vector3 pos, Target target, Color color) {
@@ -184,18 +176,15 @@ public class SendParticles {
                                 .sendTo(target.player());
                     }
                 }
-                Location location = getLocation(target.world(), pos.add(0.5, 0.5, 0.5));
-                try {
-                    particles_1_13.SOUL_FIRE_FLAME
-                            .packet(true, location)
-                            .sendTo(target.player());
-                } catch (ParticleException e) {
-                    particles_1_13.HAPPY_VILLAGER
-                            .packet(true, location)
-                            .sendTo(target.player());
-                }
             }
         }
+        sendCenter(pos, target);
+    }
+
+    private void sendCenter(Vector3 pos, Target target) {
+        particles_1_13.SOUL_FIRE_FLAME
+                .packet(true, getLocation(target.world(), pos.add(0.5, 0.5, 0.5)))
+                .sendTo(target.player());
     }
 
     private void sendLine(Vector3 pos1, Vector3 pos2, Target target, ParticleTypeMotion particleType, int r) {
@@ -215,15 +204,9 @@ public class SendParticles {
             if ((PlayerVec.distance(vec) / 3000 * config.lineDensity) + (0.8 / config.lineDensity) < vec.distance(bVec)) {
                 Location location = getLocation(target.world(), vec);
                 if (cnt % INTERVAL == r) {
-                    try {
-                        particleType
-                                .packet(true, location)
-                                .sendTo(target.player());
-                    } catch (ParticleException e) {
-                        particles_1_13.HAPPY_VILLAGER
-                                .packet(true, location)
-                                .sendTo(target.player());
-                    }
+                    particleType
+                            .packet(true, location)
+                            .sendTo(target.player());
                 }
                 bVec = vec;
                 cnt++;
@@ -244,15 +227,9 @@ public class SendParticles {
             if ((PlayerVec.distance(vec) / 3000 * config.lineDensity) + (0.8 / config.lineDensity) < vec.distance(bVec)) {
                 Location location = getLocation(target.world(), vec);
                 if (cnt % INTERVAL == r) {
-                    try {
-                        particleType
-                                .packet(true, location)
-                                .sendTo(target.player());
-                    } catch (ParticleException e) {
-                        particles_1_13.HAPPY_VILLAGER
-                                .packet(true, location)
-                                .sendTo(target.player());
-                    }
+                    particleType
+                            .packet(true, location)
+                            .sendTo(target.player());
                 }
                 bVec = vec;
                 cnt++;
