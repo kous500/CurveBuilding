@@ -11,8 +11,6 @@ public class Config {
     public int maxSetLength;
     /** The highest point number of {@code //bcpos}, at least 1. */
     public int maxPosValue;
-    /** Read from {@code curve.thicken-center}; nothing uses it. */
-    public boolean tCenter;
     /** The most blocks one {@code //bc} may change, or -1 for no limit beyond the one of the player in WorldEdit. */
     public int defaultMaxChangeLimit;
 
@@ -30,7 +28,6 @@ public class Config {
         fineness = Math.max(1, config.getInteger("curve.fineness"));
         maxSetLength = Math.max(0, config.getInteger("curve.max-set-length"));
         maxPosValue = Math.max(1, config.getInteger("curve.max-pos-value"));
-        tCenter = config.getBoolean("curve.thicken-center");
         defaultMaxChangeLimit = Math.max(-1, config.getInteger("curve.default-max-change-limit"));
     }
 }
