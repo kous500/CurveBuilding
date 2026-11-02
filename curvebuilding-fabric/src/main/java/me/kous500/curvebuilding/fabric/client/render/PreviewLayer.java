@@ -30,11 +30,11 @@ public final class PreviewLayer {
     }
 
     /**
-     * 線を描画します
+     * Draws a line from {@code start} to {@code end}.
      *
-     * @param color    線の色
-     * @param start    始点の座標
-     * @param end      終点の座標
+     * @param color the color of the line
+     * @param start where the line starts
+     * @param end where the line ends
      */
     public void addLine(Color color, Vec3 start, Vec3 end) {
         primitives.line(color, start, end);
@@ -43,6 +43,7 @@ public final class PreviewLayer {
     /**
      * Draws the outline of the block at {@code block}.
      *
+     * @param color the color of the outline
      * @param block the block's minimum corner
      */
     public void addBlockOutline(Color color, Vec3 block) {
@@ -53,6 +54,7 @@ public final class PreviewLayer {
     /**
      * Draws lines between the opposite corners of the block at {@code block}.
      *
+     * @param color the color of the lines
      * @param block the block's minimum corner
      */
     public void addBlockCrossing(Color color, Vec3 block) {
@@ -63,6 +65,7 @@ public final class PreviewLayer {
     /**
      * Fills the block at {@code block}.
      *
+     * @param color the color to fill with
      * @param block the block's minimum corner
      */
     public void addFilledBlock(Color color, Vec3 block) {

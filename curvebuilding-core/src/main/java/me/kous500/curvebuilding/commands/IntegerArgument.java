@@ -8,6 +8,14 @@ public final class IntegerArgument {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
+    /**
+     * Reads an integer argument.
+     *
+     * @param text the argument as typed
+     * @param min the lowest value allowed
+     * @return the value
+     * @throws ArgumentException when it is not an integer, is out of the range of an int, or is below {@code min}
+     */
     public static int parse(String text, int min) throws ArgumentException {
         if (!text.matches("-?[0-9]+")) {
             // Something that looks like a number, such as 2.5, is an invalid integer rather than a wrong argument

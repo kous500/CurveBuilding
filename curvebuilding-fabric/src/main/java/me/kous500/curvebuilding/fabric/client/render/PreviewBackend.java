@@ -11,14 +11,18 @@ import java.util.function.Consumer;
  */
 public interface PreviewBackend {
     /**
-     * Creates what the backend needs and registers the world render event that runs {@code onFrame} every frame.
-     * {@link #drawLines} and {@link #drawQuads} are only called from {@code onFrame}. If the backend cannot be set up,
-     * it logs why and never runs {@code onFrame}. Called once while the client starts.
+     * Creates what the backend needs and registers the world render event that runs {@code onFrame} every frame. {@link
+     * #drawLines} and {@link #drawQuads} are only called from {@code onFrame}. If the backend cannot be set up, it logs
+     * why and never runs {@code onFrame}. Called once while the client starts.
+     *
+     * @param onFrame adds and draws the preview of a frame
      */
     void init(Runnable onFrame);
 
     /**
-     * Camera position of the current frame. The preview geometry is relative to it.
+     * The camera position of the current frame. The preview geometry is relative to it.
+     *
+     * @return the camera position
      */
     Vec3 cameraPosition();
 
@@ -26,6 +30,7 @@ public interface PreviewBackend {
      * Draws the lines written by {@code writer}.
      *
      * @param isThroughWalls whether to draw through walls
+     * @param writer writes the lines
      */
     void drawLines(boolean isThroughWalls, Consumer<PreviewBuffer> writer);
 
@@ -33,6 +38,7 @@ public interface PreviewBackend {
      * Draws the quads written by {@code writer}.
      *
      * @param isThroughWalls whether to draw through walls
+     * @param writer writes the quads
      */
     void drawQuads(boolean isThroughWalls, Consumer<PreviewBuffer> writer);
 }

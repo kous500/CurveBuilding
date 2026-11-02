@@ -12,9 +12,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.player.LocalPlayer;
 
+/**
+ * The mod on the client side, which draws the preview.
+ */
 public class CurveBuildingFabricClient implements ClientModInitializer {
     /**
-     * Runs the mod initializer on the client environment.
+     * Receives the positions that the server sends for the preview, forgets them when the client connects to a server,
+     * and starts the preview.
      */
     @Override
     public void onInitializeClient() {
@@ -26,6 +30,7 @@ public class CurveBuildingFabricClient implements ClientModInitializer {
         });
 
         ClientLoginConnectionEvents.INIT.register((ClientHandshakePacketListenerImpl handler, Minecraft client) -> {
+            // In single player the server runs in this game and keeps its positions from one world to the next
             PosManager.clearPosMap();
             RenderPreview.posData = null;
         });

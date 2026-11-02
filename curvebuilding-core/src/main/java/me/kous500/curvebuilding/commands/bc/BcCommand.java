@@ -3,6 +3,9 @@ package me.kous500.curvebuilding.commands.bc;
 import com.sk89q.worldedit.entity.Player;
 import me.kous500.curvebuilding.commands.ArgumentException;
 
+/**
+ * Runs {@code //bc} on every platform.
+ */
 public final class BcCommand {
     private BcCommand() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
@@ -12,6 +15,8 @@ public final class BcCommand {
      * Builds the curve with {@code args} as the arguments of {@code //bc}, or shows the error of the first argument
      * that cannot be used.
      *
+     * @param player the player who ran the command
+     * @param args the arguments of the command
      * @return whether the arguments could be used
      */
     public static boolean bcCommand(Player player, String[] args) {

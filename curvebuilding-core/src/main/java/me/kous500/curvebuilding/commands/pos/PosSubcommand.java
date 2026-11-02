@@ -40,7 +40,12 @@ public enum PosSubcommand {
         this.arguments = arguments;
     }
 
-    /** The subcommand typed as {@code label}, or null. */
+    /**
+     * The subcommand typed as {@code label}.
+     *
+     * @param label the subcommand as typed
+     * @return the subcommand, or null when there is none of that name
+     */
     public static PosSubcommand of(String label) {
         for (PosSubcommand subcommand : values()) {
             if (subcommand.label.equals(label)) return subcommand;
@@ -48,6 +53,13 @@ public enum PosSubcommand {
         return null;
     }
 
+    /**
+     * Reads the subcommand typed as {@code label}.
+     *
+     * @param label the subcommand as typed
+     * @return the subcommand
+     * @throws ArgumentException when there is none of that name
+     */
     public static PosSubcommand parse(String label) throws ArgumentException {
         PosSubcommand subcommand = of(label);
         if (subcommand == null) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);

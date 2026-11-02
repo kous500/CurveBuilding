@@ -13,7 +13,13 @@ public enum Direction {
     /** The name to type, such as {@code back}. */
     public final String label = name().toLowerCase(Locale.ROOT);
 
-    /** The direction typed as its name or its first letter, ignoring case. */
+    /**
+     * The direction typed as its name or its first letter, ignoring case.
+     *
+     * @param text the argument as typed
+     * @return the direction
+     * @throws ArgumentException when it is not a direction
+     */
     public static Direction parse(String text) throws ArgumentException {
         String typed = text.toLowerCase(Locale.ROOT);
         for (Direction direction : values()) {
@@ -27,6 +33,11 @@ public enum Direction {
      * degrees as Minecraft gives them. {@code me} goes up or down when the player looks more than 67.5 degrees up or
      * down, and forward otherwise. The directions that follow the yaw go along each axis within 67.5 degrees of it, so
      * along two axes at once near a diagonal.
+     *
+     * @param length the number of blocks
+     * @param yaw where the player looks to the sides, in degrees: 0 is south, 90 west
+     * @param pitch where the player looks up or down, in degrees: positive is down
+     * @return the offset
      */
     public Vector3 offset(int length, double yaw, double pitch) {
         switch (this) {

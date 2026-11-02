@@ -6,6 +6,9 @@ import org.bukkit.Color;
 
 import static org.bukkit.Color.fromRGB;
 
+/**
+ * The settings of config.yml for the particles on Bukkit, with the shared ones.
+ */
 public final class BukkitConfig extends Config {
     public final Color posColor;
     public final Color startColor;
@@ -16,6 +19,11 @@ public final class BukkitConfig extends Config {
     public final int lineDensity;
     public final int lineMaxLength;
 
+    /**
+     * Reads the settings from config.yml.
+     *
+     * @param config the values of config.yml
+     */
     public BukkitConfig(YamlConfig config) {
         super(config);
 

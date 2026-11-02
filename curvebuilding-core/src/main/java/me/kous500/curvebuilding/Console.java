@@ -8,13 +8,34 @@ import java.util.logging.Logger;
  * written while the message files are being read, and they get pasted into bug reports.
  */
 public interface Console {
+    /**
+     * Logs {@code message} as information.
+     *
+     * @param message the message, in English
+     */
     void info(String message);
 
+    /**
+     * Logs {@code message} as a warning, for something a server owner should look at.
+     *
+     * @param message the message, in English
+     */
     void warning(String message);
 
+    /**
+     * Logs {@code message} as a warning, with the stack trace of {@code cause}.
+     *
+     * @param message the message, in English
+     * @param cause what went wrong
+     */
     void warning(String message, Throwable cause);
 
-    /** A console that writes to {@code logger}. */
+    /**
+     * A console that writes to a Java logger.
+     *
+     * @param logger the logger to write to
+     * @return the console
+     */
     static Console of(Logger logger) {
         return new Console() {
             @Override

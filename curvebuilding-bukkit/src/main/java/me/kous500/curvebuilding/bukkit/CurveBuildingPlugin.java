@@ -17,7 +17,13 @@ import java.nio.file.Path;
 import static java.util.Objects.requireNonNull;
 import static me.kous500.curvebuilding.CurveBuilding.*;
 
+/**
+ * The Bukkit plugin: reads the files, registers the commands and shows the curves with particles.
+ */
 public final class CurveBuildingPlugin extends JavaPlugin {
+    /**
+     * The particles to show the curves with, or null when ParticleNativeAPI could not be loaded.
+     */
     public static ParticleList_1_13 particles_1_13;
     private static final Path DATA_FOLDER = Path.of("plugins/CurveBuilding");
 
@@ -47,6 +53,10 @@ public final class CurveBuildingPlugin extends JavaPlugin {
         requireNonNull(this.getCommand("curvebuilding")).setTabCompleter(curveBuildingCommand);
     }
 
+    /**
+     * Reads the config and the message file again, and restarts the particles with the new config. The curves of every
+     * player are removed.
+     */
     public void reloadConfigAndResources() {
         SendParticles.stop();
         PosManager.clearPosMap();

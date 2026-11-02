@@ -25,12 +25,23 @@ public final class PosManager {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
-    /** The curve of {@code player}, or null when they have not set any point. */
+    /**
+     * The curve of {@code player}.
+     *
+     * @param player the player
+     * @return the curve, or null when they have not set any point
+     */
     public static PosData get(Player player) {
         return POS_MAP.get(player.getUniqueId());
     }
 
-    /** Sets {@code part} of point {@code n} where {@code player} stands. A point in another world starts a new curve. */
+    /**
+     * Sets {@code part} of point {@code n} where {@code player} stands. A point in another world starts a new curve.
+     *
+     * @param player the player, whose position is used
+     * @param n the point number
+     * @param part the part to set
+     */
     public static void addPos(Player player, int n, Part part) {
         Vector3 location = adapt(player.getLocation().toVector()).floor();
         World world = player.getWorld();
@@ -44,12 +55,24 @@ public final class PosManager {
         Chat.info(player, Message.POS_SET, posToString(n, part), location);
     }
 
+    /**
+     * Removes the whole curve of {@code player}, and tells them when there was one.
+     *
+     * @param player the player
+     */
     public static void clearPos(Player player) {
         if (POS_MAP.remove(player.getUniqueId()) != null) {
             Chat.info(player, Message.POS_CLEAR_ALL);
         }
     }
 
+    /**
+     * Clears {@code part} of point {@code n} of {@code player}, and tells them when the point was there.
+     *
+     * @param player the player
+     * @param n the point number
+     * @param part the part to clear
+     */
     public static void clearPos(Player player, int n, Part part) {
         PosData posData = get(player);
         if (posData != null && posData.clear(n, part)) {
@@ -57,7 +80,13 @@ public final class PosManager {
         }
     }
 
-    /** Inserts a new point {@code n} where {@code player} stands, before the point that had that number. */
+    /**
+     * Inserts a new point {@code n} where {@code player} stands, before the point that had that number. An error is
+     * shown when there is no point {@code n}.
+     *
+     * @param player the player, whose position is used
+     * @param n the number of the new point
+     */
     public static void insert(Player player, int n) {
         PosData posData = get(player);
         if (posData == null || !posData.contains(n)) {
@@ -69,6 +98,13 @@ public final class PosManager {
         addPos(player, n, Part.POINT);
     }
 
+    /**
+     * Removes point {@code n} of {@code player}, so that the points after it get the numbers before. An error is shown
+     * when there is no point {@code n}.
+     *
+     * @param player the player
+     * @param n the number of the point to remove
+     */
     public static void remove(Player player, int n) {
         PosData posData = get(player);
         if (posData == null || !posData.contains(n)) {
@@ -80,7 +116,14 @@ public final class PosManager {
         Chat.info(player, Message.POS_REMOVE, n);
     }
 
-    /** Moves the whole curve of {@code player} by {@code length} blocks in {@code direction}, seen from the player. */
+    /**
+     * Moves the whole curve of {@code player} by {@code length} blocks in {@code direction}, seen from the player.
+     * Nothing happens when they have no curve.
+     *
+     * @param player the player
+     * @param length the number of blocks
+     * @param direction the direction, which can depend on where the player looks
+     */
     public static void shift(Player player, int length, Direction direction) {
         PosData posData = get(player);
         if (posData == null) return;
@@ -90,10 +133,18 @@ public final class PosManager {
         Chat.info(player, Message.POS_SHIFT);
     }
 
+    /**
+     * The curves of every player.
+     *
+     * @return the curves by the UUID of their player, in a map that cannot be changed but shows the changes made here
+     */
     public static Map<UUID, PosData> getPosMap() {
         return Collections.unmodifiableMap(POS_MAP);
     }
 
+    /**
+     * Removes the curves of every player.
+     */
     public static void clearPosMap() {
         POS_MAP.clear();
     }

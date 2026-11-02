@@ -9,10 +9,27 @@ public final class CommandArguments {
     }
 
     public interface Parser<T> {
+        /**
+         * Reads one argument.
+         *
+         * @param text the argument as typed
+         * @return the value of the argument
+         * @throws ArgumentException when the argument cannot be used
+         */
         T parse(String text) throws ArgumentException;
     }
 
-    /** {@code args[index]} read by {@code parser}. A missing argument is an error too. */
+    /**
+     * Reads {@code args[index]} with {@code parser}, so that an error is the error of that argument. A missing argument
+     * is an error too.
+     *
+     * @param args the arguments of the command
+     * @param index the index of the argument to read
+     * @param parser reads the argument
+     * @param <T> the type of the value
+     * @return the value of the argument
+     * @throws ArgumentException when the argument is missing or cannot be used, with {@code index} set
+     */
     public static <T> T read(String[] args, int index, Parser<T> parser) throws ArgumentException {
         if (index >= args.length) {
             throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT).at(index);

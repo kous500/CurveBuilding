@@ -10,8 +10,19 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+/**
+ * The positions of a player, sent to their client for the preview.
+ *
+ * @param sendPosData the points by their number
+ */
 public record PosDataPayload(NavigableMap<Integer, CurvePoint> sendPosData) implements CustomPacketPayload {
+    /**
+     * The type of this payload.
+     */
     public static final CustomPacketPayload.Type<PosDataPayload> ID = FabricCompat.payloadType("bezier-pos");
+    /**
+     * Writes and reads this payload.
+     */
     public static final StreamCodec<FriendlyByteBuf, PosDataPayload> CODEC = StreamCodec.of(PosDataPayload::encoder, PosDataPayload::decoder);
 
     @Override
@@ -19,7 +30,7 @@ public record PosDataPayload(NavigableMap<Integer, CurvePoint> sendPosData) impl
         return ID;
     }
 
-    // Same wire format as FriendlyByteBuf#writeMap, which newer Minecraft versions no longer have
+    // Same wire format as FriendlyByteBuf#writeMap, which Minecraft 26.3 removed
     private static void encoder(FriendlyByteBuf buf, PosDataPayload payload) {
         buf.writeVarInt(payload.sendPosData.size());
         for (Map.Entry<Integer, CurvePoint> entry : payload.sendPosData.entrySet()) {

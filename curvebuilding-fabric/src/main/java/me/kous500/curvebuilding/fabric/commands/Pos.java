@@ -21,11 +21,19 @@ import static me.kous500.curvebuilding.fabric.network.PacketSender.sendPosPacket
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
+/**
+ * The command {@code //bcpos} on Fabric.
+ */
 public class Pos implements RunCommand {
     private static final String posCommandName = "/bcpos";
     private static final Command<CommandSourceStack> RUN = context -> runLogged(new Pos(context));
     private static final SuggestionProvider<CommandSourceStack> suggestions = CoreSuggestions.of(PosCompletion::complete);
 
+    /**
+     * Registers {@code //bcpos}, with a node for each subcommand.
+     *
+     * @param dispatcher the dispatcher to register it with
+     */
     public static void setPosBuilder(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> pos = literal(posCommandName).requires(FabricCompat::isGameMaster);
 

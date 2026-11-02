@@ -22,6 +22,7 @@ public final class PreviewFrame {
      * The layer to add shapes to.
      *
      * @param isThroughWalls whether the shapes are drawn through walls
+     * @return the layer
      */
     public PreviewLayer layer(boolean isThroughWalls) {
         return isThroughWalls ? throughWallsLayer : normalLayer;

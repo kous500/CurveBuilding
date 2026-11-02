@@ -2,9 +2,7 @@ package me.kous500.curvebuilding;
 
 import static java.lang.Math.*;
 
-/**
- * このプラグインで共通で使う処理をまとめています。
- */
+/** Small calculations shared by the rest of the code. */
 public final class Util {
 
     private Util() {
@@ -12,13 +10,14 @@ public final class Util {
     }
 
     /**
-     * ３次元の直交座標を極座標に変換したときの動径rを任意の大きさに変更する
+     * The vector (x, y, z) scaled to the length {@code newR}, keeping its direction; a negative length turns it the
+     * other way. A zero vector stays zero.
      *
-     * @param x x座標
-     * @param y y座標
-     * @param z z座標
-     * @param newR 変更する動径rの大きさ
-     * @return 動径rを変更した直交座標[ x, y, z ]
+     * @param x the x component
+     * @param y the y component
+     * @param z the z component
+     * @param newR the length to scale to
+     * @return the scaled vector, as {x, y, z}
      */
     public static double[] changeR(double x, double y, double z, double newR) {
         double currentR = sqrt(x * x + y * y + z * z);
@@ -32,11 +31,12 @@ public final class Util {
     }
 
     /**
-     * 文字列内の{番号}を0から順に引数の単語に置き換える
+     * {@code message} with {@code {0}}, {@code {1}}, ... replaced with {@code args} in that order. A placeholder without
+     * an argument stays as it is.
      *
-     * @param message 元の文字列
-     * @param args 置き換える単語
-     * @return 置き換え後の文字列
+     * @param message the text, or null
+     * @param args the values for the placeholders, or null
+     * @return the text with the values, or null when {@code message} is null
      */
     public static String messageReplace(String message, Object... args) {
         if (message == null || args == null) {

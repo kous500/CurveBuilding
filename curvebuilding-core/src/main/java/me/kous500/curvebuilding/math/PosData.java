@@ -20,37 +20,69 @@ public class PosData {
     private volatile String worldId;
     private volatile NavigableMap<Integer, CurvePoint> points;
 
+    /**
+     * A curve without points, in no world yet.
+     */
     public PosData() {
         this(new TreeMap<>());
     }
 
+    /**
+     * A curve with {@code points}, in no world.
+     *
+     * @param points the points by their number, which this copies
+     */
     public PosData(NavigableMap<Integer, CurvePoint> points) {
         this.points = Collections.unmodifiableNavigableMap(new TreeMap<>(points));
     }
 
-    /** The points, which this never changes. */
+    /**
+     * The points by their number.
+     *
+     * @return the points, in a map that is never changed
+     */
     public NavigableMap<Integer, CurvePoint> points() {
         return points;
     }
 
+    /**
+     * Whether the points are in {@code world}.
+     *
+     * @param world the world
+     * @return whether the points are in it
+     */
     public boolean isIn(World world) {
         return worldId != null && worldId.equals(WorldeditAdapter.getWorldId(world));
     }
 
-    /** Removes every point, and keeps the next ones in {@code world}. */
+    /**
+     * Removes every point, and keeps the next ones in {@code world}.
+     *
+     * @param world the world of the next points
+     */
     public void reset(World world) {
         worldId = WorldeditAdapter.getWorldId(world);
         replace(new TreeMap<>());
     }
 
+    /**
+     * Whether point {@code n} is there, even with nothing set.
+     *
+     * @param n the point number
+     * @return whether it is there
+     */
     public boolean contains(int n) {
         return points.containsKey(n);
     }
 
     /**
-     * Sets {@code part} of point {@code n} to {@code position}. Moving a point moves its handles with it. Setting a handle
-     * of a point between two others points the other handle the opposite way, so that the curve goes through smoothly;
-     * the same is done for the handle of the previous point when its next point is set.
+     * Sets {@code part} of point {@code n} to {@code position}. Moving a point moves its handles with it. Setting a
+     * handle of a point between two others points the other handle the opposite way, so that the curve goes through
+     * smoothly; the same is done for the handle of the previous point when its next point is set.
+     *
+     * @param n the point number
+     * @param part the part to set
+     * @param position its position
      */
     public void set(int n, Part part, Vector3 position) {
         NavigableMap<Integer, CurvePoint> next = new TreeMap<>(points);
@@ -79,6 +111,8 @@ public class PosData {
     /**
      * Clears {@code part} of point {@code n}. Clearing the point clears its handles too, and keeps its number.
      *
+     * @param n the point number
+     * @param part the part to clear
      * @return whether point {@code n} was there
      */
     public boolean clear(int n, Part part) {
@@ -91,7 +125,11 @@ public class PosData {
         return true;
     }
 
-    /** Makes room for a new point {@code n}: the points from {@code n} on get the next numbers. */
+    /**
+     * Makes room for a new point {@code n}: the points from {@code n} on get the next numbers.
+     *
+     * @param n the number of the new point
+     */
     public void insertAt(int n) {
         NavigableMap<Integer, CurvePoint> next = new TreeMap<>();
         for (Map.Entry<Integer, CurvePoint> entry : points.entrySet()) {
@@ -100,7 +138,11 @@ public class PosData {
         replace(next);
     }
 
-    /** Removes point {@code n}: the points after it get the numbers before. */
+    /**
+     * Removes point {@code n}: the points after it get the numbers before.
+     *
+     * @param n the number of the point to remove
+     */
     public void removeAt(int n) {
         NavigableMap<Integer, CurvePoint> next = new TreeMap<>();
         for (Map.Entry<Integer, CurvePoint> entry : points.entrySet()) {
@@ -113,7 +155,11 @@ public class PosData {
         replace(next);
     }
 
-    /** Moves every point and handle by {@code offset}. */
+    /**
+     * Moves every point and handle by {@code offset}.
+     *
+     * @param offset how far to move
+     */
     public void move(Vector3 offset) {
         NavigableMap<Integer, CurvePoint> next = new TreeMap<>();
         points.forEach((n, point) -> next.put(n, point.moved(offset)));

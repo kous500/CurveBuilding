@@ -13,9 +13,19 @@ import static me.kous500.curvebuilding.CurveBuilding.setConsole;
 import static me.kous500.curvebuilding.fabric.commands.Bc.setBcBuilder;
 import static me.kous500.curvebuilding.fabric.commands.Pos.setPosBuilder;
 
+/**
+ * The mod on the server side, which is also there in single player: reads the files, registers the commands and sends
+ * the positions to the clients.
+ */
 public class CurveBuildingFabric implements ModInitializer {
+    /**
+     * The folder of the config and the message files.
+     */
     public static final Path DATA_FOLDER = Path.of("config/CurveBuilding");
 
+    /**
+     * The config read at startup.
+     */
     public static FabricConfig fabricConfig;
 
     @Override

@@ -14,6 +14,9 @@ import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.commands.bc.BcCommand.bcCommand;
 
+/**
+ * The command {@code //bc} on Bukkit.
+ */
 public class Bc implements TabExecutor {
     @Override
     public boolean onCommand(

@@ -42,7 +42,7 @@ public class CurveBuildingGameTests {
 
     @GameTest
     public void defaultFilesAreCopied(GameTestHelper helper) {
-        // The files are copied from the mod jar at startup; this failed under a launcher in 0.6.5 - 0.6.8 (#64)
+        // The files are copied from the mod jar at startup, also when a launcher starts the game (#64)
         Path folder = CurveBuildingFabric.DATA_FOLDER;
         for (String file : new String[]{"config.yml", "messages/en-US.yml", "messages/ja-JP.yml"}) {
             helper.assertTrue(Files.isRegularFile(folder.resolve(file)), Component.literal(file + " was not copied to " + folder));

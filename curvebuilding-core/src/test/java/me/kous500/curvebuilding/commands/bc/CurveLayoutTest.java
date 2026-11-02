@@ -121,7 +121,7 @@ class CurveLayoutTest {
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0));
         int blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, line).blocks().size();
 
-        // The middle column is laid twice, so counting each time a block falls on a position would stop here
+        // The middle column is laid twice, so the limit has to count the positions, not each block laid on one
         assertEquals(blocks, layout(ONE_BLOCK, NO_ARGUMENTS, blocks, line).blocks().size());
         assertThrows(MaxChangedBlocksException.class, () -> layout(ONE_BLOCK, NO_ARGUMENTS, blocks - 1, line));
     }
@@ -141,7 +141,7 @@ class CurveLayoutTest {
 
         CurveLayout layout = layout(ONE_BLOCK, NO_ARGUMENTS, 0, diagonals.toArray(BezierSegment[]::new));
 
-        // Each segment is measured in steps that stop just short of its end; a whole number of blocks each would give 2
+        // Each segment is measured in steps that stop just short of its end, and is not cut to whole blocks
         assertEquals(2 * Math.sqrt(2), layout.length(), 1e-2);
         assertFalse(layout.blocks().isEmpty());
     }

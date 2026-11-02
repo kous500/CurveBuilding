@@ -29,6 +29,12 @@ public final class FabricCompat {
     private FabricCompat() {
     }
 
+    /**
+     * The WorldEdit player for a Minecraft player.
+     *
+     * @param player the Minecraft player
+     * @return the WorldEdit player
+     */
     public static Player adaptPlayer(ServerPlayer player) {
         //? if >=26.1 {
         return FabricAdapter.get().fromNativePlayer(player);
@@ -37,6 +43,12 @@ public final class FabricCompat {
         *///?}
     }
 
+    /**
+     * The WorldEdit world for a Minecraft level.
+     *
+     * @param level the Minecraft level
+     * @return the WorldEdit world
+     */
     public static World adaptWorld(Level level) {
         //? if >=26.1 {
         return FabricAdapter.get().fromNativeWorld(level);
@@ -47,6 +59,9 @@ public final class FabricCompat {
 
     /**
      * Whether the command source has the permission level of a game master (operator level 2).
+     *
+     * @param source the source of a command
+     * @return whether it may run the commands of CurveBuilding
      */
     public static boolean isGameMaster(CommandSourceStack source) {
         //? if >=1.21.11 {
@@ -56,6 +71,13 @@ public final class FabricCompat {
         *///?}
     }
 
+    /**
+     * The type of a payload of CurveBuilding, in its namespace {@code curvebuilding}.
+     *
+     * @param path the name of the payload in the namespace
+     * @param <T> the payload
+     * @return the payload type
+     */
     public static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> payloadType(String path) {
         //? if >=1.21.11 {
         return new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("curvebuilding", path));
@@ -64,6 +86,13 @@ public final class FabricCompat {
         *///?}
     }
 
+    /**
+     * Registers a payload that the server sends to the client.
+     *
+     * @param type the payload type
+     * @param codec writes and reads the payload
+     * @param <T> the payload
+     */
     public static <T extends CustomPacketPayload> void registerClientboundPayload(CustomPacketPayload.Type<T> type, StreamCodec<FriendlyByteBuf, T> codec) {
         //? if >=26.1 {
         PayloadTypeRegistry.clientboundPlay().register(type, codec);

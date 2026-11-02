@@ -22,6 +22,13 @@ public final class ResourceFiles {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
+    /**
+     * Copies config.yml and the message files that {@code dataFolder} does not have yet out of the jar. A file that
+     * cannot be copied is logged as a warning.
+     *
+     * @param dataFolder the folder of the config and the message files
+     * @param jar the class loader that has the default files
+     */
     public static void copyDefaults(Path dataFolder, ClassLoader jar) {
         copyDirectory(dataFolder, jar, "messages");
         copy(dataFolder, jar, "config.yml");
@@ -45,7 +52,7 @@ public final class ResourceFiles {
                 fileSystem = FileSystems.newFileSystem(uri, Map.of());
                 opened = true;
             } catch (FileSystemAlreadyExistsException e) {
-                // Fabric Loader keeps the mod jar open. Reuse it and leave it open, or the loader breaks.
+                // A mod loader can keep the jar open. Reuse it and leave it open, or the loader breaks.
                 fileSystem = FileSystems.getFileSystem(uri);
                 opened = false;
             }

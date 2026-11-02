@@ -16,14 +16,16 @@
 
 ## Code comments
 
-These rules and the ones in CONTRIBUTING.md apply to comments in the code, the Gradle build scripts
-and the GitHub Actions workflows.
-
-- Write code comments in English.
-- Write what someone opening the file half a year later needs: the reasons, assumptions and
-  constraints that the code does not show. The history of the work belongs in the pull request
-  description, not in comments.
-- Keep them short and limited to what is needed.
+- Follow "Code comments" in CONTRIBUTING.md.
+- Write comments for whoever works on the code later, without this conversation: only what stays
+  true and helps them. Leave out anything that depends on the current task or on when it was
+  written: the request, the previous code, the change, or the time ("now", "currently", "for
+  now", "no longer", "recently", "instead of", "fixed", "added", "as requested").
+- Before writing a comment, see whether a clearer name or a smaller method would say it instead.
+- When changing code, update or remove the comments it makes wrong in the same change.
+- Only write what you have checked. For the behavior of WorldEdit, Minecraft or another library,
+  read its code (for example in the jar) before relying on it; do not guess from names.
+- Start a Javadoc with what the caller gets, not "This method".
 
 ## Versions and releases
 

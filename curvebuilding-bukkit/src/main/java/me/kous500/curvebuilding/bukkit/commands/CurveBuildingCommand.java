@@ -19,9 +19,17 @@ import java.util.List;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 
+/**
+ * The command {@code /curvebuilding}, which reloads the files with {@code reload}.
+ */
 public class CurveBuildingCommand implements TabExecutor {
     private final CurveBuildingPlugin plugin;
 
+    /**
+     * The command for {@code plugin}.
+     *
+     * @param plugin the plugin to reload
+     */
     public CurveBuildingCommand(CurveBuildingPlugin plugin) {
         this.plugin = plugin;
     }

@@ -17,7 +17,7 @@ public enum GameMessage {
     INTEGER_TOO_LOW("argument.integer.low"),
     /** Argument: the value found. */
     INVALID_INTEGER("parsing.int.invalid"),
-    /** "<--[HERE]", after the argument with the problem. */
+    /** {@code <--[HERE]}, after the argument with the problem. */
     HERE("command.context.here");
 
     public final String key;
@@ -26,6 +26,12 @@ public enum GameMessage {
         this.key = key;
     }
 
+    /**
+     * This message, ready to send.
+     *
+     * @param args the arguments of the message, in its order, each shown as text
+     * @return the message as a text component
+     */
     public TranslatableComponent text(Object... args) {
         return TranslatableComponent.of(key, Arrays.stream(args)
                 .map(arg -> TextComponent.of(String.valueOf(arg)))
