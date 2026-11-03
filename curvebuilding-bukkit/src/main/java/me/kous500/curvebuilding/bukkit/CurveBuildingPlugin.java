@@ -11,6 +11,7 @@ import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.math.PosManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
 
@@ -26,7 +27,7 @@ public final class CurveBuildingPlugin extends JavaPlugin {
     /**
      * The particles to show the curves with, or null when ParticleNativeAPI could not be loaded.
      */
-    public static ParticleList_1_13 particles_1_13;
+    public static @Nullable ParticleList_1_13 particles_1_13;
     private static final Path DATA_FOLDER = Path.of("plugins/CurveBuilding");
 
     @Override

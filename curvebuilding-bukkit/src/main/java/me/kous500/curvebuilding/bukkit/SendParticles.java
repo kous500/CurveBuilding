@@ -1,6 +1,7 @@
 package me.kous500.curvebuilding.bukkit;
 
 import com.github.fierioziy.particlenativeapi.api.packet.ParticlePacket;
+import com.github.fierioziy.particlenativeapi.api.particle.ParticleList_1_13;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.math.CurvePoint;
@@ -14,6 +15,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +33,7 @@ import static org.bukkit.Bukkit.getPlayer;
  */
 public class SendParticles {
     private static final long PERIOD_TICKS = 4;
-    private static BukkitTask task;
+    private static @Nullable BukkitTask task;
 
     /**
      * Starts showing the curves, after stopping what was started before. Nothing is started when ParticleNativeAPI
@@ -42,8 +44,9 @@ public class SendParticles {
      */
     public static synchronized void start(Plugin plugin, BukkitConfig config) {
         stop();
-        if (particles_1_13 == null) return;
-        SendParticles sendParticles = new SendParticles(plugin, config);
+        ParticleList_1_13 particleList = particles_1_13;
+        if (particleList == null) return;
+        SendParticles sendParticles = new SendParticles(plugin, config, particleList);
         task = Bukkit.getScheduler().runTaskTimer(plugin, sendParticles::copyAndSend, 0, PERIOD_TICKS);
     }
 
@@ -66,13 +69,15 @@ public class SendParticles {
 
     private final Plugin plugin;
     private final BukkitConfig config;
+    private final ParticleList_1_13 particleList;
     private final ParticleLayout.Settings settings;
     // Each run sends the next turn of the dots of the lines
     private int turn = 0;
 
-    private SendParticles(Plugin plugin, BukkitConfig config) {
+    private SendParticles(Plugin plugin, BukkitConfig config, ParticleList_1_13 particleList) {
         this.plugin = plugin;
         this.config = config;
+        this.particleList = particleList;
         this.settings = new ParticleLayout.Settings(config.posDensity, config.lineDensity, config.lineMaxLength);
     }
 
@@ -118,15 +123,15 @@ public class SendParticles {
                 case POINT -> dust(config.posColor, location);
                 case F -> dust(config.fColor, location);
                 case B -> dust(config.bColor, location);
-                case CENTER, HANDLE_LINE -> particles_1_13.SOUL_FIRE_FLAME.packet(true, location);
-                case CURVE -> particles_1_13.FLAME.packet(true, location);
+                case CENTER, HANDLE_LINE -> particleList.SOUL_FIRE_FLAME.packet(true, location);
+                case CURVE -> particleList.FLAME.packet(true, location);
             };
             packet.sendTo(target.player());
         }
     }
 
-    private static ParticlePacket dust(Color color, Location location) {
-        return particles_1_13.DUST.color(color, 1D).packet(true, location);
+    private ParticlePacket dust(Color color, Location location) {
+        return particleList.DUST.color(color, 1D).packet(true, location);
     }
 
     private static Location getLocation(World world, Vector3 position) {
