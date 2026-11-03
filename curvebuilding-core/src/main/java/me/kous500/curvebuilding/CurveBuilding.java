@@ -5,6 +5,7 @@ import me.kous500.curvebuilding.config.Message;
 import me.kous500.curvebuilding.config.Messages;
 import me.kous500.curvebuilding.config.ResourceFiles;
 import me.kous500.curvebuilding.config.YamlConfig;
+import org.jspecify.annotations.Nullable;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -13,11 +14,12 @@ import java.util.logging.Logger;
 
 /** What the commands of every platform share: the config, the messages of the message file and the log. */
 public class CurveBuilding {
-    /** The config read by {@link #loadResources}, or null before it. */
+    /** The config read by {@link #loadResources}, which each platform calls when it starts, before it is read. */
+    @SuppressWarnings("NotNullFieldNotInitialized")
     public static Config config;
     /** The log of the platform. Set it first, as reading the files can already write to it. */
     public static Console console = Console.of(Logger.getLogger("CurveBuilding"));
-    private static Messages messages;
+    private static @Nullable Messages messages;
 
     /**
      * Copies the default files that are missing into the data folder, then reads config.yml and the message file it
@@ -42,11 +44,12 @@ public class CurveBuilding {
         return loadedConfig;
     }
 
-    private static Path messageFile(String setting, Path dataFolder) {
+    private static Path messageFile(@Nullable String setting, Path dataFolder) {
+        Path english = dataFolder.resolve("messages/en-US.yml");
+        if (setting == null) return english;
         try {
             return Path.of(setting.replace("%datafolder%", dataFolder.toString()));
         } catch (InvalidPathException e) {
-            Path english = dataFolder.resolve("messages/en-US.yml");
             console.warning("message-file in config.yml is not a file path: " + setting + ", using " + english);
             return english;
         }

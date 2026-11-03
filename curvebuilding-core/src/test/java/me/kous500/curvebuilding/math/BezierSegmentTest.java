@@ -29,6 +29,7 @@ class BezierSegmentTest {
     }
 
     @Test
+    @SuppressWarnings("DataFlowIssue") // Gives the constructor null on purpose
     void rejectsMissingPositions() {
         Vector3 a = Vector3.at(0, 0, 0);
         assertThrows(NullPointerException.class, () -> new BezierSegment(a, null, a, a));
@@ -191,7 +192,6 @@ class BezierSegmentTest {
         @Test
         void hasNoSegmentsWithoutTwoPositions() {
             NavigableMap<Integer, CurvePoint> points = new TreeMap<>();
-            assertTrue(BezierSegment.through(null).isEmpty());
             assertTrue(BezierSegment.through(points).isEmpty());
 
             points.put(1, new CurvePoint(a, null, null));

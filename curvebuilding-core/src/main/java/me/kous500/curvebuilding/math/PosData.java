@@ -3,6 +3,7 @@ package me.kous500.curvebuilding.math;
 import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.WorldeditAdapter;
 import me.kous500.curvebuilding.math.CurvePoint.Part;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Map;
@@ -16,7 +17,7 @@ import static me.kous500.curvebuilding.Util.changeR;
  * new map that is never changed, so {@link #points()} can be read on any thread, such as for particles or packets.
  */
 public class PosData {
-    private volatile String worldId;
+    private volatile @Nullable String worldId;
     private volatile NavigableMap<Integer, CurvePoint> points;
 
     /**
@@ -51,7 +52,7 @@ public class PosData {
      * @return whether the points are in it
      */
     public boolean isIn(World world) {
-        return worldId != null && worldId.equals(WorldeditAdapter.getWorldId(world));
+        return WorldeditAdapter.getWorldId(world).equals(worldId);
     }
 
     /**
@@ -95,13 +96,14 @@ public class PosData {
         current = current.with(part, position);
 
         if (part == Part.F && hasPoint(after) && current.point() != null) {
-            current = current.with(Part.B, opposite(current.point(), current.f(), current.b()));
+            current = current.with(Part.B, opposite(current.point(), position, current.b()));
         } else if (part == Part.B && hasPoint(before) && current.point() != null) {
-            current = current.with(Part.F, opposite(current.point(), current.b(), current.f()));
+            current = current.with(Part.F, opposite(current.point(), position, current.f()));
         }
         next.put(n, current);
 
-        if (part == Part.POINT && hasPoint(before) && before.f() != null && before.b() == null) {
+        boolean beforeHasOnlyF = before != null && before.f() != null && before.b() == null;
+        if (part == Part.POINT && beforeHasOnlyF && before.point() != null) {
             next.put(n - 1, before.with(Part.B, opposite(before.point(), before.f(), null)));
         }
         replace(next);
@@ -169,7 +171,7 @@ public class PosData {
         points = Collections.unmodifiableNavigableMap(next);
     }
 
-    private static boolean hasPoint(CurvePoint point) {
+    private static boolean hasPoint(@Nullable CurvePoint point) {
         return point != null && point.point() != null;
     }
 
@@ -177,7 +179,7 @@ public class PosData {
      * The handle opposite to {@code handle} around {@code point}: as far as {@code current}, the handle it replaces, or
      * as far as {@code handle} when there is none.
      */
-    private static Vector3 opposite(Vector3 point, Vector3 handle, Vector3 current) {
+    private static Vector3 opposite(Vector3 point, Vector3 handle, @Nullable Vector3 current) {
         double dx = handle.x() - point.x();
         double dy = handle.y() - point.y();
         double dz = handle.z() - point.z();

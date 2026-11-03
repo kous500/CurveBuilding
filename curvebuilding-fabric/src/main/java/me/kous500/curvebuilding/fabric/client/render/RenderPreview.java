@@ -5,6 +5,7 @@ import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.math.Vector3;
 import me.kous500.curvebuilding.preview.PreviewCurve;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.Color;
 import java.util.NavigableMap;
@@ -18,7 +19,7 @@ public class RenderPreview {
     /**
      * The positions that the server sent last, set on the client thread, or null.
      */
-    public static PosData posData;
+    public static @Nullable PosData posData;
 
     /**
      * Draws the preview of the positions the server sent last.
@@ -26,8 +27,9 @@ public class RenderPreview {
      * @param frame the frame to add the shapes to
      */
     public static void render(PreviewFrame frame) {
-        if (posData == null) return;
-        NavigableMap<Integer, CurvePoint> positions = posData.points();
+        PosData shown = posData;
+        if (shown == null) return;
+        NavigableMap<Integer, CurvePoint> positions = shown.points();
 
         PreviewLayer lines = frame.layer(fabricConfig.lineRenderThroughWalls);
         renderBezier(positions, fabricConfig.lineCurveColor, lines);

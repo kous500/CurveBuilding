@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding.config;
 
+import org.jspecify.annotations.Nullable;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
@@ -89,7 +90,7 @@ public class YamlConfig {
      * @param path the keys of the value, separated by dots
      * @return the value, the default, or null when neither is there
      */
-    public String getString(String path) {
+    public @Nullable String getString(String path) {
         return get(path, "text", YamlConfig::toText, null);
     }
 
@@ -128,7 +129,11 @@ public class YamlConfig {
      * value of the wrong type. Without a value in the file, or with a wrong one, the default; without a default,
      * {@code fallback}.
      */
-    private <T> T get(String path, String expected, Function<Object, T> convert, T fallback) {
+    private <T extends @Nullable Object> T get(
+            String path,
+            String expected,
+            Function<Object, @Nullable T> convert,
+            T fallback) {
         Optional<Object> value = find(values, path);
         if (value.isPresent()) {
             Object found = value.get();
@@ -153,11 +158,11 @@ public class YamlConfig {
         return Optional.ofNullable(currentValue);
     }
 
-    private static String toText(Object value) {
+    private static @Nullable String toText(Object value) {
         return value instanceof Map || value instanceof Collection ? null : value.toString();
     }
 
-    private static Integer toInteger(Object value) {
+    private static @Nullable Integer toInteger(Object value) {
         try {
             if (value instanceof Integer || value instanceof Long || value instanceof BigInteger) {
                 return new BigInteger(value.toString()).intValueExact();
@@ -171,7 +176,7 @@ public class YamlConfig {
         return null;
     }
 
-    private static Integer toArgb(Object value) {
+    private static @Nullable Integer toArgb(Object value) {
         if (value instanceof Integer argb) {
             return argb;
         }
@@ -181,7 +186,7 @@ public class YamlConfig {
         return null;
     }
 
-    private static Boolean toBoolean(Object value) {
+    private static @Nullable Boolean toBoolean(Object value) {
         if (value instanceof Boolean bool) {
             return bool;
         }

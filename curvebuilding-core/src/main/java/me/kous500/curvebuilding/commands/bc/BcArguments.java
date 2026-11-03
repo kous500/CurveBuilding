@@ -3,6 +3,7 @@ package me.kous500.curvebuilding.commands.bc;
 import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.commands.IntegerArgument;
+import org.jspecify.annotations.Nullable;
 
 import static me.kous500.curvebuilding.commands.CommandArguments.read;
 
@@ -13,7 +14,7 @@ import static me.kous500.curvebuilding.commands.CommandArguments.read;
  * @param air whether only air blocks are replaced
  * @param axis the axis to read the selection along, or null to choose it from the selection
  */
-public record BcArguments(int offset, boolean air, BcOptions.Axis axis) {
+public record BcArguments(int offset, boolean air, BcOptions.@Nullable Axis axis) {
     /**
      * Reads {@code args}, and stops at the first argument that cannot be used.
      *

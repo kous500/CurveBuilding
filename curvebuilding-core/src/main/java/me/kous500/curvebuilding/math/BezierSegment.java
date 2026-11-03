@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.Objects;
 
+import static java.util.Objects.requireNonNullElse;
+
 /**
  * A cubic Bézier curve from {@code p0} to {@code p3}, pulled towards {@code p1} and {@code p2}: the part of a curve
  * between two of its points. Each position is the corner of a block, so the curve goes through the corners; {@link
@@ -29,25 +31,23 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
      * that is not set.
      *
      * @param points the points by their number
-     * @return the segments in order, empty with fewer than two points or with null
+     * @return the segments in order, empty with fewer than two points
      */
     public static List<BezierSegment> through(NavigableMap<Integer, CurvePoint> points) {
         List<BezierSegment> segments = new ArrayList<>();
-        if (points == null || points.isEmpty()) return segments;
+        CurvePoint first = points.get(1);
+        if (first == null || first.point() == null) return segments;
 
-        for (int n = 1; n <= points.lastKey(); n++) {
+        Vector3 before = first.point();
+        Vector3 beforeHandle = requireNonNullElse(first.b(), before);
+        for (int n = 2; n <= points.lastKey(); n++) {
             CurvePoint p = points.get(n);
             if (p == null || p.point() == null) break;
 
-            if (n > 1) {
-                CurvePoint before = points.get(n - 1);
-                segments.add(new BezierSegment(
-                        before.point(),
-                        before.b() != null ? before.b() : before.point(),
-                        p.f() != null ? p.f() : p.point(),
-                        p.point()
-                ));
-            }
+            Vector3 point = p.point();
+            segments.add(new BezierSegment(before, beforeHandle, requireNonNullElse(p.f(), point), point));
+            before = point;
+            beforeHandle = requireNonNullElse(p.b(), point);
         }
         return segments;
     }

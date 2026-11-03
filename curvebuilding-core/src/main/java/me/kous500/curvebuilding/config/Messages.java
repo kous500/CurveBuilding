@@ -39,9 +39,10 @@ public class Messages {
      *
      * @param message the message
      * @param args the values for {@code {0}}, {@code {1}}, ... in the message
-     * @return the message with its values
+     * @return the message with its values, or its path when neither the file nor the jar has it
      */
     public String get(Message message, Object... args) {
-        return messageReplace(file.getString(message.path), args);
+        String text = file.getString(message.path);
+        return text != null ? messageReplace(text, args) : message.path;
     }
 }

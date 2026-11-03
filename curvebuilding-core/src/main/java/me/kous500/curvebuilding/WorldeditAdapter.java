@@ -2,6 +2,7 @@ package me.kous500.curvebuilding;
 
 import me.kous500.curvebuilding.math.BlockVector3;
 import me.kous500.curvebuilding.math.Vector3;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Method;
 
@@ -83,7 +84,7 @@ public class WorldeditAdapter {
     }
 
     private static class MethodSuggestions<C, R> {
-        private Method method;
+        private @Nullable Method method;
         private final String[] methodNames;
 
         MethodSuggestions(String[] methodNames) {
@@ -92,7 +93,7 @@ public class WorldeditAdapter {
 
         @SuppressWarnings("unchecked")
         R executeMethod(C instance, Object... args) {
-            if (method == null) getMethod(instance, args);
+            if (method == null) method = findMethod(instance, args);
             try {
                 return (R) method.invoke(instance, args);
             } catch (Exception e) {
@@ -100,19 +101,18 @@ public class WorldeditAdapter {
             }
         }
 
-        private void getMethod(C instance, Object... args) {
+        private Method findMethod(C instance, Object... args) {
             for (String methodName : methodNames) {
                 try {
                     Class<?>[] argTypes = new Class<?>[args.length];
                     for (int i = 0; i < args.length; i++) {
                         argTypes[i] = args[i].getClass();
                     }
-                    method = instance.getClass().getMethod(methodName, argTypes);
-                    break;
+                    return instance.getClass().getMethod(methodName, argTypes);
                 } catch (NoSuchMethodException ignored) {}
             }
 
-            if (method == null) throw new RuntimeException("Failed to convert the worldedit-api method.");
+            throw new RuntimeException("Failed to convert the worldedit-api method.");
         }
     }
 }

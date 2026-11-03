@@ -2,6 +2,7 @@ package me.kous500.curvebuilding.fabric.client.render;
 
 import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.Vector3;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.Color;
 import java.util.NavigableMap;
@@ -20,13 +21,14 @@ public class PosVector {
      * @param part the point or one of its handles
      * @return the part to draw, or null when it is not set
      */
-    public static PosVector getInstance(NavigableMap<Integer, CurvePoint> p, int n, CurvePoint.Part part) {
-        if (p == null || n <= 0) return null;
+    public static @Nullable PosVector getInstance(NavigableMap<Integer, CurvePoint> p, int n, CurvePoint.Part part) {
+        if (n <= 0) return null;
 
         CurvePoint point = p.get(n);
-        if (point == null || point.get(part) == null) return null;
+        Vector3 vector = point != null ? point.get(part) : null;
+        if (vector == null) return null;
 
-        return new PosVector(p, n, part);
+        return new PosVector(vector, n, part, n == p.lastKey());
     }
 
     public final Vector3 vector;
@@ -35,10 +37,10 @@ public class PosVector {
     public final int n;
     public final CurvePoint.Part part;
 
-    private PosVector(NavigableMap<Integer, CurvePoint> p, int n, CurvePoint.Part part) {
-        vector = p.get(n).get(part);
+    private PosVector(Vector3 vector, int n, CurvePoint.Part part, boolean isEndPos) {
+        this.vector = vector;
         isStartPos = n == 1;
-        isEndPos = n == p.lastEntry().getKey();
+        this.isEndPos = isEndPos;
         this.n = n;
         this.part = part;
     }

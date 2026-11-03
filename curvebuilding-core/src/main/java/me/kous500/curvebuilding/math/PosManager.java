@@ -7,6 +7,7 @@ import me.kous500.curvebuilding.Chat;
 import me.kous500.curvebuilding.commands.pos.Direction;
 import me.kous500.curvebuilding.config.Message;
 import me.kous500.curvebuilding.math.CurvePoint.Part;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Map;
@@ -31,7 +32,7 @@ public final class PosManager {
      * @param player the player
      * @return the curve, or null when they have not set any point
      */
-    public static PosData get(Player player) {
+    public static @Nullable PosData get(Player player) {
         return POS_MAP.get(player.getUniqueId());
     }
 
