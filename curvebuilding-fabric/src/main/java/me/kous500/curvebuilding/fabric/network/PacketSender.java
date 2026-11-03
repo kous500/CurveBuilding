@@ -2,7 +2,7 @@ package me.kous500.curvebuilding.fabric.network;
 
 import me.kous500.curvebuilding.curve.PosData;
 import me.kous500.curvebuilding.curve.PosManager;
-import me.kous500.curvebuilding.fabric.FabricCompat;
+import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;

@@ -5,8 +5,6 @@ package me.kous500.curvebuilding.fabric.client.render.backend;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import me.kous500.curvebuilding.fabric.client.render.PreviewBackend;
-import me.kous500.curvebuilding.fabric.client.render.PreviewBuffer;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;

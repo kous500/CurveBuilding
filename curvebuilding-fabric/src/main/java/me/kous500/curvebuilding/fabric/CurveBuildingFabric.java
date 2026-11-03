@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding.fabric;
 
+import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import me.kous500.curvebuilding.fabric.config.FabricConfig;
 import me.kous500.curvebuilding.fabric.network.PacketSender;
 import me.kous500.curvebuilding.fabric.network.PosDataPayload;

@@ -52,7 +52,7 @@ public final class CurveBuildingPlugin extends JavaPlugin {
         requireNonNull(this.getCommand("/bcpos")).setExecutor(pos);
         requireNonNull(this.getCommand("/bcpos")).setTabCompleter(pos);
 
-        CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this);
+        CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this::reloadConfigAndResources);
         requireNonNull(this.getCommand("curvebuilding")).setExecutor(curveBuildingCommand);
         requireNonNull(this.getCommand("curvebuilding")).setTabCompleter(curveBuildingCommand);
     }
@@ -61,7 +61,7 @@ public final class CurveBuildingPlugin extends JavaPlugin {
      * Reads the config and the message file again, and restarts the particles with the new config. The curves of every
      * player are removed.
      */
-    public void reloadConfigAndResources() {
+    private void reloadConfigAndResources() {
         SendParticles.stop();
         PosManager.clearPosMap();
 

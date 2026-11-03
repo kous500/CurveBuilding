@@ -5,6 +5,6 @@
 
 <suppressions>
     <!-- Stonecutter comments switch some imports between Minecraft versions; they stay in their own block -->
-    <suppress checks="CustomImportOrder" files="[\\/]fabric[\\/]FabricCompat\.java$"/>
+    <suppress checks="CustomImportOrder" files="[\\/]compat[\\/]FabricCompat\.java$"/>
     <suppress checks="CustomImportOrder" files="[\\/]backend[\\/]SubmitPreviewBackend\.java$"/>
 </suppressions>

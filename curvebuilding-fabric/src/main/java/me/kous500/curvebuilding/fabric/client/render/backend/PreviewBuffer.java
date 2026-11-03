@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.fabric.client.render;
+package me.kous500.curvebuilding.fabric.client.render.backend;
 
 /**
  * Receives the preview geometry, in coordinates relative to the camera.

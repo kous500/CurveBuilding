@@ -6,15 +6,15 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.kous500.curvebuilding.commands.bc.BcCompletion;
-import me.kous500.curvebuilding.fabric.FabricCompat;
+import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.word;
 import static me.kous500.curvebuilding.commands.bc.BcCommand.bcCommand;
-import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.runLogged;
+import static me.kous500.curvebuilding.fabric.compat.FabricCompat.adaptPlayer;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 

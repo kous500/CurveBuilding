@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.fabric.client.render;
+package me.kous500.curvebuilding.fabric.client.render.backend;
 
 import net.minecraft.world.phys.Vec3;
 
@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 /**
  * Draws the preview with the rendering API of one range of Minecraft versions.
  * Every version-specific part of the preview is in an implementation in the backend package;
- * {@link PreviewBackends} picks the one for the running version.
+ * {@code PreviewBackends} picks the one for the running version.
  */
 public interface PreviewBackend {
     /**

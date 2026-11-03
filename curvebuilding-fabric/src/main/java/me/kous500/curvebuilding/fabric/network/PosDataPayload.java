@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.fabric.network;
 
 import me.kous500.curvebuilding.curve.CurvePoint;
-import me.kous500.curvebuilding.fabric.FabricCompat;
+import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import me.kous500.curvebuilding.math.Vector3;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

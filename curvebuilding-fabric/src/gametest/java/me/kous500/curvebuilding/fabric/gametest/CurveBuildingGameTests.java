@@ -18,7 +18,7 @@ import me.kous500.curvebuilding.commands.pos.PosCommand;
 import me.kous500.curvebuilding.curve.CurvePoint.Part;
 import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
-import me.kous500.curvebuilding.fabric.FabricCompat;
+import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.commands.CommandSourceStack;

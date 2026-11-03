@@ -8,15 +8,15 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import me.kous500.curvebuilding.commands.pos.PosCompletion;
 import me.kous500.curvebuilding.commands.pos.PosSubcommand;
-import me.kous500.curvebuilding.fabric.FabricCompat;
+import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.word;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
-import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.runLogged;
+import static me.kous500.curvebuilding.fabric.compat.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.fabric.network.PacketSender.sendPosPacket;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
