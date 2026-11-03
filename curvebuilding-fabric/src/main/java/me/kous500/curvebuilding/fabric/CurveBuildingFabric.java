@@ -24,8 +24,9 @@ public class CurveBuildingFabric implements ModInitializer {
     public static final Path DATA_FOLDER = Path.of("config/CurveBuilding");
 
     /**
-     * The config read at startup.
+     * The config read in {@link #onInitialize}, which runs before it is read.
      */
+    @SuppressWarnings("NotNullFieldNotInitialized")
     public static FabricConfig fabricConfig;
 
     @Override

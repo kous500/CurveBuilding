@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 // Draws with its own buffer source at the end of the world render (WorldRenderEvents.END_MAIN), after translucent
 // terrain such as water, so the usual depth test is enough. Lines are 1 pixel wide debug lines.
 // RenderPipelines.DEBUG_FILLED_SNIPPET and RenderType.create are opened by curvebuilding.accesswidener.
+@SuppressWarnings("NotNullFieldNotInitialized") // init sets the render types before anything is drawn
 public final class LegacyPreviewBackend implements PreviewBackend {
     private final MultiBufferSource.BufferSource bufferSource =
             MultiBufferSource.immediate(new ByteBufferBuilder(RenderType.SMALL_BUFFER_SIZE));

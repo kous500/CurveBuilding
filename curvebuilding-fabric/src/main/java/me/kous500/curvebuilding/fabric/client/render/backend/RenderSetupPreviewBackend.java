@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 // terrain such as water, so the usual depth test is enough.
 // Lines use the vanilla line shader, so each line vertex needs a normal and a line width.
 // The snippets, RenderPipelines.register and RenderType.create are opened by curvebuilding.accesswidener.
+@SuppressWarnings("NotNullFieldNotInitialized") // init sets the render types before anything is drawn
 public final class RenderSetupPreviewBackend implements PreviewBackend {
     private static final float LINE_WIDTH = 1.0f;
 

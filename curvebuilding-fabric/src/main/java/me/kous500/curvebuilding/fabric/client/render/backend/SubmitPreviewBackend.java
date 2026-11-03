@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ import java.util.function.Consumer;
 // the non-public snippets, RenderPipelines.register and RenderType.create.
 // Every pipeline sets a translucent color target: LINES_SNIPPET has none in 26.3, and a pipeline without one fails
 // when it is drawn ("color attachment count must match pipeline color target state count").
+@SuppressWarnings("NotNullFieldNotInitialized") // init and render set the fields before anything is drawn
 public final class SubmitPreviewBackend implements PreviewBackend {
     private static final Logger LOGGER = LoggerFactory.getLogger(SubmitPreviewBackend.class);
     private static final String[] PIPELINE_CLASSES = {
@@ -67,9 +69,9 @@ public final class SubmitPreviewBackend implements PreviewBackend {
     private RenderType linesThroughWalls;
     private RenderType quads;
     private RenderType quadsThroughWalls;
-    private ImmediateDraw immediateDraw;
-    private SubmitNodeCollector collector;
-    private LevelRenderContext immediateContext;
+    private @Nullable ImmediateDraw immediateDraw;
+    private @Nullable SubmitNodeCollector collector;
+    private @Nullable LevelRenderContext immediateContext;
     private PoseStack poseStack;
     private Vec3 cameraPosition = Vec3.ZERO;
 
@@ -160,9 +162,9 @@ public final class SubmitPreviewBackend implements PreviewBackend {
                 if (isLines) vertex.setNormal(v[7], v[8], v[9]).setLineWidth(LINE_WIDTH);
             }
         };
-        if (immediateContext != null) {
+        if (immediateContext != null && immediateDraw != null) {
             immediateDraw.draw(immediateContext, renderType, poseStack.last(), geometry);
-        } else {
+        } else if (collector != null) {
             // Fabric passes Minecraft's SubmitNodeStorage, the only collector with phases to choose from
             AfterTerrainPhase.submit((SubmitNodeStorage) collector, poseStack, renderType, geometry);
         }
