@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding;
 
+import me.kous500.curvebuilding.log.Console;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 

@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static me.kous500.curvebuilding.CurveBuilding.console;
+import static me.kous500.curvebuilding.log.Log.console;
 
 /** Copies the default files that the data folder does not have yet out of the jar. */
 public final class ResourceFiles {
@@ -62,7 +62,7 @@ public final class ResourceFiles {
                 if (opened) fileSystem.close();
             }
         } catch (IOException | URISyntaxException e) {
-            console.warning("Could not copy the default files in " + directory + " from the jar", e);
+            console().warning("Could not copy the default files in " + directory + " from the jar", e);
         }
     }
 
@@ -86,7 +86,7 @@ public final class ResourceFiles {
             Files.createDirectories(destination.getParent());
             Files.copy(stream, destination);
         } catch (IOException e) {
-            console.warning("Could not copy the default " + resource + " from the jar into " + dataFolder, e);
+            console().warning("Could not copy the default " + resource + " from the jar into " + dataFolder, e);
         }
     }
 }

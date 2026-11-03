@@ -1,8 +1,8 @@
 package me.kous500.curvebuilding.config;
 
-import me.kous500.curvebuilding.Console;
-import me.kous500.curvebuilding.CurveBuilding;
 import me.kous500.curvebuilding.RecordingConsole;
+import me.kous500.curvebuilding.log.Console;
+import me.kous500.curvebuilding.log.Log;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,9 +33,9 @@ class YamlConfigTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        previousConsole = CurveBuilding.console;
+        previousConsole = Log.console();
         console = new RecordingConsole();
-        CurveBuilding.setConsole(console);
+        Log.setConsole(console);
 
         jar = temp.resolve("jar");
         file = temp.resolve("config.yml");
@@ -50,7 +50,7 @@ class YamlConfigTest {
 
     @AfterEach
     void restoreConsole() {
-        CurveBuilding.setConsole(previousConsole);
+        Log.setConsole(previousConsole);
     }
 
     @Test

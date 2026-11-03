@@ -10,8 +10,8 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
-import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.commands.bc.BcCommand.bcCommand;
+import static me.kous500.curvebuilding.message.Messages.getMessage;
 
 /**
  * The command {@code //bc} on Bukkit.

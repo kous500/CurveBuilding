@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding;
+package me.kous500.curvebuilding.log;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

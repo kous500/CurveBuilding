@@ -10,9 +10,9 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import java.nio.file.Path;
 
 import static me.kous500.curvebuilding.CurveBuilding.loadResources;
-import static me.kous500.curvebuilding.CurveBuilding.setConsole;
 import static me.kous500.curvebuilding.fabric.commands.Bc.setBcBuilder;
 import static me.kous500.curvebuilding.fabric.commands.Pos.setPosBuilder;
+import static me.kous500.curvebuilding.log.Log.setConsole;
 
 /**
  * The mod on the server side, which is also there in single player: reads the files, registers the commands and sends

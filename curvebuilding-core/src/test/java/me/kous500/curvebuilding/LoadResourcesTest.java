@@ -1,7 +1,10 @@
 package me.kous500.curvebuilding;
 
 import me.kous500.curvebuilding.config.Config;
+import me.kous500.curvebuilding.log.Console;
+import me.kous500.curvebuilding.log.Log;
 import me.kous500.curvebuilding.message.Message;
+import me.kous500.curvebuilding.message.Messages;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,9 +35,9 @@ class LoadResourcesTest {
     @BeforeEach
     void createJar() throws IOException {
         previousConfig = CurveBuilding.config;
-        previousConsole = CurveBuilding.console;
+        previousConsole = Log.console();
         console = new RecordingConsole();
-        CurveBuilding.setConsole(console);
+        Log.setConsole(console);
         jar = temp.resolve("jar");
         dataFolder = temp.resolve("data");
         write(jar.resolve("config.yml"), "message-file: \"%datafolder%/messages/ja-JP.yml\"\ncurve:\n  fineness: 3\n");
@@ -45,7 +48,7 @@ class LoadResourcesTest {
     @AfterEach
     void restoreConfig() {
         CurveBuilding.config = previousConfig;
-        CurveBuilding.setConsole(previousConsole);
+        Log.setConsole(previousConsole);
     }
 
     @Test
@@ -61,8 +64,8 @@ class LoadResourcesTest {
         assertSame(config, CurveBuilding.config);
         assertEquals(3, config.fineness);
         assertTrue(Files.exists(dataFolder.resolve("config.yml")), "the default config is copied");
-        assertEquals("移動しました", CurveBuilding.getMessage(Message.POS_SHIFT));
-        assertEquals("2 を削除", CurveBuilding.getMessage(Message.POS_REMOVE, 2));
+        assertEquals("移動しました", Messages.getMessage(Message.POS_SHIFT));
+        assertEquals("2 を削除", Messages.getMessage(Message.POS_REMOVE, 2));
     }
 
     @Test
@@ -74,8 +77,8 @@ class LoadResourcesTest {
             CurveBuilding.loadResources(dataFolder, classLoader, Config::new);
         }
 
-        assertEquals("Moved", CurveBuilding.getMessage(Message.POS_SHIFT));
-        assertEquals("Removed 2", CurveBuilding.getMessage(Message.POS_REMOVE, 2));
+        assertEquals("Moved", Messages.getMessage(Message.POS_SHIFT));
+        assertEquals("Removed 2", Messages.getMessage(Message.POS_REMOVE, 2));
         assertEquals(0, console.entries.size(), String.valueOf(console.entries));
     }
 
@@ -85,7 +88,7 @@ class LoadResourcesTest {
 
         load();
 
-        assertEquals("シフト", CurveBuilding.getMessage(Message.POS_SHIFT));
+        assertEquals("シフト", Messages.getMessage(Message.POS_SHIFT));
         assertOneWarning("ja-JP.yml");
     }
 
@@ -95,7 +98,7 @@ class LoadResourcesTest {
 
         load();
 
-        assertEquals("Shifted", CurveBuilding.getMessage(Message.POS_SHIFT));
+        assertEquals("Shifted", Messages.getMessage(Message.POS_SHIFT));
         assertOneWarning("message-file");
     }
 

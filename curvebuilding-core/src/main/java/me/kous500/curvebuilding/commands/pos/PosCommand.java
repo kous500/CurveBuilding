@@ -11,8 +11,8 @@ import me.kous500.curvebuilding.message.Chat;
 import me.kous500.curvebuilding.message.GameMessage;
 import me.kous500.curvebuilding.message.Message;
 
-import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.commands.CommandArguments.read;
+import static me.kous500.curvebuilding.message.Messages.getMessage;
 
 /**
  * Runs {@code //bcpos} on every platform, and replies to the player.

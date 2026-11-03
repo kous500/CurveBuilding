@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
-import static me.kous500.curvebuilding.CurveBuilding.getMessage;
+import static me.kous500.curvebuilding.message.Messages.getMessage;
 
 /**
  * The command {@code /curvebuilding}, which reloads the files with {@code reload}.

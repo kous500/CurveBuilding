@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.fabric;
 
-import me.kous500.curvebuilding.Console;
+import me.kous500.curvebuilding.log.Console;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
