@@ -2,6 +2,7 @@ package me.kous500.curvebuilding.preview;
 
 import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.Vector3;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -146,7 +147,7 @@ public final class ParticleLayout {
         }
     }
 
-    private void addHandleLine(Vector3 point, Vector3 handle) {
+    private void addHandleLine(@Nullable Vector3 point, @Nullable Vector3 handle) {
         if (point == null || handle == null) return;
 
         int distance = (int) point.distance(handle);

@@ -1,5 +1,7 @@
 package me.kous500.curvebuilding.commands.bc;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -20,7 +22,7 @@ public final class BcOptions {
     public static final String AIR = "a";
 
     private boolean air;
-    private Axis axis;
+    private @Nullable Axis axis;
 
     /**
      * Uses the option {@code letters}, typed after a {@code -}, up to the first letter that is not an option or was
@@ -57,7 +59,7 @@ public final class BcOptions {
      *
      * @return the axis, or null to choose it from the selection
      */
-    public Axis axis() {
+    public @Nullable Axis axis() {
         return axis;
     }
 
@@ -77,7 +79,7 @@ public final class BcOptions {
         return letters;
     }
 
-    private static Axis axisOf(String letter) {
+    private static @Nullable Axis axisOf(String letter) {
         for (Axis each : Axis.values()) {
             if (each.letter.equals(letter)) return each;
         }

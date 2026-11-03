@@ -2,6 +2,7 @@ package me.kous500.curvebuilding.commands.pos;
 
 import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The subcommands of {@code //bcpos} and the arguments each takes. The command and its suggestions on every
@@ -46,7 +47,7 @@ public enum PosSubcommand {
      * @param label the subcommand as typed
      * @return the subcommand, or null when there is none of that name
      */
-    public static PosSubcommand of(String label) {
+    public static @Nullable PosSubcommand of(String label) {
         for (PosSubcommand subcommand : values()) {
             if (subcommand.label.equals(label)) return subcommand;
         }

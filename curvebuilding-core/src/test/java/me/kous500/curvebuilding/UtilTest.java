@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class UtilTest {
     @Nested
@@ -41,12 +40,6 @@ class UtilTest {
         @Test
         void keepsPlaceholdersWithoutArguments() {
             assertEquals("a {1}", Util.messageReplace("{0} {1}", "a"));
-        }
-
-        @Test
-        void handlesNull() {
-            assertNull(Util.messageReplace(null, "a"));
-            assertEquals("{0}", Util.messageReplace("{0}", (Object[]) null));
         }
     }
 }

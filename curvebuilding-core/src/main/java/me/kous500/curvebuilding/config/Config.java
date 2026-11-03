@@ -1,9 +1,11 @@
 package me.kous500.curvebuilding.config;
 
+import org.jspecify.annotations.Nullable;
+
 /** The settings of config.yml that every platform has. The platforms add their own in a subclass. */
 public class Config {
-    /** The path of the message file, with {@code %datafolder%} for the data folder. */
-    public String messageFilePath;
+    /** The path of the message file, with {@code %datafolder%} for the data folder, or null without a setting. */
+    public @Nullable String messageFilePath;
 
     /** How many steps {@code //bc} takes along the curve per block, at least 1. */
     public int fineness;

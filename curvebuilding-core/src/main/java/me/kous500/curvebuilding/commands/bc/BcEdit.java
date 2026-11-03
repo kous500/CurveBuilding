@@ -53,6 +53,7 @@ public final class BcEdit {
 
         EditSession editSession = session.createEditSession(player);
         try (editSession) {
+            if (world == null) throw new IncompleteRegionException();
             Region region = session.getSelection(world);
 
             PosData posData = PosManager.get(player);

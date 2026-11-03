@@ -34,15 +34,11 @@ public final class Util {
      * {@code message} with {@code {0}}, {@code {1}}, ... replaced with {@code args} in that order. A placeholder
      * without an argument stays as it is.
      *
-     * @param message the text, or null
-     * @param args the values for the placeholders, or null
-     * @return the text with the values, or null when {@code message} is null
+     * @param message the text
+     * @param args the values for the placeholders
+     * @return the text with the values
      */
     public static String messageReplace(String message, Object... args) {
-        if (message == null || args == null) {
-            return message;
-        }
-
         for (int i = 0; i < args.length; i++) {
             message = message.replace("{" + i + "}", String.valueOf(args[i]));
         }

@@ -1,11 +1,15 @@
 package me.kous500.curvebuilding;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /** Keeps what is written to the console, for tests. */
+@NullMarked
 public class RecordingConsole implements Console {
-    public record Entry(String level, String message, Throwable cause) {
+    public record Entry(String level, String message, @Nullable Throwable cause) {
     }
 
     public final List<Entry> entries = new ArrayList<>();
