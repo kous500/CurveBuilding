@@ -1,11 +1,10 @@
-package me.kous500.curvebuilding;
+package me.kous500.curvebuilding.message;
 
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 import com.sk89q.worldedit.util.formatting.text.format.TextDecoration;
-import me.kous500.curvebuilding.config.Message;
 
 import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 

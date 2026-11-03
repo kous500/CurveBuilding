@@ -1,11 +1,11 @@
 package me.kous500.curvebuilding.commands.pos;
 
 import me.kous500.curvebuilding.CurveBuilding;
-import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.config.Config;
-import me.kous500.curvebuilding.config.Message;
-import me.kous500.curvebuilding.math.CurvePoint.Part;
+import me.kous500.curvebuilding.curve.CurvePoint.Part;
+import me.kous500.curvebuilding.message.GameMessage;
+import me.kous500.curvebuilding.message.Message;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;

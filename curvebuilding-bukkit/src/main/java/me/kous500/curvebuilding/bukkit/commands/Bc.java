@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.bukkit.commands;
 
 import me.kous500.curvebuilding.commands.bc.BcCompletion;
-import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.message.Message;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;

@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
-import me.kous500.curvebuilding.math.CurvePoint;
-import me.kous500.curvebuilding.math.PosData;
+import me.kous500.curvebuilding.curve.CurvePoint;
+import me.kous500.curvebuilding.curve.PosData;
 import me.kous500.curvebuilding.math.Vector3;
 import me.kous500.curvebuilding.preview.PreviewCurve;
 import net.minecraft.world.phys.Vec3;

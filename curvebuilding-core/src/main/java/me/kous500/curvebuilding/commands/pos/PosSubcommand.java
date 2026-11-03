@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.commands.pos;
 
-import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
+import me.kous500.curvebuilding.message.GameMessage;
 import org.jspecify.annotations.Nullable;
 
 /**

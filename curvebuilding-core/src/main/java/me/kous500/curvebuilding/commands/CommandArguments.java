@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.commands;
 
-import me.kous500.curvebuilding.GameMessage;
+import me.kous500.curvebuilding.message.GameMessage;
 
 /** Reads the arguments of a command, so that an error is the error of the argument it is about. */
 public final class CommandArguments {

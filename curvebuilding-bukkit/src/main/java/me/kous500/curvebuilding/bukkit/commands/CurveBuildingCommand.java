@@ -1,9 +1,9 @@
 package me.kous500.curvebuilding.bukkit.commands;
 
-import me.kous500.curvebuilding.Chat;
-import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.bukkit.CurveBuildingPlugin;
-import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.message.Chat;
+import me.kous500.curvebuilding.message.GameMessage;
+import me.kous500.curvebuilding.message.Message;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;

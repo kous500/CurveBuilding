@@ -146,6 +146,21 @@ public record Vector3(double x, double y, double z) {
     }
 
     /**
+     * This vector scaled to {@code length}, keeping its direction; a negative length turns it the other way. A zero
+     * vector stays zero.
+     *
+     * @param length the length to scale to
+     * @return a new vector
+     */
+    public Vector3 withLength(double length) {
+        double current = length();
+        if (current == 0) return at(0, 0, 0);
+
+        double scale = length / current;
+        return at(x * scale, y * scale, z * scale);
+    }
+
+    /**
      * Get the length, squared, of the vector.
      *
      * @return length, squared

@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding;
 
 import me.kous500.curvebuilding.config.Config;
-import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.message.Message;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

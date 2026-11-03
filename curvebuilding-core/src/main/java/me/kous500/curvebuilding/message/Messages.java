@@ -1,10 +1,11 @@
-package me.kous500.curvebuilding.config;
+package me.kous500.curvebuilding.message;
+
+import me.kous500.curvebuilding.config.YamlConfig;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static me.kous500.curvebuilding.CurveBuilding.console;
-import static me.kous500.curvebuilding.Util.messageReplace;
 
 /**
  * The messages of a message file. A message missing from it comes from the file of the same name in the jar, or from
@@ -43,6 +44,22 @@ public class Messages {
      */
     public String get(Message message, Object... args) {
         String text = file.getString(message.path);
-        return text != null ? messageReplace(text, args) : message.path;
+        return text != null ? replacePlaceholders(text, args) : message.path;
+    }
+
+    /**
+     * {@code message} with {@code {0}}, {@code {1}}, ... replaced with {@code args} in that order. A placeholder
+     * without an argument stays as it is.
+     *
+     * @param message the text
+     * @param args the values for the placeholders
+     * @return the text with the values
+     */
+    static String replacePlaceholders(String message, Object... args) {
+        for (int i = 0; i < args.length; i++) {
+            message = message.replace("{" + i + "}", String.valueOf(args[i]));
+        }
+
+        return message;
     }
 }

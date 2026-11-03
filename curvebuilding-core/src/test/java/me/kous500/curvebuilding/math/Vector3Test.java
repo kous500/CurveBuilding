@@ -24,6 +24,21 @@ class Vector3Test {
     }
 
     @Test
+    void withLengthKeepsTheDirection() {
+        assertVector(6, 8, 0, Vector3.at(3, 4, 0).withLength(10));
+    }
+
+    @Test
+    void negativeLengthReversesTheDirection() {
+        assertVector(-1, -2, -2, Vector3.at(1, 2, 2).withLength(-3));
+    }
+
+    @Test
+    void zeroVectorStaysZeroAtAnyLength() {
+        assertVector(0, 0, 0, Vector3.at(0, 0, 0).withLength(5));
+    }
+
+    @Test
     void distance() {
         assertEquals(5, Vector3.at(1, 2, 3).distance(Vector3.at(4, 6, 3)), 1e-9);
     }

@@ -9,7 +9,7 @@ import me.kous500.curvebuilding.bukkit.commands.Bc;
 import me.kous500.curvebuilding.bukkit.commands.CurveBuildingCommand;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
-import me.kous500.curvebuilding.math.PosManager;
+import me.kous500.curvebuilding.curve.PosManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.Nullable;
 

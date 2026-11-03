@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.preview;
 
-import me.kous500.curvebuilding.math.BezierSegment;
-import me.kous500.curvebuilding.math.CurvePoint;
+import me.kous500.curvebuilding.curve.BezierSegment;
+import me.kous500.curvebuilding.curve.CurvePoint;
 
 import java.util.ArrayList;
 import java.util.List;

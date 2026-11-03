@@ -1,8 +1,8 @@
 package me.kous500.curvebuilding.commands.pos;
 
-import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.math.Vector3;
+import me.kous500.curvebuilding.message.GameMessage;
 
 import java.util.Locale;
 

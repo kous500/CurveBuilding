@@ -1,9 +1,9 @@
 package me.kous500.curvebuilding.commands.pos;
 
-import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
-import me.kous500.curvebuilding.config.Message;
-import me.kous500.curvebuilding.math.CurvePoint.Part;
+import me.kous500.curvebuilding.curve.CurvePoint.Part;
+import me.kous500.curvebuilding.message.GameMessage;
+import me.kous500.curvebuilding.message.Message;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

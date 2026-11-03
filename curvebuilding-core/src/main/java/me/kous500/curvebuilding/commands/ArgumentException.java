@@ -1,9 +1,9 @@
 package me.kous500.curvebuilding.commands;
 
 import com.sk89q.worldedit.entity.Player;
-import me.kous500.curvebuilding.Chat;
-import me.kous500.curvebuilding.GameMessage;
-import me.kous500.curvebuilding.config.Message;
+import me.kous500.curvebuilding.message.Chat;
+import me.kous500.curvebuilding.message.GameMessage;
+import me.kous500.curvebuilding.message.Message;
 
 import java.util.List;
 

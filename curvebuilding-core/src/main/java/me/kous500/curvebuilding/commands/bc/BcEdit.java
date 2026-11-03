@@ -8,12 +8,12 @@ import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.World;
-import me.kous500.curvebuilding.Chat;
-import me.kous500.curvebuilding.config.Message;
-import me.kous500.curvebuilding.math.BezierSegment;
+import me.kous500.curvebuilding.curve.BezierSegment;
+import me.kous500.curvebuilding.curve.PosData;
+import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.math.BlockVector3;
-import me.kous500.curvebuilding.math.PosData;
-import me.kous500.curvebuilding.math.PosManager;
+import me.kous500.curvebuilding.message.Chat;
+import me.kous500.curvebuilding.message.Message;
 
 import java.util.Map;
 

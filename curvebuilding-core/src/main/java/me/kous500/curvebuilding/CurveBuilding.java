@@ -1,10 +1,10 @@
 package me.kous500.curvebuilding;
 
 import me.kous500.curvebuilding.config.Config;
-import me.kous500.curvebuilding.config.Message;
-import me.kous500.curvebuilding.config.Messages;
 import me.kous500.curvebuilding.config.ResourceFiles;
 import me.kous500.curvebuilding.config.YamlConfig;
+import me.kous500.curvebuilding.message.Message;
+import me.kous500.curvebuilding.message.Messages;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.InvalidPathException;

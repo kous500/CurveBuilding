@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.commands.bc;
 
 import com.sk89q.worldedit.MaxChangedBlocksException;
-import me.kous500.curvebuilding.math.BezierSegment;
+import me.kous500.curvebuilding.curve.BezierSegment;
 import me.kous500.curvebuilding.math.BlockVector3;
 import me.kous500.curvebuilding.math.Vector3;
 import org.junit.jupiter.api.Test;
