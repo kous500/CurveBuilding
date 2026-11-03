@@ -1,5 +1,6 @@
-package me.kous500.curvebuilding.math;
+package me.kous500.curvebuilding.curve;
 
+import me.kous500.curvebuilding.math.Vector3;
 import org.jspecify.annotations.Nullable;
 
 /**

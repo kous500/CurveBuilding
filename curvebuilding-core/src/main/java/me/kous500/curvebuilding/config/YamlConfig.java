@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import static me.kous500.curvebuilding.CurveBuilding.console;
+import static me.kous500.curvebuilding.log.Log.console;
 
 /**
  * The values of a YAML file, with those missing from it taken from a default file in the jar. A value of the wrong
@@ -59,11 +59,11 @@ public class YamlConfig {
             // Read the bytes first, so that an error reading the file is not wrapped by the YAML parser
             loaded = new Yaml().load(new ByteArrayInputStream(Files.readAllBytes(file)));
         } catch (IOException e) {
-            console.warning("Could not read " + file + ", so the defaults are used", e);
+            console().warning("Could not read " + file + ", so the defaults are used", e);
             return Map.of();
         } catch (YAMLException e) {
             // The message says where in the file the error is; the stack trace would not help
-            console.warning("Could not read " + file + " as YAML, so the defaults are used:\n" + e.getMessage());
+            console().warning("Could not read " + file + " as YAML, so the defaults are used:\n" + e.getMessage());
             return Map.of();
         }
 
@@ -71,7 +71,7 @@ public class YamlConfig {
             return map;
         }
         if (loaded != null) {
-            console.warning(file + " does not hold keys and values, so the defaults are used");
+            console().warning(file + " does not hold keys and values, so the defaults are used");
         }
         return Map.of();
     }
@@ -140,7 +140,7 @@ public class YamlConfig {
             T converted = convert.apply(found);
             if (converted != null) return converted;
             if (warned.add(path)) {
-                console.warning(path + " in " + file + " is not " + expected + ": " + found + ", using the default");
+                console().warning(path + " in " + file + " is not " + expected + ": " + found + ", using the default");
             }
         }
         return find(defaults, path).map(convert).orElse(fallback);

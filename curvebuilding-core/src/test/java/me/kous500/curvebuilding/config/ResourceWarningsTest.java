@@ -1,8 +1,8 @@
 package me.kous500.curvebuilding.config;
 
-import me.kous500.curvebuilding.Console;
-import me.kous500.curvebuilding.CurveBuilding;
 import me.kous500.curvebuilding.RecordingConsole;
+import me.kous500.curvebuilding.log.Console;
+import me.kous500.curvebuilding.log.Log;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,9 +31,9 @@ class ResourceWarningsTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        previousConsole = CurveBuilding.console;
+        previousConsole = Log.console();
         console = new RecordingConsole();
-        CurveBuilding.setConsole(console);
+        Log.setConsole(console);
 
         jar = temp.resolve("jar");
         dataFolder = temp.resolve("data");
@@ -43,7 +43,7 @@ class ResourceWarningsTest {
 
     @AfterEach
     void restoreConsole() {
-        CurveBuilding.setConsole(previousConsole);
+        Log.setConsole(previousConsole);
     }
 
     @Test

@@ -15,10 +15,10 @@ import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.commands.bc.BcArguments;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
 import me.kous500.curvebuilding.commands.pos.PosCommand;
+import me.kous500.curvebuilding.curve.CurvePoint.Part;
+import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
-import me.kous500.curvebuilding.fabric.FabricCompat;
-import me.kous500.curvebuilding.math.CurvePoint.Part;
-import me.kous500.curvebuilding.math.PosManager;
+import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.commands.CommandSourceStack;
@@ -103,7 +103,7 @@ public class CurveBuildingGameTests {
     public void bcposRejectsArgumentsItDoesNotTake(GameTestHelper helper) {
         Player player = FabricCompat.adaptPlayer(newPlayer(helper));
         for (String[] args : new String[][]{{"set", "1", "extra"}, {"set", "3fx"}, {"insert", "1f"}}) {
-            boolean isUsed = PosCommand.posCommand(player, args);
+            boolean isUsed = PosCommand.posCommand(player, args, CurveBuildingFabric.fabricConfig);
             helper.assertTrue(!isUsed, Component.literal(String.join(" ", args) + " was used"));
         }
         helper.assertTrue(PosManager.get(player) == null, Component.literal("a position was set"));
@@ -309,7 +309,7 @@ public class CurveBuildingGameTests {
         /** Builds the curve, as //bc without arguments does. */
         void build(String... arguments) {
             try {
-                BcEdit.build(player, BcArguments.parse(arguments));
+                BcEdit.build(player, BcArguments.parse(arguments), CurveBuildingFabric.fabricConfig);
             } catch (ArgumentException e) {
                 helper.fail(Component.literal("invalid arguments: " + String.join(" ", arguments)));
             }

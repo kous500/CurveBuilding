@@ -1,8 +1,8 @@
 package me.kous500.curvebuilding.commands.bc;
 
-import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.commands.IntegerArgument;
+import me.kous500.curvebuilding.message.GameMessage;
 import org.jspecify.annotations.Nullable;
 
 import static me.kous500.curvebuilding.commands.CommandArguments.read;

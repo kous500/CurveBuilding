@@ -4,8 +4,8 @@ import com.github.fierioziy.particlenativeapi.api.packet.ParticlePacket;
 import com.github.fierioziy.particlenativeapi.api.particle.ParticleList_1_13;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
-import me.kous500.curvebuilding.math.CurvePoint;
-import me.kous500.curvebuilding.math.PosData;
+import me.kous500.curvebuilding.curve.CurvePoint;
+import me.kous500.curvebuilding.curve.PosData;
 import me.kous500.curvebuilding.math.Vector3;
 import me.kous500.curvebuilding.preview.ParticleLayout;
 import org.bukkit.Bukkit;
@@ -24,7 +24,7 @@ import java.util.NavigableMap;
 import java.util.UUID;
 
 import static me.kous500.curvebuilding.bukkit.CurveBuildingPlugin.particles_1_13;
-import static me.kous500.curvebuilding.math.PosManager.getPosMap;
+import static me.kous500.curvebuilding.curve.PosManager.getPosMap;
 import static org.bukkit.Bukkit.getPlayer;
 
 /**

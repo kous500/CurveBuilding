@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.fabric;
+package me.kous500.curvebuilding.fabric.compat;
 
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.fabric.FabricAdapter;

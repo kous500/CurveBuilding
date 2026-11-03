@@ -2,6 +2,7 @@ package me.kous500.curvebuilding.commands.bc;
 
 import com.sk89q.worldedit.entity.Player;
 import me.kous500.curvebuilding.commands.ArgumentException;
+import me.kous500.curvebuilding.config.Config;
 
 /**
  * Runs {@code //bc} on every platform.
@@ -17,9 +18,10 @@ public final class BcCommand {
      *
      * @param player the player who ran the command
      * @param args the arguments of the command
+     * @param config the config in use
      * @return whether the arguments could be used
      */
-    public static boolean bcCommand(Player player, String[] args) {
+    public static boolean bcCommand(Player player, String[] args, Config config) {
         BcArguments arguments;
         try {
             arguments = BcArguments.parse(args);
@@ -27,7 +29,7 @@ public final class BcCommand {
             e.show(player, "bc", args);
             return false;
         }
-        BcEdit.build(player, arguments);
+        BcEdit.build(player, arguments, config);
         return true;
     }
 }

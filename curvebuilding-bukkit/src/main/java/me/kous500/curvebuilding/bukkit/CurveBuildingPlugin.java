@@ -4,21 +4,21 @@ import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
 import com.github.fierioziy.particlenativeapi.api.particle.ParticleList_1_13;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
-import me.kous500.curvebuilding.Console;
 import me.kous500.curvebuilding.bukkit.commands.Bc;
 import me.kous500.curvebuilding.bukkit.commands.CurveBuildingCommand;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
-import me.kous500.curvebuilding.math.PosManager;
+import me.kous500.curvebuilding.curve.PosManager;
+import me.kous500.curvebuilding.log.Console;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
-import static me.kous500.curvebuilding.CurveBuilding.console;
 import static me.kous500.curvebuilding.CurveBuilding.loadResources;
-import static me.kous500.curvebuilding.CurveBuilding.setConsole;
+import static me.kous500.curvebuilding.log.Log.console;
+import static me.kous500.curvebuilding.log.Log.setConsole;
 
 /**
  * The Bukkit plugin: reads the files, registers the commands and shows the curves with particles.
@@ -30,6 +30,9 @@ public final class CurveBuildingPlugin extends JavaPlugin {
     public static @Nullable ParticleList_1_13 particles_1_13;
     private static final Path DATA_FOLDER = Path.of("plugins/CurveBuilding");
 
+    @SuppressWarnings("NotNullFieldNotInitialized") // onEnable reads it before it registers the commands
+    private BukkitConfig config;
+
     @Override
     public void onEnable() {
         setConsole(Console.of(getLogger()));
@@ -39,20 +42,20 @@ public final class CurveBuildingPlugin extends JavaPlugin {
             ParticleNativeAPI api = ParticleNativeCore.loadAPI(this);
             particles_1_13 = api.LIST_1_13;
         } catch (ParticleException e) {
-            console.warning("Could not load ParticleNativeAPI, so the curves are not shown with particles", e);
+            console().warning("Could not load ParticleNativeAPI, so the curves are not shown with particles", e);
         }
 
         reloadConfigAndResources();
 
-        Bc bc = new Bc();
+        Bc bc = new Bc(() -> config);
         requireNonNull(this.getCommand("/bc")).setExecutor(bc);
         requireNonNull(this.getCommand("/bc")).setTabCompleter(bc);
 
-        Pos pos = new Pos();
+        Pos pos = new Pos(() -> config);
         requireNonNull(this.getCommand("/bcpos")).setExecutor(pos);
         requireNonNull(this.getCommand("/bcpos")).setTabCompleter(pos);
 
-        CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this);
+        CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this::reloadConfigAndResources);
         requireNonNull(this.getCommand("curvebuilding")).setExecutor(curveBuildingCommand);
         requireNonNull(this.getCommand("curvebuilding")).setTabCompleter(curveBuildingCommand);
     }
@@ -61,13 +64,13 @@ public final class CurveBuildingPlugin extends JavaPlugin {
      * Reads the config and the message file again, and restarts the particles with the new config. The curves of every
      * player are removed.
      */
-    public void reloadConfigAndResources() {
+    private void reloadConfigAndResources() {
         SendParticles.stop();
         PosManager.clearPosMap();
 
-        BukkitConfig bukkitConfig = loadResources(DATA_FOLDER, getClassLoader(), BukkitConfig::new);
+        config = loadResources(DATA_FOLDER, getClassLoader(), BukkitConfig::new);
 
-        SendParticles.start(this, bukkitConfig);
+        SendParticles.start(this, config);
     }
 
     @Override

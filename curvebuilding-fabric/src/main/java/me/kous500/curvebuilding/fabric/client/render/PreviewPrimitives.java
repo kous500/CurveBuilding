@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
+import me.kous500.curvebuilding.fabric.client.render.backend.PreviewBackend;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.Color;

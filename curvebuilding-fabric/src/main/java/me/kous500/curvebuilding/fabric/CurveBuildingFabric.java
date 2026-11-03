@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding.fabric;
 
+import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import me.kous500.curvebuilding.fabric.config.FabricConfig;
 import me.kous500.curvebuilding.fabric.network.PacketSender;
 import me.kous500.curvebuilding.fabric.network.PosDataPayload;
@@ -9,9 +10,9 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import java.nio.file.Path;
 
 import static me.kous500.curvebuilding.CurveBuilding.loadResources;
-import static me.kous500.curvebuilding.CurveBuilding.setConsole;
 import static me.kous500.curvebuilding.fabric.commands.Bc.setBcBuilder;
 import static me.kous500.curvebuilding.fabric.commands.Pos.setPosBuilder;
+import static me.kous500.curvebuilding.log.Log.setConsole;
 
 /**
  * The mod on the server side, which is also there in single player: reads the files, registers the commands and sends
@@ -36,8 +37,8 @@ public class CurveBuildingFabric implements ModInitializer {
         fabricConfig = loadResources(DATA_FOLDER, getClass().getClassLoader(), FabricConfig::new);
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            setPosBuilder(dispatcher);
-            setBcBuilder(dispatcher);
+            setPosBuilder(dispatcher, () -> fabricConfig);
+            setBcBuilder(dispatcher, () -> fabricConfig);
         });
 
         FabricCompat.registerClientboundPayload(PosDataPayload.ID, PosDataPayload.CODEC);

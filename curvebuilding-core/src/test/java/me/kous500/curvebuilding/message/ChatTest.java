@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding;
+package me.kous500.curvebuilding.message;
 
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;

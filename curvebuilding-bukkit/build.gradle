@@ -27,15 +27,14 @@ dependencies {
     api project(':curvebuilding-core')
 }
 
+// The plugin jar, with core, ParticleNativeAPI and SnakeYAML inside. It takes the name of the plain jar, which is
+// not built.
 shadowJar {
     archiveClassifier = ""
 }
 
 jar {
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    from sourceSets.main.output
+    enabled = false
 }
 
 def targetJavaVersion = 21

@@ -1,16 +1,15 @@
-package me.kous500.curvebuilding.math;
+package me.kous500.curvebuilding.curve;
 
 import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.WorldeditAdapter;
-import me.kous500.curvebuilding.math.CurvePoint.Part;
+import me.kous500.curvebuilding.curve.CurvePoint.Part;
+import me.kous500.curvebuilding.math.Vector3;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-
-import static me.kous500.curvebuilding.Util.changeR;
 
 /**
  * The points of one curve by their number, from 1, and the world they are in. Each change replaces the points with a
@@ -180,14 +179,10 @@ public class PosData {
      * as far as {@code handle} when there is none.
      */
     private static Vector3 opposite(Vector3 point, Vector3 handle, @Nullable Vector3 current) {
-        double dx = handle.x() - point.x();
-        double dy = handle.y() - point.y();
-        double dz = handle.z() - point.z();
-
+        Vector3 toHandle = handle.subtract(point);
         if (current == null) {
-            return point.add(-dx, -dy, -dz);
+            return point.subtract(toHandle);
         }
-        double[] scaled = changeR(dx, dy, dz, -1 * point.distance(current));
-        return point.add(scaled[0], scaled[1], scaled[2]);
+        return point.add(toHandle.withLength(-point.distance(current)));
     }
 }

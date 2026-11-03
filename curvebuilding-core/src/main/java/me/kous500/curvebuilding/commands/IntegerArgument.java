@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.commands;
 
-import me.kous500.curvebuilding.GameMessage;
+import me.kous500.curvebuilding.message.GameMessage;
 
 /** Reads an integer argument, with the errors of the game's own integer arguments. */
 public final class IntegerArgument {

@@ -4,8 +4,6 @@ package me.kous500.curvebuilding.fabric.client.render.backend;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import me.kous500.curvebuilding.fabric.client.render.PreviewBackend;
-import me.kous500.curvebuilding.fabric.client.render.PreviewBuffer;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.renderer.RenderPipelines;

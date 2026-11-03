@@ -4,7 +4,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 
-import static me.kous500.curvebuilding.CurveBuilding.console;
+import static me.kous500.curvebuilding.log.Log.console;
 
 /**
  * A run of a command of CurveBuilding, with the context it was typed in.
@@ -37,7 +37,7 @@ public interface RunCommand {
         try {
             return command.run();
         } catch (RuntimeException e) {
-            console.warning("Could not run /" + command.getContext().getInput(), e);
+            console().warning("Could not run /" + command.getContext().getInput(), e);
             throw e;
         }
     }

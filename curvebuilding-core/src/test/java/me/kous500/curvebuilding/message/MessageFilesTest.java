@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.config;
+package me.kous500.curvebuilding.message;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;

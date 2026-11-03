@@ -1,7 +1,7 @@
 package me.kous500.curvebuilding.commands.bc;
 
-import me.kous500.curvebuilding.GameMessage;
 import me.kous500.curvebuilding.commands.ArgumentException;
+import me.kous500.curvebuilding.message.GameMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

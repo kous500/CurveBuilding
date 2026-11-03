@@ -1,19 +1,22 @@
 package me.kous500.curvebuilding.commands.pos;
 
 import com.sk89q.worldedit.entity.Player;
-import me.kous500.curvebuilding.GameMessage;
+import com.sk89q.worldedit.util.Location;
 import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.commands.IntegerArgument;
+import me.kous500.curvebuilding.config.Config;
+import me.kous500.curvebuilding.curve.CurvePoint.Part;
+import me.kous500.curvebuilding.curve.PosManager;
+import me.kous500.curvebuilding.math.Vector3;
+import me.kous500.curvebuilding.message.Chat;
+import me.kous500.curvebuilding.message.GameMessage;
+import me.kous500.curvebuilding.message.Message;
 
 import static me.kous500.curvebuilding.commands.CommandArguments.read;
-import static me.kous500.curvebuilding.math.PosManager.addPos;
-import static me.kous500.curvebuilding.math.PosManager.clearPos;
-import static me.kous500.curvebuilding.math.PosManager.insert;
-import static me.kous500.curvebuilding.math.PosManager.remove;
-import static me.kous500.curvebuilding.math.PosManager.shift;
+import static me.kous500.curvebuilding.message.Messages.getMessage;
 
 /**
- * Runs {@code //bcpos} on every platform.
+ * Runs {@code //bcpos} on every platform, and replies to the player.
  */
 public final class PosCommand {
     private PosCommand() {
@@ -25,30 +28,52 @@ public final class PosCommand {
      *
      * @param player the player who ran the command
      * @param args the arguments of the command
+     * @param config the config in use
      * @return whether the arguments could be used
      */
-    public static boolean posCommand(Player player, String[] args) {
+    public static boolean posCommand(Player player, String[] args, Config config) {
+        int maxPosValue = config.maxPosValue;
         try {
             PosSubcommand subcommand = read(args, 0, PosSubcommand::parse);
             int end = 1 + subcommand.arguments.max;
             if (args.length > end) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT).at(end);
 
             switch (subcommand) {
-                case CLEARALL -> clearPos(player);
+                case CLEARALL -> {
+                    if (PosManager.clearPos(player)) Chat.info(player, Message.POS_CLEAR_ALL);
+                }
                 case CLEAR -> {
-                    PosPoint point = read(args, 1, PosPoint::parse);
-                    clearPos(player, point.n(), point.part());
+                    PosPoint point = read(args, 1, text -> PosPoint.parse(text, maxPosValue));
+                    if (PosManager.clearPos(player, point.n(), point.part())) {
+                        Chat.info(player, Message.POS_CLEAR, posToString(point.n(), point.part()));
+                    }
                 }
                 case SET -> {
-                    PosPoint point = read(args, 1, PosPoint::parse);
-                    addPos(player, point.n(), point.part());
+                    PosPoint point = read(args, 1, text -> PosPoint.parse(text, maxPosValue));
+                    set(player, point.n(), point.part());
                 }
-                case INSERT -> insert(player, read(args, 1, PosPoint::parseNumber));
-                case REMOVE -> remove(player, read(args, 1, PosPoint::parseNumber));
+                case INSERT -> {
+                    int n = read(args, 1, text -> PosPoint.parseNumber(text, maxPosValue));
+                    if (PosManager.insertAt(player, n)) {
+                        set(player, n, Part.POINT);
+                    } else {
+                        Chat.error(player, Message.POS_NOT_EXIST, n);
+                    }
+                }
+                case REMOVE -> {
+                    int n = read(args, 1, text -> PosPoint.parseNumber(text, maxPosValue));
+                    if (PosManager.remove(player, n)) {
+                        Chat.info(player, Message.POS_REMOVE, n);
+                    } else {
+                        Chat.error(player, Message.POS_NOT_EXIST, n);
+                    }
+                }
                 case SHIFT -> {
                     int length = read(args, 1, text -> IntegerArgument.parse(text, 0));
                     Direction direction = args.length > 2 ? read(args, 2, Direction::parse) : Direction.ME;
-                    shift(player, length, direction);
+                    Location location = player.getLocation();
+                    Vector3 offset = direction.offset(length, location.getYaw(), location.getPitch());
+                    if (PosManager.move(player, offset)) Chat.info(player, Message.POS_SHIFT);
                 }
             }
             return true;
@@ -56,5 +81,18 @@ public final class PosCommand {
             e.show(player, "bcpos", args);
             return false;
         }
+    }
+
+    private static void set(Player player, int n, Part part) {
+        Vector3 position = PosManager.addPos(player, n, part);
+        Chat.info(player, Message.POS_SET, posToString(n, part), position);
+    }
+
+    private static String posToString(int n, Part part) {
+        return switch (part) {
+            case F -> getMessage(Message.POS_NF, n);
+            case B -> getMessage(Message.POS_NB, n);
+            case POINT -> getMessage(Message.POS_N, n);
+        };
     }
 }

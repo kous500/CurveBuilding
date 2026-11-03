@@ -1,4 +1,4 @@
-package me.kous500.curvebuilding.config;
+package me.kous500.curvebuilding.message;
 
 /**
  * The messages in the message files ({@code messages/<language>.yml}). {@code {0}}, {@code {1}}, ... in a message are

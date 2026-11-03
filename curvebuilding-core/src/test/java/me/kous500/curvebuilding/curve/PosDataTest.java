@@ -1,6 +1,7 @@
-package me.kous500.curvebuilding.math;
+package me.kous500.curvebuilding.curve;
 
-import me.kous500.curvebuilding.math.CurvePoint.Part;
+import me.kous500.curvebuilding.curve.CurvePoint.Part;
+import me.kous500.curvebuilding.math.Vector3;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
