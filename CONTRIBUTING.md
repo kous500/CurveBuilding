@@ -81,6 +81,8 @@ When a method or record declaration does not fit on one line, put each parameter
 
 The body of `for`, `while` and `do` is always in braces. An `if` without braces is fine when the whole statement fits on one line.
 
+Every package under `src/main` has a `package-info.java` that marks it `@NullMarked` ([JSpecify](https://jspecify.org/)), so a type without an annotation does not include null. Mark what can be null with `@Nullable`, right before the type (`public @Nullable Vector3 get(Part part)`, `Map.@Nullable Entry`), and say in the Javadoc when it is null. IntelliJ IDEA warns where the code does not match.
+
 `./gradlew checkCodeStyle` lists where the code breaks these rules, using Checkstyle (`config/checkstyle/`); it does not check the indentation and the line breaks. CI runs it and shows each finding as a warning on the pull request.
 
 ## Code comments
