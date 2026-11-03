@@ -6,6 +6,7 @@ import me.kous500.curvebuilding.math.Vector3;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -23,7 +24,8 @@ public record PosDataPayload(NavigableMap<Integer, CurvePoint> sendPosData) impl
     /**
      * Writes and reads this payload.
      */
-    public static final StreamCodec<FriendlyByteBuf, PosDataPayload> CODEC = StreamCodec.of(PosDataPayload::encoder, PosDataPayload::decoder);
+    public static final StreamCodec<FriendlyByteBuf, PosDataPayload> CODEC =
+            StreamCodec.of(PosDataPayload::encoder, PosDataPayload::decoder);
 
     @Override
     public Type<PosDataPayload> type() {

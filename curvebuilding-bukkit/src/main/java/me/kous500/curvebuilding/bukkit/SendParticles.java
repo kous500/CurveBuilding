@@ -2,9 +2,9 @@ package me.kous500.curvebuilding.bukkit;
 
 import com.github.fierioziy.particlenativeapi.api.packet.ParticlePacket;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.PosData;
-import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
 import me.kous500.curvebuilding.math.Vector3;
 import me.kous500.curvebuilding.preview.ParticleLayout;
 import org.bukkit.Bukkit;
@@ -58,7 +58,11 @@ public class SendParticles {
     }
 
     /** The positions of a player and where the player is, taken on the server thread. */
-    private record Target(Player player, World world, NavigableMap<Integer, CurvePoint> positions, Vector3 playerPosition) {}
+    private record Target(
+            Player player,
+            World world,
+            NavigableMap<Integer, CurvePoint> positions,
+            Vector3 playerPosition) {}
 
     private final Plugin plugin;
     private final BukkitConfig config;
@@ -84,8 +88,8 @@ public class SendParticles {
             if (positions.isEmpty()) continue;
 
             Location location = player.getLocation();
-            targets.add(new Target(player, player.getWorld(), positions,
-                    Vector3.at(location.getX(), location.getY(), location.getZ())));
+            Vector3 playerPosition = Vector3.at(location.getX(), location.getY(), location.getZ());
+            targets.add(new Target(player, player.getWorld(), positions, playerPosition));
         }
 
         int turn = this.turn;
@@ -100,8 +104,13 @@ public class SendParticles {
     }
 
     private void send(Target target, int turn) {
-        for (ParticleLayout.Particle particle : ParticleLayout.layout(target.positions(), target.playerPosition(), turn,
-                settings)) {
+        List<ParticleLayout.Particle> particles = ParticleLayout.layout(
+                target.positions(),
+                target.playerPosition(),
+                turn,
+                settings
+        );
+        for (ParticleLayout.Particle particle : particles) {
             Location location = getLocation(target.world(), particle.position());
             ParticlePacket packet = switch (particle.kind()) {
                 case START -> dust(config.startColor, location);

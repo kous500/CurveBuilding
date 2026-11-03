@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id "checkstyle"
     // Applied per Minecraft version in curvebuilding-fabric/build.gradle
     id "net.fabricmc.fabric-loom" version "1.18.4" apply false
     id "net.fabricmc.fabric-loom-remap" version "1.18.4" apply false
@@ -40,6 +41,26 @@ subprojects {
             }
         }
     }
+}
+
+// ./gradlew checkCodeStyle: config/checkstyle/checkstyle.xml on the sources of every module. Violations are warnings
+// only: the task lists them and succeeds, and `build` does not run it. CI shows them on the pull request.
+// The Fabric sources are checked once, as committed, rather than once per Minecraft version.
+repositories {
+    mavenCentral()
+}
+
+checkstyle {
+    toolVersion = "14.3.0"
+}
+
+tasks.register("checkCodeStyle", Checkstyle) {
+    group = "verification"
+    description = "Lists where the Java sources of every module break the code style."
+    source = fileTree(rootDir) {
+        include "curvebuilding-*/src/**/*.java"
+    }
+    classpath = files()
 }
 
 // ./gradlew allTests: the unit tests and the Fabric game tests on every Minecraft version, including the oldest

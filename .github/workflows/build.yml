@@ -80,6 +80,25 @@ jobs:
       - name: Build
         run: ./gradlew $GRADLE_TOOLCHAINS ${RELEASE_VERSION:+-PreleaseVersion=$RELEASE_VERSION} build
 
+      # Only warns: each violation becomes a warning annotation, which the pull request shows on the changed lines
+      - name: Check the code style
+        if: ${{ !cancelled() }}
+        run: |
+          ./gradlew $GRADLE_TOOLCHAINS checkCodeStyle
+          python3 - <<'EOF'
+          import os
+          import xml.etree.ElementTree as ET
+
+          root = os.getcwd() + os.sep
+          for file in ET.parse("build/reports/checkstyle/checkCodeStyle.xml").getroot().iter("file"):
+              path = file.get("name").removeprefix(root)
+              for error in file.iter("error"):
+                  check = error.get("source").rsplit(".", 1)[-1].removesuffix("Check")
+                  message = error.get("message").replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                  print(f"::warning file={path},line={error.get('line')},col={error.get('column', '1')},"
+                        f"title={check}::{message}")
+          EOF
+
       - name: Upload test reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

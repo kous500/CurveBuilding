@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding.fabric.gametest;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -18,6 +19,7 @@ import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
 import me.kous500.curvebuilding.fabric.FabricCompat;
 import me.kous500.curvebuilding.math.CurvePoint.Part;
 import me.kous500.curvebuilding.math.PosManager;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -32,10 +34,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Tests on a real server with WorldEdit, run with runGameTest. Each test gets an empty 8x8x8 area, and positions in
- * the tests are relative to it. The curve tests call what {@code //bcpos} and {@code //bc} call, with a mock player.
+ * the tests are relative to it. The curve tests call what {@code //bcpos} and {@code //bc} call, with a fake player.
  */
 public class CurveBuildingGameTests {
     private static final int SIZE = 8;
@@ -45,7 +48,8 @@ public class CurveBuildingGameTests {
         // The files are copied from the mod jar at startup, also when a launcher starts the game (#64)
         Path folder = CurveBuildingFabric.DATA_FOLDER;
         for (String file : new String[]{"config.yml", "messages/en-US.yml", "messages/ja-JP.yml"}) {
-            helper.assertTrue(Files.isRegularFile(folder.resolve(file)), Component.literal(file + " was not copied to " + folder));
+            Path copy = folder.resolve(file);
+            helper.assertTrue(Files.isRegularFile(copy), Component.literal(file + " was not copied to " + folder));
         }
         helper.succeed();
     }
@@ -74,7 +78,8 @@ public class CurveBuildingGameTests {
         helper.assertTrue(back != null, Component.literal("no \"5 back\" for " + command));
         String applied = back.apply(command);
         helper.assertTrue(applied.equals("//bcpos shift 5 back"), Component.literal("\"5 back\" gave " + applied));
-        helper.assertTrue(!parse(helper, applied).getReader().canRead(), Component.literal(applied + " does not parse"));
+        boolean isParsed = !parse(helper, applied).getReader().canRead();
+        helper.assertTrue(isParsed, Component.literal(applied + " does not parse"));
         helper.succeed();
     }
 
@@ -88,17 +93,18 @@ public class CurveBuildingGameTests {
             } catch (CommandSyntaxException e) {
                 error = e;
             }
-            helper.assertTrue(error != null && error.getType() == CommandSourceStack.ERROR_NOT_PLAYER,
-                    Component.literal(command + " from the console gave " + error));
+            boolean needsPlayer = error != null && error.getType() == CommandSourceStack.ERROR_NOT_PLAYER;
+            helper.assertTrue(needsPlayer, Component.literal(command + " from the console gave " + error));
         }
         helper.succeed();
     }
 
     @GameTest
     public void bcposRejectsArgumentsItDoesNotTake(GameTestHelper helper) {
-        Player player = FabricCompat.adaptPlayer(helper.makeMockServerPlayerInLevel());
+        Player player = FabricCompat.adaptPlayer(newPlayer(helper));
         for (String[] args : new String[][]{{"set", "1", "extra"}, {"set", "3fx"}, {"insert", "1f"}}) {
-            helper.assertTrue(!PosCommand.posCommand(player, args), Component.literal(String.join(" ", args) + " was used"));
+            boolean isUsed = PosCommand.posCommand(player, args);
+            helper.assertTrue(!isUsed, Component.literal(String.join(" ", args) + " was used"));
         }
         helper.assertTrue(PosManager.get(player) == null, Component.literal("a position was set"));
         helper.succeed();
@@ -188,8 +194,8 @@ public class CurveBuildingGameTests {
 
         // The loop goes out along the control points and back, so it places more than its two ends
         List<BlockPos> stone = blocks(helper, Blocks.STONE);
-        helper.assertTrue(stone.contains(new BlockPos(1, 1, 1)) && stone.size() > 4,
-                Component.literal("expected a loop from (1, 1, 1), found stone at " + stone));
+        boolean isLoop = stone.contains(new BlockPos(1, 1, 1)) && stone.size() > 4;
+        helper.assertTrue(isLoop, Component.literal("expected a loop from (1, 1, 1), found stone at " + stone));
         helper.succeed();
     }
 
@@ -221,7 +227,8 @@ public class CurveBuildingGameTests {
 
     private static void assertBlocks(GameTestHelper helper, Block block, List<BlockPos> expected) {
         List<BlockPos> actual = blocks(helper, block);
-        helper.assertTrue(actual.equals(expected), Component.literal("expected " + block + " at " + expected + ", found at " + actual));
+        String message = "expected " + block + " at " + expected + ", found at " + actual;
+        helper.assertTrue(actual.equals(expected), Component.literal(message));
     }
 
     /**
@@ -243,7 +250,8 @@ public class CurveBuildingGameTests {
 
     private static void assertSuggestions(GameTestHelper helper, String command, List<String> expected) {
         List<String> found = suggestions(helper, command).stream().map(Suggestion::getText).toList();
-        helper.assertTrue(found.equals(expected), Component.literal("expected " + expected + " for " + command + ", found " + found));
+        String message = "expected " + expected + " for " + command + ", found " + found;
+        helper.assertTrue(found.equals(expected), Component.literal(message));
     }
 
     /** Every position in the test area with {@code block}, ordered by x, then y, then z. */
@@ -260,7 +268,15 @@ public class CurveBuildingGameTests {
         return found;
     }
 
-    /** Sets up and builds a curve for a new mock player, the way the commands do. */
+    /**
+     * Returns a new fake player with a UUID of its own, so that what one test keeps for its player, such as the
+     * curve positions, does not reach another test. {@link FakePlayer#get} reuses the player of the same profile.
+     */
+    private static ServerPlayer newPlayer(GameTestHelper helper) {
+        return FakePlayer.get(helper.getLevel(), new GameProfile(UUID.randomUUID(), "test-player"));
+    }
+
+    /** Sets up and builds a curve for a new fake player, the way the commands do. */
     private static final class Curve {
         private final GameTestHelper helper;
         private final ServerPlayer serverPlayer;
@@ -268,7 +284,7 @@ public class CurveBuildingGameTests {
 
         Curve(GameTestHelper helper) {
             this.helper = helper;
-            this.serverPlayer = helper.makeMockServerPlayerInLevel();
+            this.serverPlayer = newPlayer(helper);
             this.player = FabricCompat.adaptPlayer(serverPlayer);
         }
 

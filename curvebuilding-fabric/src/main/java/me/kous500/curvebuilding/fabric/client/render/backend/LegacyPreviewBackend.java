@@ -25,7 +25,8 @@ import java.util.function.Consumer;
 // terrain such as water, so the usual depth test is enough. Lines are 1 pixel wide debug lines.
 // RenderPipelines.DEBUG_FILLED_SNIPPET and RenderType.create are opened by curvebuilding.accesswidener.
 public final class LegacyPreviewBackend implements PreviewBackend {
-    private final MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(RenderType.SMALL_BUFFER_SIZE));
+    private final MultiBufferSource.BufferSource bufferSource =
+            MultiBufferSource.immediate(new ByteBufferBuilder(RenderType.SMALL_BUFFER_SIZE));
     private RenderType lines;
     private RenderType linesThroughWalls;
     private RenderType quads;
@@ -64,7 +65,17 @@ public final class LegacyPreviewBackend implements PreviewBackend {
         VertexConsumer consumer = bufferSource.getBuffer(renderType);
         writer.accept(new PreviewBuffer() {
             @Override
-            public void line(float x1, float y1, float z1, float x2, float y2, float z2, float red, float green, float blue, float alpha) {
+            public void line(
+                    float x1,
+                    float y1,
+                    float z1,
+                    float x2,
+                    float y2,
+                    float z2,
+                    float red,
+                    float green,
+                    float blue,
+                    float alpha) {
                 consumer.addVertex(pose, x1, y1, z1).setColor(red, green, blue, alpha);
                 consumer.addVertex(pose, x2, y2, z2).setColor(red, green, blue, alpha);
             }

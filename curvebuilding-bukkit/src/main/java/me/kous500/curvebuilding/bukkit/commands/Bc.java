@@ -20,7 +20,10 @@ import static me.kous500.curvebuilding.commands.bc.BcCommand.bcCommand;
 public class Bc implements TabExecutor {
     @Override
     public boolean onCommand(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String label,
+            @NotNull String[] args) {
         // An error was already shown, so Bukkit should not add the usage from plugin.yml
         if (sender instanceof Player player) {
             bcCommand(adapt(player), args);
@@ -32,7 +35,10 @@ public class Bc implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(
-            @NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
+            @NotNull CommandSender sender,
+            @NotNull Command cmd,
+            @NotNull String label,
+            @NotNull String[] args) {
         return BcCompletion.complete(args);
     }
 }

@@ -58,7 +58,7 @@ class ResourceWarningsTest {
 
         assertEquals(3, config.getInteger("curve.fineness"));
         assertEquals(1, console.entries.size(), String.valueOf(console.entries));
-        RecordingConsole.Entry entry = console.entries.get(0);
+        RecordingConsole.Entry entry = console.entries.getFirst();
         assertEquals("warning", entry.level());
         assertTrue(entry.message().contains(configFile.toString()), entry.message());
         assertNotNull(entry.cause());
@@ -73,7 +73,7 @@ class ResourceWarningsTest {
 
         assertTrue(Files.exists(dataFolder.resolve("config.yml")), "the files that exist are still copied");
         assertEquals(1, console.entries.size(), String.valueOf(console.entries));
-        RecordingConsole.Entry entry = console.entries.get(0);
+        RecordingConsole.Entry entry = console.entries.getFirst();
         assertEquals("warning", entry.level());
         assertTrue(entry.message().contains("messages"), entry.message());
         assertNotNull(entry.cause());

@@ -29,7 +29,10 @@ public class CurveBuilding {
      * @param <C> the config of the platform
      * @return the config read
      */
-    public static <C extends Config> C loadResources(Path dataFolder, ClassLoader jar, Function<YamlConfig, C> readConfig) {
+    public static <C extends Config> C loadResources(
+            Path dataFolder,
+            ClassLoader jar,
+            Function<YamlConfig, C> readConfig) {
         ResourceFiles.copyDefaults(dataFolder, jar);
 
         C loadedConfig = readConfig.apply(YamlConfig.load(dataFolder.resolve("config.yml"), jar, "config.yml"));
@@ -44,7 +47,7 @@ public class CurveBuilding {
             return Path.of(setting.replace("%datafolder%", dataFolder.toString()));
         } catch (InvalidPathException e) {
             Path english = dataFolder.resolve("messages/en-US.yml");
-            console.warning("The message-file " + setting + " in config.yml is not a file path, so " + english + " is used");
+            console.warning("message-file in config.yml is not a file path: " + setting + ", using " + english);
             return english;
         }
     }

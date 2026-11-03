@@ -11,8 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static com.sk89q.worldedit.bukkit.BukkitAdapter.adapt;
+import static me.kous500.curvebuilding.CurveBuilding.getMessage;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
 
 /**
@@ -21,7 +21,10 @@ import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
 public class Pos implements TabExecutor {
     @Override
     public boolean onCommand(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String label,
+            @NotNull String[] args) {
         // An error was already shown, so Bukkit should not add the usage from plugin.yml
         if (sender instanceof Player player) {
             posCommand(adapt(player), args);
@@ -33,7 +36,11 @@ public class Pos implements TabExecutor {
 
     @Nullable
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public List<String> onTabComplete(
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String label,
+            @NotNull String[] args) {
         if (!command.getName().equalsIgnoreCase("/bcpos")) return List.of();
         return PosCompletion.complete(args);
     }

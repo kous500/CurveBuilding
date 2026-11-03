@@ -27,6 +27,18 @@
   read its code (for example in the jar) before relying on it; do not guess from names.
 - Start a Javadoc with what the caller gets, not "This method".
 
+## After changing code
+
+- Run `./gradlew build`, which compiles every Minecraft version and runs the unit tests.
+- When the Fabric code or the game tests changed, also run
+  `./gradlew :curvebuilding-fabric:26.3:runGameTest`. When the change differs between Minecraft
+  versions (Stonecutter conditions, `FabricCompat`, the preview backends), run `./gradlew allTests`.
+- Run `./gradlew checkCodeStyle` and fix the warnings in the lines you wrote.
+- Read the whole diff before reporting: leftover debugging, unrelated changes, and code that does
+  not match the files around it.
+- Report which of these you ran and their results. Leave out checks you did not run, such as
+  playing in the game; ask the user instead of writing them in the pull request.
+
 ## Versions and releases
 
 - The release tag is the only source of the version number. Do not bump version numbers in build

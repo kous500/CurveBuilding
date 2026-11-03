@@ -125,7 +125,8 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
         Vector3 before = blockCenter(0);
         for (int step = 1; step <= fineness; step++) {
             Vector3 p = blockCenter(step / fineness);
-            length += Math.sqrt((p.x() - before.x()) * (p.x() - before.x()) + (p.y() - before.y()) * (p.y() - before.y())
+            length += Math.sqrt((p.x() - before.x()) * (p.x() - before.x())
+                    + (p.y() - before.y()) * (p.y() - before.y())
                     + (p.z() - before.z()) * (p.z() - before.z()));
             before = p;
         }

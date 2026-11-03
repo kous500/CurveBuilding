@@ -35,7 +35,11 @@ public class CurveBuildingCommand implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public boolean onCommand(
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String label,
+            @NotNull String[] args) {
         if (args.length >= 1 && args[0].equalsIgnoreCase("reload")) {
             plugin.reloadConfigAndResources();
             if (sender instanceof Player player) {
@@ -56,7 +60,11 @@ public class CurveBuildingCommand implements TabExecutor {
 
     @Nullable
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public List<String> onTabComplete(
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String label,
+            @NotNull String[] args) {
         if (args.length == 1) {
             return StringUtil.copyPartialMatches(args[0], Collections.singletonList("reload"), new ArrayList<>());
         }

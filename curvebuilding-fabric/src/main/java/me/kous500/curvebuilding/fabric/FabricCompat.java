@@ -93,7 +93,9 @@ public final class FabricCompat {
      * @param codec writes and reads the payload
      * @param <T> the payload
      */
-    public static <T extends CustomPacketPayload> void registerClientboundPayload(CustomPacketPayload.Type<T> type, StreamCodec<FriendlyByteBuf, T> codec) {
+    public static <T extends CustomPacketPayload> void registerClientboundPayload(
+            CustomPacketPayload.Type<T> type,
+            StreamCodec<FriendlyByteBuf, T> codec) {
         //? if >=26.1 {
         PayloadTypeRegistry.clientboundPlay().register(type, codec);
         //?} else {

@@ -124,16 +124,18 @@ public class YamlConfig {
     }
 
     /**
-     * The value at {@code path}, with its keys separated by dots, made by {@code convert}, which returns null for a value
-     * of the wrong type. Without a value in the file, or with a wrong one, the default; without a default, {@code fallback}.
+     * The value at {@code path}, with its keys separated by dots, made by {@code convert}, which returns null for a
+     * value of the wrong type. Without a value in the file, or with a wrong one, the default; without a default,
+     * {@code fallback}.
      */
     private <T> T get(String path, String expected, Function<Object, T> convert, T fallback) {
         Optional<Object> value = find(values, path);
         if (value.isPresent()) {
-            T converted = convert.apply(value.get());
+            Object found = value.get();
+            T converted = convert.apply(found);
             if (converted != null) return converted;
             if (warned.add(path)) {
-                console.warning(path + " in " + file + " is not " + expected + ": " + value.get() + ", so the default is used");
+                console.warning(path + " in " + file + " is not " + expected + ": " + found + ", using the default");
             }
         }
         return find(defaults, path).map(convert).orElse(fallback);

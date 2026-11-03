@@ -29,7 +29,7 @@ public class Messages {
         String sameName = "messages/" + file.getFileName();
         String defaults = jar.getResource(sameName) != null ? sameName : "messages/en-US.yml";
         if (!Files.exists(file)) {
-            console.warning("The message file " + file + " does not exist, so the messages of " + defaults + " in the jar are used");
+            console.warning("The message file " + file + " does not exist, using " + defaults + " in the jar");
         }
         return new Messages(YamlConfig.load(file, jar, defaults));
     }

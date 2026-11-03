@@ -6,7 +6,7 @@ import me.kous500.curvebuilding.math.Vector3;
 import me.kous500.curvebuilding.preview.PreviewCurve;
 import net.minecraft.world.phys.Vec3;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.NavigableMap;
 
 import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.fabricConfig;

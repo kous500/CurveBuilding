@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.kous500.curvebuilding.commands.bc.BcCompletion;
 import me.kous500.curvebuilding.fabric.FabricCompat;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.word;
@@ -51,7 +52,8 @@ public class Bc implements RunCommand {
 
     @Override
     public int run() throws CommandSyntaxException {
-        return bcCommand(adaptPlayer(context.getSource().getPlayerOrException()), CommandInput.arguments(context)) ? 1 : 0;
+        ServerPlayer sender = context.getSource().getPlayerOrException();
+        return bcCommand(adaptPlayer(sender), CommandInput.arguments(context)) ? 1 : 0;
     }
 
     @Override

@@ -19,7 +19,17 @@ public interface PreviewBuffer {
      * @param blue the blue of the color, from 0 to 1
      * @param alpha the opacity, from 0 to 1
      */
-    void line(float x1, float y1, float z1, float x2, float y2, float z2, float red, float green, float blue, float alpha);
+    void line(
+            float x1,
+            float y1,
+            float z1,
+            float x2,
+            float y2,
+            float z2,
+            float red,
+            float green,
+            float blue,
+            float alpha);
 
     /**
      * Adds one corner of a quad. Every four calls make one quad.

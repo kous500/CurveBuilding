@@ -69,10 +69,19 @@ public final class BcEdit {
 
             RegionBlocks regionBlocks = new RegionBlocks(editSession, region);
             CurveLayout.Selection selection = new CurveLayout.Selection(
-                    region.getWidth(), region.getHeight(), region.getLength(), adapt(region.getCenter()));
-            CurveLayout layout = new CurveLayout(selection, arguments,
+                    region.getWidth(),
+                    region.getHeight(),
+                    region.getLength(),
+                    adapt(region.getCenter())
+            );
+            CurveLayout layout = new CurveLayout(
+                    selection,
+                    arguments,
                     position -> editSession.getBlock(adapt(position)).getBlockType().getMaterial().isAir(),
-                    maxBlocks, config.maxSetLength, config.fineness);
+                    maxBlocks,
+                    config.maxSetLength,
+                    config.fineness
+            );
             for (BezierSegment segment : BezierSegment.through(posData.points())) {
                 layout.add(segment);
             }

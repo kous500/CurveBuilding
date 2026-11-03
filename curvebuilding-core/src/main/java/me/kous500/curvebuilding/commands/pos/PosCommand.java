@@ -6,7 +6,11 @@ import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.commands.IntegerArgument;
 
 import static me.kous500.curvebuilding.commands.CommandArguments.read;
-import static me.kous500.curvebuilding.math.PosManager.*;
+import static me.kous500.curvebuilding.math.PosManager.addPos;
+import static me.kous500.curvebuilding.math.PosManager.clearPos;
+import static me.kous500.curvebuilding.math.PosManager.insert;
+import static me.kous500.curvebuilding.math.PosManager.remove;
+import static me.kous500.curvebuilding.math.PosManager.shift;
 
 /**
  * Runs {@code //bcpos} on every platform.

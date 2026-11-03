@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding;
 
-import static java.lang.Math.*;
+import static java.lang.Math.sqrt;
 
 /** Small calculations shared by the rest of the code. */
 public final class Util {
@@ -31,8 +31,8 @@ public final class Util {
     }
 
     /**
-     * {@code message} with {@code {0}}, {@code {1}}, ... replaced with {@code args} in that order. A placeholder without
-     * an argument stays as it is.
+     * {@code message} with {@code {0}}, {@code {1}}, ... replaced with {@code args} in that order. A placeholder
+     * without an argument stays as it is.
      *
      * @param message the text, or null
      * @param args the values for the placeholders, or null

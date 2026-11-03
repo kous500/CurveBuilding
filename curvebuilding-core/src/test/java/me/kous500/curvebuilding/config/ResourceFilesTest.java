@@ -71,7 +71,8 @@ class ResourceFilesTest {
     private void assertCopied() throws IOException {
         assertEquals("message-file: en-US.yml\n", Files.readString(dataFolder.resolve("config.yml")));
         assertTrue(Files.exists(dataFolder.resolve("messages/en-US.yml")));
-        assertEquals("messages:\n  test: テスト\n", Files.readString(dataFolder.resolve("messages/ja-JP.yml"), StandardCharsets.UTF_8));
+        String japanese = Files.readString(dataFolder.resolve("messages/ja-JP.yml"), StandardCharsets.UTF_8);
+        assertEquals("messages:\n  test: テスト\n", japanese);
     }
 
     private URI jarUri() {

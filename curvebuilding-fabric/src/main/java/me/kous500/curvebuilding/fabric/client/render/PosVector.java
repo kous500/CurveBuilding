@@ -1,10 +1,9 @@
 package me.kous500.curvebuilding.fabric.client.render;
 
-
 import me.kous500.curvebuilding.math.CurvePoint;
 import me.kous500.curvebuilding.math.Vector3;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.NavigableMap;
 
 import static me.kous500.curvebuilding.fabric.CurveBuildingFabric.fabricConfig;

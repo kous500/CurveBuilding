@@ -76,8 +76,11 @@ public final class ParticleLayout {
      * @param settings how densely the particles are laid
      * @return the particles, the points and handles first, then the curve
      */
-    public static List<Particle> layout(NavigableMap<Integer, CurvePoint> points, Vector3 viewer, int turn,
-                                        Settings settings) {
+    public static List<Particle> layout(
+            NavigableMap<Integer, CurvePoint> points,
+            Vector3 viewer,
+            int turn,
+            Settings settings) {
         ParticleLayout layout = new ParticleLayout(viewer, turn, settings);
         layout.addPoints(points);
         layout.addCurve(points);
@@ -109,6 +112,7 @@ public final class ParticleLayout {
 
     private void addEdges(Vector3 block, Kind kind) {
         int density = settings.pointDensity();
+        double step = 1.0 / density;
         for (int x = 0; x <= density; x++) {
             for (int y = 0; y <= density; y++) {
                 for (int z = 0; z <= density; z++) {
@@ -116,8 +120,7 @@ public final class ParticleLayout {
                     boolean isYEdge = y == 0 || y == density;
                     boolean isZEdge = z == 0 || z == density;
                     if ((isXEdge && isYEdge) || (isYEdge && isZEdge) || (isZEdge && isXEdge)) {
-                        particles.add(new Particle(
-                                block.add(x * (1.0 / density), y * (1.0 / density), z * (1.0 / density)), kind));
+                        particles.add(new Particle(block.add(x * step, y * step, z * step), kind));
                     }
                 }
             }

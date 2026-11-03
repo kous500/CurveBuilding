@@ -35,23 +35,30 @@ class CurveLayoutTest {
         return new BezierSegment(from, from, to, to);
     }
 
-    private static CurveLayout layout(CurveLayout.Selection selection, BcArguments arguments, int maxBlocks,
-                                      BezierSegment... segments) throws Exception {
+    private static CurveLayout layout(
+            CurveLayout.Selection selection,
+            BcArguments arguments,
+            int maxBlocks,
+            BezierSegment... segments) throws Exception {
         CurveLayout layout = new CurveLayout(selection, arguments, NEVER_AIR, maxBlocks, 10000, 10);
-        for (BezierSegment segment : segments) layout.add(segment);
+        for (BezierSegment segment : segments) {
+            layout.add(segment);
+        }
         return layout;
     }
 
     private static Set<Integer> xs(NavigableMap<BlockVector3, BlockVector3> blocks) {
         Set<Integer> xs = new TreeSet<>();
-        for (BlockVector3 target : blocks.keySet()) xs.add(target.x());
+        for (BlockVector3 target : blocks.keySet()) {
+            xs.add(target.x());
+        }
         return xs;
     }
 
     @Test
     void straightCurvePlacesOneBlockAtEachStep() throws Exception {
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0,
-                straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0))).blocks();
+        BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0));
+        NavigableMap<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, line).blocks();
 
         assertEquals(Set.of(0, 1, 2, 3, 4, 5, 6), xs(blocks));
         for (BlockVector3 target : blocks.keySet()) {
@@ -64,8 +71,8 @@ class CurveLayoutTest {
     void crossSectionIsLaidAcrossTheCurve() throws Exception {
         // Three blocks high and three wide across x, so the curve along x gets a 3 x 3 cross section
         CurveLayout.Selection selection = new CurveLayout.Selection(1, 3, 3, Vector3.at(0, 1, 1));
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0,
-                straight(Vector3.at(0, 64, 0), Vector3.at(4, 64, 0))).blocks();
+        BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(4, 64, 0));
+        NavigableMap<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
 
         Set<Integer> ys = new TreeSet<>();
         Set<Integer> zs = new TreeSet<>();
@@ -103,9 +110,9 @@ class CurveLayoutTest {
 
     @Test
     void offsetCarriesOnFromOneSegmentToTheNext() throws Exception {
-        assertEquals(List.of(1, 2, 3, 0, 1, 2, 3, 0, 1, 2), blocksUsed(1,
-                straight(Vector3.at(0, 64, 0), Vector3.at(5, 64, 0)),
-                straight(Vector3.at(5, 64, 0), Vector3.at(9, 64, 0))));
+        BezierSegment first = straight(Vector3.at(0, 64, 0), Vector3.at(5, 64, 0));
+        BezierSegment second = straight(Vector3.at(5, 64, 0), Vector3.at(9, 64, 0));
+        assertEquals(List.of(1, 2, 3, 0, 1, 2, 3, 0, 1, 2), blocksUsed(1, first, second));
     }
 
     @Test
@@ -130,7 +137,8 @@ class CurveLayoutTest {
     void segmentLongerThanTheMaximumIsRejected() {
         CurveLayout layout = new CurveLayout(ONE_BLOCK, NO_ARGUMENTS, NEVER_AIR, 0, 5, 10);
 
-        assertThrows(CurveLayout.TooLongException.class, () -> layout.add(straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0))));
+        BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0));
+        assertThrows(CurveLayout.TooLongException.class, () -> layout.add(line));
     }
 
     @Test

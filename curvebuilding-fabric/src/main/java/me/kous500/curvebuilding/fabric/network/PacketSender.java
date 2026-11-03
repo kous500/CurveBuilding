@@ -6,7 +6,8 @@ import me.kous500.curvebuilding.math.PosManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;
-import java.util.*;
+
+import java.util.TreeMap;
 
 /**
  * Sends the curve positions of each player to their client, which draws the preview from them.

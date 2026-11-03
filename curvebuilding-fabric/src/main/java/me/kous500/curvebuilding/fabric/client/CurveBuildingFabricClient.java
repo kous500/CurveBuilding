@@ -1,9 +1,9 @@
 package me.kous500.curvebuilding.fabric.client;
 
-import me.kous500.curvebuilding.fabric.network.PosDataPayload;
-import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.fabric.client.render.PreviewBackends;
 import me.kous500.curvebuilding.fabric.client.render.RenderPreview;
+import me.kous500.curvebuilding.fabric.network.PosDataPayload;
+import me.kous500.curvebuilding.math.PosData;
 import me.kous500.curvebuilding.math.PosManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
