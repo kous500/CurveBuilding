@@ -12,15 +12,15 @@ import java.util.function.Function;
 
 import static me.kous500.curvebuilding.log.Log.console;
 
-/** Reads the files that every platform shares, and keeps the config that the commands read. */
-public class CurveBuilding {
-    /** The config read by {@link #loadResources}, which each platform calls when it starts, before it is read. */
-    @SuppressWarnings("NotNullFieldNotInitialized")
-    public static Config config;
+/** Reads the files that every platform shares. */
+public final class CurveBuilding {
+    private CurveBuilding() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
     /**
      * Copies the default files that are missing into the data folder, then reads config.yml and the message file it
-     * names, and uses them from now on.
+     * names. The messages are used from now on; the platform keeps the config and gives it to the commands.
      *
      * @param dataFolder the folder of the config and the message files
      * @param jar the class loader that has the default files
@@ -37,7 +37,6 @@ public class CurveBuilding {
         C loadedConfig = readConfig.apply(YamlConfig.load(dataFolder.resolve("config.yml"), jar, "config.yml"));
 
         Messages.use(Messages.load(messageFile(loadedConfig.messageFilePath, dataFolder), jar));
-        config = loadedConfig;
         return loadedConfig;
     }
 

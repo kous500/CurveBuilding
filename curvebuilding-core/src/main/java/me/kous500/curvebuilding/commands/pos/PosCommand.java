@@ -4,6 +4,7 @@ import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.util.Location;
 import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.commands.IntegerArgument;
+import me.kous500.curvebuilding.config.Config;
 import me.kous500.curvebuilding.curve.CurvePoint.Part;
 import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.math.Vector3;
@@ -27,9 +28,11 @@ public final class PosCommand {
      *
      * @param player the player who ran the command
      * @param args the arguments of the command
+     * @param config the config in use
      * @return whether the arguments could be used
      */
-    public static boolean posCommand(Player player, String[] args) {
+    public static boolean posCommand(Player player, String[] args, Config config) {
+        int maxPosValue = config.maxPosValue;
         try {
             PosSubcommand subcommand = read(args, 0, PosSubcommand::parse);
             int end = 1 + subcommand.arguments.max;
@@ -40,17 +43,17 @@ public final class PosCommand {
                     if (PosManager.clearPos(player)) Chat.info(player, Message.POS_CLEAR_ALL);
                 }
                 case CLEAR -> {
-                    PosPoint point = read(args, 1, PosPoint::parse);
+                    PosPoint point = read(args, 1, text -> PosPoint.parse(text, maxPosValue));
                     if (PosManager.clearPos(player, point.n(), point.part())) {
                         Chat.info(player, Message.POS_CLEAR, posToString(point.n(), point.part()));
                     }
                 }
                 case SET -> {
-                    PosPoint point = read(args, 1, PosPoint::parse);
+                    PosPoint point = read(args, 1, text -> PosPoint.parse(text, maxPosValue));
                     set(player, point.n(), point.part());
                 }
                 case INSERT -> {
-                    int n = read(args, 1, PosPoint::parseNumber);
+                    int n = read(args, 1, text -> PosPoint.parseNumber(text, maxPosValue));
                     if (PosManager.insertAt(player, n)) {
                         set(player, n, Part.POINT);
                     } else {
@@ -58,7 +61,7 @@ public final class PosCommand {
                     }
                 }
                 case REMOVE -> {
-                    int n = read(args, 1, PosPoint::parseNumber);
+                    int n = read(args, 1, text -> PosPoint.parseNumber(text, maxPosValue));
                     if (PosManager.remove(player, n)) {
                         Chat.info(player, Message.POS_REMOVE, n);
                     } else {

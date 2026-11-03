@@ -8,8 +8,6 @@ import me.kous500.curvebuilding.message.Message;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static me.kous500.curvebuilding.CurveBuilding.config;
-
 /**
  * A point of the curve, or one of its handles, as typed in {@code //bcpos}: {@code 2} is point 2, {@code 2f} its front
  * handle and {@code 2b} its back handle. The first point has no front handle.
@@ -24,16 +22,17 @@ public record PosPoint(int n, Part part) {
      * Reads a point or one of its handles, such as {@code 2}, {@code 2f} or {@code 2b}.
      *
      * @param text the argument as typed
+     * @param maxPosValue the highest point number, the {@code max-pos-value} of the config
      * @return the point and the part of it
      * @throws ArgumentException when it is not a point, or the point is out of range
      */
-    public static PosPoint parse(String text) throws ArgumentException {
+    public static PosPoint parse(String text, int maxPosValue) throws ArgumentException {
         Matcher matcher = POS.matcher(text);
         if (!matcher.matches()) {
             throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);
         }
 
-        int n = number(matcher.group(1), text);
+        int n = number(matcher.group(1), text, maxPosValue);
         return switch (matcher.group(2)) {
             case "f" -> {
                 if (n == 1) throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);
@@ -48,17 +47,18 @@ public record PosPoint(int n, Part part) {
      * Reads a point number only, such as {@code 2}.
      *
      * @param text the argument as typed
+     * @param maxPosValue the highest point number, the {@code max-pos-value} of the config
      * @return the point number
      * @throws ArgumentException when it is not a point number, or it is out of range
      */
-    public static int parseNumber(String text) throws ArgumentException {
+    public static int parseNumber(String text, int maxPosValue) throws ArgumentException {
         if (!text.matches("[0-9]+")) {
             throw new ArgumentException(GameMessage.INCORRECT_ARGUMENT);
         }
-        return number(text, text);
+        return number(text, text, maxPosValue);
     }
 
-    private static int number(String digits, String text) throws ArgumentException {
+    private static int number(String digits, String text, int maxPosValue) throws ArgumentException {
         int n;
         try {
             n = Integer.parseInt(digits);
@@ -68,8 +68,8 @@ public record PosPoint(int n, Part part) {
         if (n < 1) {
             throw new ArgumentException(GameMessage.INTEGER_TOO_LOW, 1, text);
         }
-        if (n > config.maxPosValue) {
-            throw new ArgumentException(Message.MAX_POS_VALUE, config.maxPosValue);
+        if (n > maxPosValue) {
+            throw new ArgumentException(Message.MAX_POS_VALUE, maxPosValue);
         }
         return n;
     }

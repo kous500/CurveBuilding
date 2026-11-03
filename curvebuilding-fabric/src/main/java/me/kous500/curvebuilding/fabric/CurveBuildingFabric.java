@@ -37,8 +37,8 @@ public class CurveBuildingFabric implements ModInitializer {
         fabricConfig = loadResources(DATA_FOLDER, getClass().getClassLoader(), FabricConfig::new);
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            setPosBuilder(dispatcher);
-            setBcBuilder(dispatcher);
+            setPosBuilder(dispatcher, () -> fabricConfig);
+            setBcBuilder(dispatcher, () -> fabricConfig);
         });
 
         FabricCompat.registerClientboundPayload(PosDataPayload.ID, PosDataPayload.CODEC);

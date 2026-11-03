@@ -30,6 +30,9 @@ public final class CurveBuildingPlugin extends JavaPlugin {
     public static @Nullable ParticleList_1_13 particles_1_13;
     private static final Path DATA_FOLDER = Path.of("plugins/CurveBuilding");
 
+    @SuppressWarnings("NotNullFieldNotInitialized") // onEnable reads it before it registers the commands
+    private BukkitConfig config;
+
     @Override
     public void onEnable() {
         setConsole(Console.of(getLogger()));
@@ -44,11 +47,11 @@ public final class CurveBuildingPlugin extends JavaPlugin {
 
         reloadConfigAndResources();
 
-        Bc bc = new Bc();
+        Bc bc = new Bc(() -> config);
         requireNonNull(this.getCommand("/bc")).setExecutor(bc);
         requireNonNull(this.getCommand("/bc")).setTabCompleter(bc);
 
-        Pos pos = new Pos();
+        Pos pos = new Pos(() -> config);
         requireNonNull(this.getCommand("/bcpos")).setExecutor(pos);
         requireNonNull(this.getCommand("/bcpos")).setTabCompleter(pos);
 
@@ -65,9 +68,9 @@ public final class CurveBuildingPlugin extends JavaPlugin {
         SendParticles.stop();
         PosManager.clearPosMap();
 
-        BukkitConfig bukkitConfig = loadResources(DATA_FOLDER, getClassLoader(), BukkitConfig::new);
+        config = loadResources(DATA_FOLDER, getClassLoader(), BukkitConfig::new);
 
-        SendParticles.start(this, bukkitConfig);
+        SendParticles.start(this, config);
     }
 
     @Override

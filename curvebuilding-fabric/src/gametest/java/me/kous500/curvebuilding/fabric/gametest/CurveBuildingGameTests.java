@@ -103,7 +103,7 @@ public class CurveBuildingGameTests {
     public void bcposRejectsArgumentsItDoesNotTake(GameTestHelper helper) {
         Player player = FabricCompat.adaptPlayer(newPlayer(helper));
         for (String[] args : new String[][]{{"set", "1", "extra"}, {"set", "3fx"}, {"insert", "1f"}}) {
-            boolean isUsed = PosCommand.posCommand(player, args);
+            boolean isUsed = PosCommand.posCommand(player, args, CurveBuildingFabric.fabricConfig);
             helper.assertTrue(!isUsed, Component.literal(String.join(" ", args) + " was used"));
         }
         helper.assertTrue(PosManager.get(player) == null, Component.literal("a position was set"));
@@ -309,7 +309,7 @@ public class CurveBuildingGameTests {
         /** Builds the curve, as //bc without arguments does. */
         void build(String... arguments) {
             try {
-                BcEdit.build(player, BcArguments.parse(arguments));
+                BcEdit.build(player, BcArguments.parse(arguments), CurveBuildingFabric.fabricConfig);
             } catch (ArgumentException e) {
                 helper.fail(Component.literal("invalid arguments: " + String.join(" ", arguments)));
             }

@@ -18,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Loads the config and the message file from a data folder, with the defaults in a stand-in for the jar. */
@@ -28,13 +27,11 @@ class LoadResourcesTest {
 
     private Path jar;
     private Path dataFolder;
-    private Config previousConfig;
     private Console previousConsole;
     private RecordingConsole console;
 
     @BeforeEach
     void createJar() throws IOException {
-        previousConfig = CurveBuilding.config;
         previousConsole = Log.console();
         console = new RecordingConsole();
         Log.setConsole(console);
@@ -46,8 +43,7 @@ class LoadResourcesTest {
     }
 
     @AfterEach
-    void restoreConfig() {
-        CurveBuilding.config = previousConfig;
+    void restoreConsole() {
         Log.setConsole(previousConsole);
     }
 
@@ -61,7 +57,6 @@ class LoadResourcesTest {
             config = CurveBuilding.loadResources(dataFolder, classLoader, Config::new);
         }
 
-        assertSame(config, CurveBuilding.config);
         assertEquals(3, config.fineness);
         assertTrue(Files.exists(dataFolder.resolve("config.yml")), "the default config is copied");
         assertEquals("移動しました", Messages.getMessage(Message.POS_SHIFT));

@@ -8,6 +8,7 @@ import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.World;
+import me.kous500.curvebuilding.config.Config;
 import me.kous500.curvebuilding.curve.BezierSegment;
 import me.kous500.curvebuilding.curve.PosData;
 import me.kous500.curvebuilding.curve.PosManager;
@@ -17,7 +18,6 @@ import me.kous500.curvebuilding.message.Message;
 
 import java.util.Map;
 
-import static me.kous500.curvebuilding.CurveBuilding.config;
 import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
 
 /** Builds the curve of {@code //bc} in the world, with WorldEdit, and replies to the player. */
@@ -39,8 +39,9 @@ public final class BcEdit {
      *
      * @param player the player who ran the command, whose positions and selection are used
      * @param arguments the arguments of {@code //bc}
+     * @param config the config in use, for the limits and the {@code fineness}
      */
-    public static void build(Player player, BcArguments arguments) {
+    public static void build(Player player, BcArguments arguments, Config config) {
         LocalSession session = WorldEdit.getInstance().getSessionManager().get(player);
         World world = session.getSelectionWorld();
 
