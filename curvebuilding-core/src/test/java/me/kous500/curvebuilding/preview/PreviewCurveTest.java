@@ -14,7 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class PreviewCurveTest {
     private static NavigableMap<Integer, CurvePoint> straight(int points) {
         NavigableMap<Integer, CurvePoint> map = new TreeMap<>();
-        for (int n = 1; n <= points; n++) map.put(n, new CurvePoint(Vector3.at((n - 1) * 10, 64, 0), null, null));
+        for (int n = 1; n <= points; n++) {
+            map.put(n, new CurvePoint(Vector3.at((n - 1) * 10, 64, 0), null, null));
+        }
         return map;
     }
 

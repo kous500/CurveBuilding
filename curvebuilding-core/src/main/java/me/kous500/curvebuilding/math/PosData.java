@@ -2,7 +2,6 @@ package me.kous500.curvebuilding.math;
 
 import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.WorldeditAdapter;
-
 import me.kous500.curvebuilding.math.CurvePoint.Part;
 
 import java.util.Collections;

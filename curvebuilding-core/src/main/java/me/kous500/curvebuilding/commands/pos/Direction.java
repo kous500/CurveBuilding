@@ -6,7 +6,9 @@ import me.kous500.curvebuilding.math.Vector3;
 
 import java.util.Locale;
 
-/** The directions of {@code //bcpos shift}. Their first letters differ, so each can also be typed as its first letter. */
+/**
+ * The directions of {@code //bcpos shift}. Their first letters differ, so each can also be typed as its first letter.
+ */
 public enum Direction {
     BACK, DOWN, EAST, FORWARD, LEFT, ME, NORTH, RIGHT, SOUTH, UP, WEST;
 

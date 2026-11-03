@@ -2,7 +2,7 @@ package me.kous500.curvebuilding.fabric.client.render;
 
 import net.minecraft.world.phys.Vec3;
 
-import java.awt.*;
+import java.awt.Color;
 
 /**
  * The shapes of the preview that are drawn the same way: either all through walls or none.
@@ -48,7 +48,9 @@ public final class PreviewLayer {
      */
     public void addBlockOutline(Color color, Vec3 block) {
         Vec3[] corners = blockCorners(block);
-        for (int[] edge : EDGES) primitives.line(color, corners[edge[0]], corners[edge[1]]);
+        for (int[] edge : EDGES) {
+            primitives.line(color, corners[edge[0]], corners[edge[1]]);
+        }
     }
 
     /**
@@ -59,7 +61,9 @@ public final class PreviewLayer {
      */
     public void addBlockCrossing(Color color, Vec3 block) {
         Vec3[] corners = blockCorners(block);
-        for (int[] diagonal : DIAGONALS) primitives.line(color, corners[diagonal[0]], corners[diagonal[1]]);
+        for (int[] diagonal : DIAGONALS) {
+            primitives.line(color, corners[diagonal[0]], corners[diagonal[1]]);
+        }
     }
 
     /**
@@ -70,7 +74,9 @@ public final class PreviewLayer {
      */
     public void addFilledBlock(Color color, Vec3 block) {
         Vec3[] corners = blockCorners(block);
-        for (int[] face : FACES) primitives.quad(color, corners[face[0]], corners[face[1]], corners[face[2]], corners[face[3]]);
+        for (int[] face : FACES) {
+            primitives.quad(color, corners[face[0]], corners[face[1]], corners[face[2]], corners[face[3]]);
+        }
     }
 
     private static Vec3[] blockCorners(Vec3 block) {

@@ -25,7 +25,9 @@ public final class BcCompletion {
         for (String arg : args) {
             List<String> candidates = new ArrayList<>();
             if (arg.startsWith("-") && options.read(arg.substring(1))) {
-                for (String letter : options.unusedLetters()) candidates.add(arg + letter);
+                for (String letter : options.unusedLetters()) {
+                    candidates.add(arg + letter);
+                }
             }
             completions = startingWith(arg, candidates);
         }

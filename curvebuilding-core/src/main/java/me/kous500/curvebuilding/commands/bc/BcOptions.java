@@ -70,7 +70,9 @@ public final class BcOptions {
         List<String> letters = new ArrayList<>();
         if (!air) letters.add(AIR);
         if (axis == null) {
-            for (Axis each : Axis.values()) letters.add(each.letter);
+            for (Axis each : Axis.values()) {
+                letters.add(each.letter);
+            }
         }
         return letters;
     }

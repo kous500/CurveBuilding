@@ -9,13 +9,20 @@ import java.lang.reflect.Method;
 public class WorldeditAdapter {
     // WorldEdit 7.2 has only getX() and getId(), and 7.3 added x() and id(). The methods are looked up by name, so
     // that one jar works with both. This can go once WorldEdit 7.2 is no longer supported.
-    private static final MethodSuggestions<com.sk89q.worldedit.math.Vector3, Double> vector3_X = new MethodSuggestions<>(new String[]{"x", "getX"});
-    private static final MethodSuggestions<com.sk89q.worldedit.math.Vector3, Double> vector3_Y = new MethodSuggestions<>(new String[]{"y", "getY"});
-    private static final MethodSuggestions<com.sk89q.worldedit.math.Vector3, Double> vector3_Z = new MethodSuggestions<>(new String[]{"z", "getZ"});
-    private static final MethodSuggestions<com.sk89q.worldedit.math.BlockVector3, Integer> blockVector3_X = new MethodSuggestions<>(new String[]{"x", "getX"});
-    private static final MethodSuggestions<com.sk89q.worldedit.math.BlockVector3, Integer> blockVector3_Y = new MethodSuggestions<>(new String[]{"y", "getY"});
-    private static final MethodSuggestions<com.sk89q.worldedit.math.BlockVector3, Integer> blockVector3_Z = new MethodSuggestions<>(new String[]{"z", "getZ"});
-    private static final MethodSuggestions<com.sk89q.worldedit.world.World, String> world_id = new MethodSuggestions<>(new String[]{"id", "getId"});
+    private static final MethodSuggestions<com.sk89q.worldedit.math.Vector3, Double> vector3_X =
+            new MethodSuggestions<>(new String[]{"x", "getX"});
+    private static final MethodSuggestions<com.sk89q.worldedit.math.Vector3, Double> vector3_Y =
+            new MethodSuggestions<>(new String[]{"y", "getY"});
+    private static final MethodSuggestions<com.sk89q.worldedit.math.Vector3, Double> vector3_Z =
+            new MethodSuggestions<>(new String[]{"z", "getZ"});
+    private static final MethodSuggestions<com.sk89q.worldedit.math.BlockVector3, Integer> blockVector3_X =
+            new MethodSuggestions<>(new String[]{"x", "getX"});
+    private static final MethodSuggestions<com.sk89q.worldedit.math.BlockVector3, Integer> blockVector3_Y =
+            new MethodSuggestions<>(new String[]{"y", "getY"});
+    private static final MethodSuggestions<com.sk89q.worldedit.math.BlockVector3, Integer> blockVector3_Z =
+            new MethodSuggestions<>(new String[]{"z", "getZ"});
+    private static final MethodSuggestions<com.sk89q.worldedit.world.World, String> world_id =
+            new MethodSuggestions<>(new String[]{"id", "getId"});
 
     /**
      * The ID of {@code world}, which tells worlds apart.

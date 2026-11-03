@@ -21,7 +21,9 @@ class ParticleLayoutTest {
 
     private static NavigableMap<Integer, CurvePoint> points(CurvePoint... points) {
         NavigableMap<Integer, CurvePoint> map = new TreeMap<>();
-        for (int n = 1; n <= points.length; n++) map.put(n, points[n - 1]);
+        for (int n = 1; n <= points.length; n++) {
+            map.put(n, points[n - 1]);
+        }
         return map;
     }
 
@@ -31,25 +33,28 @@ class ParticleLayoutTest {
 
     @Test
     void pointHasTheEdgesOfItsBlockAndACenter() {
-        List<Particle> particles = ParticleLayout.layout(
-                points(new CurvePoint(Vector3.at(10, 64, 10), null, null)), VIEWER, 0, SETTINGS);
+        NavigableMap<Integer, CurvePoint> point = points(new CurvePoint(Vector3.at(10, 64, 10), null, null));
+        List<Particle> particles = ParticleLayout.layout(point, VIEWER, 0, SETTINGS);
 
         // 8 corners and 3 more particles on each of the 12 edges, with 4 particles per block
         assertEquals(8 + 12 * 3, count(particles, Kind.START));
         assertEquals(1, count(particles, Kind.CENTER));
         for (Particle particle : particles) {
             Vector3 position = particle.position();
-            assertTrue(position.x() >= 10 && position.x() <= 11 && position.z() >= 10 && position.z() <= 11,
-                    particle.toString());
+            boolean isInBlock = position.x() >= 10 && position.x() <= 11 && position.z() >= 10 && position.z() <= 11;
+            assertTrue(isInBlock, particle.toString());
         }
     }
 
     @Test
     void firstAndLastPointsAreToldApart() {
         Vector3 a = Vector3.at(0, 64, 0);
-        List<Particle> particles = ParticleLayout.layout(points(
-                new CurvePoint(a, null, null), new CurvePoint(a.add(5, 0, 0), null, null),
-                new CurvePoint(a.add(10, 0, 0), null, null)), VIEWER, 0, SETTINGS);
+        NavigableMap<Integer, CurvePoint> curve = points(
+                new CurvePoint(a, null, null),
+                new CurvePoint(a.add(5, 0, 0), null, null),
+                new CurvePoint(a.add(10, 0, 0), null, null)
+        );
+        List<Particle> particles = ParticleLayout.layout(curve, VIEWER, 0, SETTINGS);
 
         assertEquals(44, count(particles, Kind.START));
         assertEquals(44, count(particles, Kind.POINT));
@@ -59,8 +64,8 @@ class ParticleLayoutTest {
     @Test
     void handleHasACrossToTheCenterAndALine() {
         Vector3 point = Vector3.at(0, 64, 0);
-        List<Particle> particles = ParticleLayout.layout(
-                points(new CurvePoint(point, null, point.add(6, 0, 0))), VIEWER, 0, SETTINGS);
+        NavigableMap<Integer, CurvePoint> handle = points(new CurvePoint(point, null, point.add(6, 0, 0)));
+        List<Particle> particles = ParticleLayout.layout(handle, VIEWER, 0, SETTINGS);
 
         // 8 lines from the corners to the center, 4 * sqrt(3) / 2 = 3 steps each, both ends included
         assertEquals(8 * 4, count(particles, Kind.B));
@@ -72,8 +77,8 @@ class ParticleLayoutTest {
     void crossWithTheLowestDensityHasItsCornersAndCenter() {
         Vector3 point = Vector3.at(0, 64, 0);
         ParticleLayout.Settings lowest = new ParticleLayout.Settings(1, 1, 10000);
-        List<Particle> particles = ParticleLayout.layout(
-                points(new CurvePoint(point, null, point.add(6, 0, 0))), VIEWER, 0, lowest);
+        NavigableMap<Integer, CurvePoint> handle = points(new CurvePoint(point, null, point.add(6, 0, 0)));
+        List<Particle> particles = ParticleLayout.layout(handle, VIEWER, 0, lowest);
 
         List<Particle> cross = particles.stream().filter(particle -> particle.kind() == Kind.B).toList();
         assertEquals(8 * 2, cross.size());
@@ -86,7 +91,9 @@ class ParticleLayoutTest {
     void turnsSplitTheDotsOfTheLines() {
         Vector3 a = Vector3.at(0, 64, 0);
         NavigableMap<Integer, CurvePoint> curve = points(
-                new CurvePoint(a, null, a.add(0, 0, 8)), new CurvePoint(a.add(20, 0, 0), a.add(20, 0, 8), null));
+                new CurvePoint(a, null, a.add(0, 0, 8)),
+                new CurvePoint(a.add(20, 0, 0), a.add(20, 0, 8), null)
+        );
 
         // Two lines can meet at a point, so each line is checked on its own
         Set<Particle> all = new HashSet<>();
@@ -106,7 +113,9 @@ class ParticleLayoutTest {
     void dotsAreFurtherApartFarFromTheViewer() {
         Vector3 a = Vector3.at(0, 64, 0);
         NavigableMap<Integer, CurvePoint> line = points(
-                new CurvePoint(a, null, null), new CurvePoint(a.add(30, 0, 0), null, null));
+                new CurvePoint(a, null, null),
+                new CurvePoint(a.add(30, 0, 0), null, null)
+        );
 
         long near = count(ParticleLayout.layout(line, Vector3.at(15, 64, 0), 0, SETTINGS), Kind.CURVE);
         long far = count(ParticleLayout.layout(line, Vector3.at(15, 64, 3000), 0, SETTINGS), Kind.CURVE);
@@ -118,7 +127,9 @@ class ParticleLayoutTest {
     void curveLongerThanTheMaximumIsNotShown() {
         Vector3 a = Vector3.at(0, 64, 0);
         NavigableMap<Integer, CurvePoint> line = points(
-                new CurvePoint(a, null, null), new CurvePoint(a.add(30, 0, 0), null, null));
+                new CurvePoint(a, null, null),
+                new CurvePoint(a.add(30, 0, 0), null, null)
+        );
 
         ParticleLayout.Settings shorter = new ParticleLayout.Settings(4, 4, 20);
         ParticleLayout.Settings longer = new ParticleLayout.Settings(4, 4, 40);

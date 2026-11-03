@@ -14,8 +14,8 @@ import net.minecraft.server.level.ServerPlayer;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.word;
-import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.commands.pos.PosCommand.posCommand;
+import static me.kous500.curvebuilding.fabric.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.fabric.commands.RunCommand.runLogged;
 import static me.kous500.curvebuilding.fabric.network.PacketSender.sendPosPacket;
 import static net.minecraft.commands.Commands.argument;
@@ -27,7 +27,8 @@ import static net.minecraft.commands.Commands.literal;
 public class Pos implements RunCommand {
     private static final String posCommandName = "/bcpos";
     private static final Command<CommandSourceStack> RUN = context -> runLogged(new Pos(context));
-    private static final SuggestionProvider<CommandSourceStack> suggestions = CoreSuggestions.of(PosCompletion::complete);
+    private static final SuggestionProvider<CommandSourceStack> suggestions =
+            CoreSuggestions.of(PosCompletion::complete);
 
     /**
      * Registers {@code //bcpos}, with a node for each subcommand.

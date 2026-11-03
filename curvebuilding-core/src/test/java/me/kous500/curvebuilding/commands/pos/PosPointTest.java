@@ -65,7 +65,8 @@ class PosPointTest {
     @ParameterizedTest
     @CsvSource({"101", "101f"})
     void rejectsPosAboveTheMaximum(String input) {
-        assertEquals(Message.MAX_POS_VALUE, assertThrows(ArgumentException.class, () -> PosPoint.parse(input)).message());
+        ArgumentException error = assertThrows(ArgumentException.class, () -> PosPoint.parse(input));
+        assertEquals(Message.MAX_POS_VALUE, error.message());
     }
 
     @ParameterizedTest

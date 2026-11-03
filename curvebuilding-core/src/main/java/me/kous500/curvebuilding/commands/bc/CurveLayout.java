@@ -56,8 +56,13 @@ final class CurveLayout {
      * @param maxLength the longest curve, from the {@code max-set-length} of the config
      * @param stepsPerBlock the steps along the curve per block, from the {@code fineness} of the config
      */
-    CurveLayout(Selection selection, BcArguments arguments, Predicate<BlockVector3> isAir, int maxBlocks, int maxLength,
-                int stepsPerBlock) {
+    CurveLayout(
+            Selection selection,
+            BcArguments arguments,
+            Predicate<BlockVector3> isAir,
+            int maxBlocks,
+            int maxLength,
+            int stepsPerBlock) {
         this.selection = selection;
         if (arguments.axis() != null) {
             this.axis = arguments.axis();
@@ -97,7 +102,8 @@ final class CurveLayout {
     NavigableMap<BlockVector3, BlockVector3> blocks() {
         NavigableMap<BlockVector3, BlockVector3> blocks = new TreeMap<>();
         for (Map.Entry<BlockVector3, NavigableMap<BlockVector3, Integer>> entry : votes.entrySet()) {
-            blocks.put(entry.getKey(), Collections.max(entry.getValue().entrySet(), Map.Entry.comparingByValue()).getKey());
+            Map<BlockVector3, Integer> counts = entry.getValue();
+            blocks.put(entry.getKey(), Collections.max(counts.entrySet(), Map.Entry.comparingByValue()).getKey());
         }
         return blocks;
     }
@@ -161,8 +167,8 @@ final class CurveLayout {
     private void layColumn(List<Sample> samples, int side, int y, Vector3 column) throws MaxChangedBlocksException {
         BlockVector3 before = null;
         for (Sample sample : samples) {
-            BlockVector3 target = BlockVector3.round(sample.point().add(
-                    side * Math.cos(-sample.angle()), y, side * Math.sin(-sample.angle())));
+            Vector3 across = Vector3.at(side * Math.cos(-sample.angle()), y, side * Math.sin(-sample.angle()));
+            BlockVector3 target = BlockVector3.round(sample.point().add(across));
 
             if (!target.equals(before)) {
                 // How far into the repeating selection this block is

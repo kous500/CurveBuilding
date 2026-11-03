@@ -24,7 +24,9 @@ public final class PosCompletion {
         List<String> candidates = new ArrayList<>();
         String typed = args[args.length - 1];
         if (args.length == 1) {
-            for (PosSubcommand subcommand : PosSubcommand.values()) candidates.add(subcommand.label);
+            for (PosSubcommand subcommand : PosSubcommand.values()) {
+                candidates.add(subcommand.label);
+            }
         } else if (args.length == 2) {
             PosSubcommand subcommand = PosSubcommand.of(args[0]);
             if (subcommand != null) {
@@ -33,7 +35,9 @@ public final class PosCompletion {
                     case POINT -> addPositions(typed, candidates, new String[0]);
                     case LENGTH_AND_DIRECTION -> {
                         if (typed.matches("[0-9]+")) {
-                            for (Direction direction : Direction.values()) candidates.add(typed + " " + direction.label);
+                            for (Direction direction : Direction.values()) {
+                                candidates.add(typed + " " + direction.label);
+                            }
                         }
                     }
                     case NONE -> { }
@@ -53,10 +57,14 @@ public final class PosCompletion {
                 if (!(typed + suffix).equals("1f")) candidates.add(typed + suffix);
             }
             if (suffixes.length == 0) {
-                for (int digit = 0; digit <= 9; digit++) candidates.add(typed + digit);
+                for (int digit = 0; digit <= 9; digit++) {
+                    candidates.add(typed + digit);
+                }
             }
         } else if (typed.isEmpty()) {
-            for (int n = 1; n <= 9; n++) candidates.add(String.valueOf(n));
+            for (int n = 1; n <= 9; n++) {
+                candidates.add(String.valueOf(n));
+            }
         }
     }
 

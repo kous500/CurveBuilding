@@ -2,7 +2,7 @@ package me.kous500.curvebuilding.fabric.client.render;
 
 import net.minecraft.world.phys.Vec3;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,12 +41,16 @@ final class PreviewPrimitives {
     void draw(PreviewBackend backend) {
         if (!lines.isEmpty()) {
             backend.drawLines(isThroughWalls, buffer -> {
-                for (float[] l : lines) buffer.line(l[0], l[1], l[2], l[3], l[4], l[5], l[6], l[7], l[8], l[9]);
+                for (float[] l : lines) {
+                    buffer.line(l[0], l[1], l[2], l[3], l[4], l[5], l[6], l[7], l[8], l[9]);
+                }
             });
         }
         if (!quadVertices.isEmpty()) {
             backend.drawQuads(isThroughWalls, buffer -> {
-                for (float[] v : quadVertices) buffer.quadVertex(v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
+                for (float[] v : quadVertices) {
+                    buffer.quadVertex(v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
+                }
             });
         }
     }
@@ -60,6 +64,6 @@ final class PreviewPrimitives {
     }
 
     private static float[] color(Color color) {
-        return new float[]{color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f};
+        return color.getRGBComponents(null);
     }
 }

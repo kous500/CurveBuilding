@@ -15,7 +15,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
-import static me.kous500.curvebuilding.CurveBuilding.*;
+import static me.kous500.curvebuilding.CurveBuilding.console;
+import static me.kous500.curvebuilding.CurveBuilding.loadResources;
+import static me.kous500.curvebuilding.CurveBuilding.setConsole;
 
 /**
  * The Bukkit plugin: reads the files, registers the commands and shows the curves with particles.

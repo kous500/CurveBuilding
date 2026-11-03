@@ -40,7 +40,8 @@ public class RegionBlocks {
         for (int x = minX; x <= maxRegion.x(); x++) {
             for (int y = minY; y <= maxRegion.y(); y++) {
                 for (int z = minZ; z <= maxRegion.z(); z++) {
-                    regionBlocks[x - minX][y - minY][z - minZ] = editSession.getFullBlock(adapt(BlockVector3.at(x, y, z)));
+                    regionBlocks[x - minX][y - minY][z - minZ] =
+                            editSession.getFullBlock(adapt(BlockVector3.at(x, y, z)));
                 }
             }
         }

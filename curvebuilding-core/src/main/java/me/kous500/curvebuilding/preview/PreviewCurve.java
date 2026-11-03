@@ -32,8 +32,10 @@ public final class PreviewCurve {
      * @param stepsPerBlock the steps per block to measure the segments with, as {@link BezierSegment#fineness} takes
      * @return the shown segments, in order
      */
-    public static List<ShownSegment> segments(NavigableMap<Integer, CurvePoint> points, double maxLength,
-                                              double stepsPerBlock) {
+    public static List<ShownSegment> segments(
+            NavigableMap<Integer, CurvePoint> points,
+            double maxLength,
+            double stepsPerBlock) {
         List<ShownSegment> shown = new ArrayList<>();
         double lengthToEnd = 0;
         for (BezierSegment segment : BezierSegment.through(points)) {

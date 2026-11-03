@@ -142,7 +142,7 @@ class YamlConfigTest {
 
     private RecordingConsole.Entry assertOneWarning(String containing) {
         assertEquals(1, console.entries.size(), String.valueOf(console.entries));
-        RecordingConsole.Entry entry = console.entries.get(0);
+        RecordingConsole.Entry entry = console.entries.getFirst();
         assertEquals("warning", entry.level());
         assertTrue(entry.message().contains(containing), entry.message());
         return entry;

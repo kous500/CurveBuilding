@@ -42,8 +42,20 @@ class PosCompletionTest {
 
     @Test
     void lengthWithEachDirectionForShift() {
-        assertEquals(List.of("5 back", "5 down", "5 east", "5 forward", "5 left", "5 me", "5 north", "5 right",
-                "5 south", "5 up", "5 west"), complete("shift", "5"));
+        List<String> expected = List.of(
+                "5 back",
+                "5 down",
+                "5 east",
+                "5 forward",
+                "5 left",
+                "5 me",
+                "5 north",
+                "5 right",
+                "5 south",
+                "5 up",
+                "5 west"
+        );
+        assertEquals(expected, complete("shift", "5"));
         assertEquals(List.of(), complete("shift", ""));
         assertEquals(List.of(), complete("shift", "x"));
     }

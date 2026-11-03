@@ -41,8 +41,10 @@ class ConsoleTest {
         console.warning("warning");
         console.warning("warning with a cause", cause);
 
-        assertEquals(List.of(Level.INFO, Level.WARNING, Level.WARNING), records.stream().map(LogRecord::getLevel).toList());
-        assertEquals(List.of("info", "warning", "warning with a cause"), records.stream().map(LogRecord::getMessage).toList());
+        List<Level> levels = records.stream().map(LogRecord::getLevel).toList();
+        List<String> messages = records.stream().map(LogRecord::getMessage).toList();
+        assertEquals(List.of(Level.INFO, Level.WARNING, Level.WARNING), levels);
+        assertEquals(List.of("info", "warning", "warning with a cause"), messages);
         assertNull(records.get(1).getThrown());
         assertSame(cause, records.get(2).getThrown());
     }

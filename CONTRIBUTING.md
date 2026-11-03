@@ -73,6 +73,16 @@ Pull requests must pass CI before they are merged: the build and tests, a Fabric
 
 Please do not share built jars in issues or pull requests. Official builds are only distributed through [GitHub Releases](https://github.com/kous500/CurveBuilding/releases) and the official download pages listed in the README.
 
+## Code style
+
+Follow `.editorconfig`, which IntelliJ IDEA and most editors read: Java is indented with 4 spaces, lines are at most 120 characters, and every import is named on its own, in the order IntelliJ IDEA uses (other packages, then `java` and `javax`, then static imports). Imports that Stonecutter comments switch between Minecraft versions stay in their own block after the others.
+
+When a method or record declaration does not fit on one line, put each parameter on its own line. When a call does not fit, move part of it into a local variable; if it still does not fit, put each argument on its own line and the closing parenthesis on the line after them.
+
+The body of `for`, `while` and `do` is always in braces. An `if` without braces is fine when the whole statement fits on one line.
+
+`./gradlew checkCodeStyle` lists where the code breaks these rules, using Checkstyle (`config/checkstyle/`); it does not check the indentation and the line breaks. CI runs it and shows each finding as a warning on the pull request.
+
 ## Code comments
 
 These rules apply to the comments in the code, the Gradle build scripts and the GitHub Actions workflows.

@@ -83,7 +83,7 @@ public final class SubmitPreviewBackend implements PreviewBackend {
             quadsThroughWalls = create("filled_through_walls", false, true);
             if (!hasAfterTerrainPhase) immediateDraw = new ImmediateDraw();
         } catch (ReflectiveOperationException | RuntimeException e) {
-            LOGGER.error("Could not create the render pipelines for this Minecraft version. The curve preview is disabled.", e);
+            LOGGER.error("Could not create the render pipelines. The curve preview is disabled.", e);
             return;
         }
 
@@ -130,7 +130,17 @@ public final class SubmitPreviewBackend implements PreviewBackend {
         List<float[]> vertices = new ArrayList<>();
         writer.accept(new PreviewBuffer() {
             @Override
-            public void line(float x1, float y1, float z1, float x2, float y2, float z2, float red, float green, float blue, float alpha) {
+            public void line(
+                    float x1,
+                    float y1,
+                    float z1,
+                    float x2,
+                    float y2,
+                    float z2,
+                    float red,
+                    float green,
+                    float blue,
+                    float alpha) {
                 float[] normal = LineNormals.normal(x1, y1, z1, x2, y2, z2);
                 vertices.add(new float[]{x1, y1, z1, red, green, blue, alpha, normal[0], normal[1], normal[2]});
                 vertices.add(new float[]{x2, y2, z2, red, green, blue, alpha, normal[0], normal[1], normal[2]});
@@ -145,7 +155,8 @@ public final class SubmitPreviewBackend implements PreviewBackend {
 
         SubmitNodeCollector.CustomGeometryRenderer geometry = (pose, consumer) -> {
             for (float[] v : vertices) {
-                VertexConsumer vertex = consumer.addVertex(pose.pose(), v[0], v[1], v[2]).setColor(v[3], v[4], v[5], v[6]);
+                VertexConsumer vertex = consumer.addVertex(pose.pose(), v[0], v[1], v[2])
+                        .setColor(v[3], v[4], v[5], v[6]);
                 if (isLines) vertex.setNormal(v[7], v[8], v[9]).setLineWidth(LINE_WIDTH);
             }
         };
@@ -177,23 +188,36 @@ public final class SubmitPreviewBackend implements PreviewBackend {
 
     // Separate class so that 26.1, which lacks CustomFeatureRenderer.Submit and afterTerrain, never loads this code.
     private static final class AfterTerrainPhase {
-        static void submit(SubmitNodeStorage storage, PoseStack poseStack, RenderType renderType, SubmitNodeCollector.CustomGeometryRenderer geometry) {
-            storage.order(0).afterTerrain.submit(new CustomFeatureRenderer.Submit(poseStack.last().copy(), renderType, geometry));
+        static void submit(
+                SubmitNodeStorage storage,
+                PoseStack poseStack,
+                RenderType renderType,
+                SubmitNodeCollector.CustomGeometryRenderer geometry) {
+            PoseStack.Pose pose = poseStack.last().copy();
+            storage.order(0).afterTerrain.submit(new CustomFeatureRenderer.Submit(pose, renderType, geometry));
         }
     }
 
     // Separate class so that 26.1 - 26.2, which lack OIT, never load this code.
     private static final class Oit {
         // Through walls: built like the vanilla sets, from the non-public OIT snippets, without the depth test.
-        static void setPipelines(RenderSetup.RenderSetupBuilder setup, String name, boolean isLines, boolean isThroughWalls) throws ReflectiveOperationException {
+        static void setPipelines(
+                RenderSetup.RenderSetupBuilder setup,
+                String name,
+                boolean isLines,
+                boolean isThroughWalls) throws ReflectiveOperationException {
             if (!isThroughWalls) {
-                setup.setOitPipelines(isLines ? RenderPipelines.OIT_LINES_TRANSLUCENT : RenderPipelines.OIT_DEBUG_FILLED_BOX);
+                setup.setOitPipelines(isLines
+                        ? RenderPipelines.OIT_LINES_TRANSLUCENT
+                        : RenderPipelines.OIT_DEBUG_FILLED_BOX);
                 return;
             }
 
-            Field snippet = RenderPipelines.class.getDeclaredField(isLines ? "OIT_LINES_SNIPPET" : "OIT_DEBUG_FILLED_SNIPPET");
+            String snippetName = isLines ? "OIT_LINES_SNIPPET" : "OIT_DEBUG_FILLED_SNIPPET";
+            Field snippet = RenderPipelines.class.getDeclaredField(snippetName);
             snippet.setAccessible(true);
-            OitPipelineSet pipelines = OitPipelineSet.builder("curvebuilding_" + name, RenderPipeline.builder((RenderPipeline.Snippet) snippet.get(null)))
+            RenderPipeline.Snippet base = (RenderPipeline.Snippet) snippet.get(null);
+            OitPipelineSet pipelines = OitPipelineSet.builder("curvebuilding_" + name, RenderPipeline.builder(base))
                     .withoutDepthTest()
                     .build();
             Method register = RenderPipelines.class.getDeclaredMethod("register", OitPipelineSet.class);
@@ -215,7 +239,11 @@ public final class SubmitPreviewBackend implements PreviewBackend {
             endBatch = bufferSourceClass.getMethod("endBatch", RenderType.class);
         }
 
-        void draw(LevelRenderContext context, RenderType renderType, PoseStack.Pose pose, SubmitNodeCollector.CustomGeometryRenderer geometry) {
+        void draw(
+                LevelRenderContext context,
+                RenderType renderType,
+                PoseStack.Pose pose,
+                SubmitNodeCollector.CustomGeometryRenderer geometry) {
             try {
                 Object bufferSource = contextBufferSource.invoke(context);
                 geometry.render(pose, (VertexConsumer) getBuffer.invoke(bufferSource, renderType));
@@ -226,7 +254,8 @@ public final class SubmitPreviewBackend implements PreviewBackend {
         }
     }
 
-    private static RenderType create(String name, boolean isLines, boolean isThroughWalls) throws ReflectiveOperationException {
+    private static RenderType create(String name, boolean isLines, boolean isThroughWalls)
+            throws ReflectiveOperationException {
         Class<?> pipelineClass = findPipelineClass();
         Class<?> snippetClass = Class.forName(pipelineClass.getName() + "$Snippet");
 
@@ -245,7 +274,8 @@ public final class SubmitPreviewBackend implements PreviewBackend {
         // Otherwise the snippet's depth state is kept: lines test and write depth, filled quads only test it.
         if (isThroughWalls) {
             Object depthStencilState = noDepthTest(pipelineClass);
-            builderClass.getMethod("withDepthStencilState", depthStencilState.getClass()).invoke(builder, depthStencilState);
+            builderClass.getMethod("withDepthStencilState", depthStencilState.getClass())
+                    .invoke(builder, depthStencilState);
         }
         Object pipeline = builderClass.getMethod("build").invoke(builder);
 
@@ -253,7 +283,8 @@ public final class SubmitPreviewBackend implements PreviewBackend {
         register.setAccessible(true);
         pipeline = register.invoke(null, pipeline);
 
-        RenderSetup.RenderSetupBuilder setup = (RenderSetup.RenderSetupBuilder) RenderSetup.class.getMethod("builder", pipelineClass).invoke(null, pipeline);
+        Method setupBuilder = RenderSetup.class.getMethod("builder", pipelineClass);
+        RenderSetup.RenderSetupBuilder setup = (RenderSetup.RenderSetupBuilder) setupBuilder.invoke(null, pipeline);
         if (HAS_OIT) {
             Oit.setPipelines(setup, name, isLines, isThroughWalls);
         } else {
@@ -267,7 +298,8 @@ public final class SubmitPreviewBackend implements PreviewBackend {
     private static void setItemEntityTarget(RenderSetup.RenderSetupBuilder setup) throws ReflectiveOperationException {
         Class<?> outputTargetClass = Class.forName("net.minecraft.client.renderer.rendertype.OutputTarget");
         Object itemEntityTarget = outputTargetClass.getField("ITEM_ENTITY_TARGET").get(null);
-        RenderSetup.RenderSetupBuilder.class.getMethod("setOutputTarget", outputTargetClass).invoke(setup, itemEntityTarget);
+        RenderSetup.RenderSetupBuilder.class.getMethod("setOutputTarget", outputTargetClass)
+                .invoke(setup, itemEntityTarget);
     }
 
     private static Object translucentColorTargetState(Class<?> pipelineClass) throws ReflectiveOperationException {

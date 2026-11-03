@@ -28,8 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * placeholders as en-US.yml.
  */
 class MessageFilesTest {
-    private static final Path BUKKIT_MESSAGES = Path.of("..", "curvebuilding-bukkit", "src", "main", "resources", "messages");
-    private static final Path FABRIC_MESSAGES = Path.of("..", "curvebuilding-fabric", "src", "main", "resources", "messages");
+    private static final Path BUKKIT_MESSAGES =
+            Path.of("..", "curvebuilding-bukkit", "src", "main", "resources", "messages");
+    private static final Path FABRIC_MESSAGES =
+            Path.of("..", "curvebuilding-fabric", "src", "main", "resources", "messages");
     private static final String BASE_FILE = "en-US.yml";
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\d+}");
 
@@ -58,7 +60,9 @@ class MessageFilesTest {
 
     @Test
     void englishHasEveryMessageInTheCode() {
-        Set<String> inCode = Arrays.stream(Message.values()).map(message -> message.path).collect(Collectors.toCollection(TreeSet::new));
+        Set<String> inCode = Arrays.stream(Message.values())
+                .map(message -> message.path)
+                .collect(Collectors.toCollection(TreeSet::new));
         assertEquals(inCode, keys(BUKKIT_MESSAGES.resolve(BASE_FILE)));
     }
 
@@ -85,7 +89,9 @@ class MessageFilesTest {
         messages(file).forEach((key, message) -> {
             Set<String> found = new TreeSet<>();
             Matcher matcher = PLACEHOLDER.matcher(message);
-            while (matcher.find()) found.add(matcher.group());
+            while (matcher.find()) {
+                found.add(matcher.group());
+            }
             placeholders.put(key, found);
         });
         return placeholders;
