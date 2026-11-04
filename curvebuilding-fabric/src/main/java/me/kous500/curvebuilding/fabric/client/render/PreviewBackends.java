@@ -5,7 +5,7 @@ import me.kous500.curvebuilding.fabric.client.render.backend.PreviewBackend;
 import me.kous500.curvebuilding.fabric.client.render.backend.SubmitPreviewBackend;
 //?} else if >=1.21.11 {
 /*import me.kous500.curvebuilding.fabric.client.render.backend.RenderSetupPreviewBackend;
-*///?} else if >=1.21.10 {
+*///?} else if >=1.21.8 {
 /*import me.kous500.curvebuilding.fabric.client.render.backend.LegacyPreviewBackend;
 *///?} else {
 /*import me.kous500.curvebuilding.fabric.client.render.backend.TesselatorPreviewBackend;
@@ -25,7 +25,7 @@ public final class PreviewBackends {
     private static final PreviewBackend BACKEND = new SubmitPreviewBackend();
     //?} else if >=1.21.11 {
     /*private static final PreviewBackend BACKEND = new RenderSetupPreviewBackend();
-    *///?} else if >=1.21.10 {
+    *///?} else if >=1.21.8 {
     /*private static final PreviewBackend BACKEND = new LegacyPreviewBackend();
     *///?} else {
     /*private static final PreviewBackend BACKEND = new TesselatorPreviewBackend();

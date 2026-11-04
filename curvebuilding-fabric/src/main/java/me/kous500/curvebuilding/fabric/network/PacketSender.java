@@ -39,7 +39,7 @@ public class PacketSender {
      */
     public static void sendPosPacket(ServerPlayer player) {
         PosData posData = PosManager.getPosMap().get(player.getUUID());
-        if (posData != null && posData.isIn(FabricCompat.adaptWorld(player.level()))) {
+        if (posData != null && posData.isIn(FabricCompat.adaptPlayer(player).getWorld())) {
             // Never changed, so it can still be written out after the next command changes the positions
             ServerPlayNetworking.send(player, new PosDataPayload(posData.points()));
         } else {

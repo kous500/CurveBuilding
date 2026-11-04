@@ -2,14 +2,12 @@ package me.kous500.curvebuilding.fabric.compat;
 
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.fabric.FabricAdapter;
-import com.sk89q.worldedit.world.World;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 //? if >=1.21.11 {
 import net.minecraft.commands.Commands;
 import net.minecraft.resources.Identifier;
@@ -40,20 +38,6 @@ public final class FabricCompat {
         return FabricAdapter.get().fromNativePlayer(player);
         //?} else {
         /*return FabricAdapter.adaptPlayer(player);
-        *///?}
-    }
-
-    /**
-     * The WorldEdit world for a Minecraft level.
-     *
-     * @param level the Minecraft level
-     * @return the WorldEdit world
-     */
-    public static World adaptWorld(Level level) {
-        //? if >=26.1 {
-        return FabricAdapter.get().fromNativeWorld(level);
-        //?} else {
-        /*return FabricAdapter.adapt(level);
         *///?}
     }
 
