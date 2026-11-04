@@ -28,7 +28,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-//? if >=1.21.10 {
+//? if >=1.21.8 {
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 //?} else {
 /*import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
@@ -287,9 +287,9 @@ public class CurveBuildingGameTests {
         return found;
     }
 
-    // Minecraft 1.21.4 and older take the message of a failed check as text, 1.21.10 and later as a component
+    // Minecraft 1.21.4 and older take the message of a failed check as text, 1.21.8 and later as a component
     private static void assertTrue(GameTestHelper helper, boolean condition, String message) {
-        //? if >=1.21.10 {
+        //? if >=1.21.8 {
         helper.assertTrue(condition, Component.literal(message));
         //?} else {
         /*helper.assertTrue(condition, message);
@@ -297,7 +297,7 @@ public class CurveBuildingGameTests {
     }
 
     private static void fail(GameTestHelper helper, String message) {
-        //? if >=1.21.10 {
+        //? if >=1.21.8 {
         helper.fail(Component.literal(message));
         //?} else {
         /*helper.fail(message);

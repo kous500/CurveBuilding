@@ -14,7 +14,7 @@ apply plugin: obfuscated ? "net.fabricmc.fabric-loom-remap" : "net.fabricmc.fabr
 
 // The annotation of the game tests, which stand on a //$ game_test line. Fabric API for 1.21.4 and older has no
 // GameTest annotation of its own, so the tests there take the one of Minecraft, with the empty structure of Fabric API.
-stonecutter.swaps.put("game_test", stonecutter.eval(minecraftVersion, ">=1.21.10")
+stonecutter.swaps.put("game_test", stonecutter.eval(minecraftVersion, ">=1.21.8")
         ? "@GameTest"
         : "@GameTest(template = FabricGameTest.EMPTY_STRUCTURE)")
 

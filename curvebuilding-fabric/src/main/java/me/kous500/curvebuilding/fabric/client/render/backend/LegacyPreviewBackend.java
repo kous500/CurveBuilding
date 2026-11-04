@@ -1,13 +1,17 @@
 package me.kous500.curvebuilding.fabric.client.render.backend;
 
-//? if >=1.21.10 && <1.21.11 {
+//? if >=1.21.8 && <1.21.11 {
 /*import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+//? if >=1.21.10 {
+/^import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+^///?} else {
+/^import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+^///?}
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -18,9 +22,11 @@ import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
 
-// Preview backend for Minecraft 1.21.10.
-// Draws with its own buffer source at the end of the world render (WorldRenderEvents.END_MAIN), after translucent
-// terrain such as water, so the usual depth test is enough. Lines are 1 pixel wide debug lines.
+// Preview backend for Minecraft 1.21.5 - 1.21.10.
+// Draws with its own buffer source after translucent terrain such as water, so the usual depth test is enough: in
+// WorldRenderEvents.END_MAIN from 1.21.10, and before it in WorldRenderEvents.LAST, where the model view matrix of
+// RenderSystem already faces the camera, so the vertices, relative to the camera, need no other pose. Lines are 1 pixel
+// wide debug lines.
 // RenderPipelines.DEBUG_FILLED_SNIPPET and RenderType.create are opened by curvebuilding.accesswidener.
 @SuppressWarnings("NotNullFieldNotInitialized") // init sets the render types before anything is drawn
 public final class LegacyPreviewBackend implements PreviewBackend {
@@ -39,10 +45,14 @@ public final class LegacyPreviewBackend implements PreviewBackend {
         quads = create("filled", VertexFormat.Mode.QUADS, false);
         quadsThroughWalls = create("filled_through_walls", VertexFormat.Mode.QUADS, true);
 
-        WorldRenderEvents.END_MAIN.register(context -> {
+        //? if >=1.21.10 {
+        /^WorldRenderEvents.END_MAIN.register(context -> {
             pose = context.matrices().last().pose();
             onFrame.run();
         });
+        ^///?} else {
+        /^WorldRenderEvents.LAST.register(context -> onFrame.run());
+        ^///?}
     }
 
     @Override
