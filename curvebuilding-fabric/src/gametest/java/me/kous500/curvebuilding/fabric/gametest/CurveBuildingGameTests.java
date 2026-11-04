@@ -20,7 +20,6 @@ import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
 import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import net.fabricmc.fabric.api.entity.FakePlayer;
-import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -29,6 +28,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+//? if >=1.21.10 {
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
+//?} else {
+/*import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.gametest.framework.GameTest;
+*///?}
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,30 +44,35 @@ import java.util.UUID;
 /**
  * Tests on a real server with WorldEdit, run with runGameTest. Each test gets an empty 8x8x8 area, and positions in
  * the tests are relative to it. The curve tests call what {@code //bcpos} and {@code //bc} call, with a fake player.
+ * Each test has a {@code //$ game_test} line before its annotation, so that Stonecutter writes the annotation of the
+ * Minecraft version (see {@code curvebuilding-fabric/build.gradle}).
  */
 public class CurveBuildingGameTests {
     private static final int SIZE = 8;
 
+    //$ game_test
     @GameTest
     public void defaultFilesAreCopied(GameTestHelper helper) {
         // The files are copied from the mod jar at startup, also when a launcher starts the game (#64)
         Path folder = CurveBuildingFabric.DATA_FOLDER;
         for (String file : new String[]{"config.yml", "messages/en-US.yml", "messages/ja-JP.yml"}) {
             Path copy = folder.resolve(file);
-            helper.assertTrue(Files.isRegularFile(copy), Component.literal(file + " was not copied to " + folder));
+            assertTrue(helper, Files.isRegularFile(copy), file + " was not copied to " + folder);
         }
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void commandsAreRegistered(GameTestHelper helper) {
         var root = helper.getLevel().getServer().getCommands().getDispatcher().getRoot();
         for (String command : new String[]{"/bc", "/bcpos"}) {
-            helper.assertTrue(root.getChild(command) != null, Component.literal("/" + command + " is not registered"));
+            assertTrue(helper, root.getChild(command) != null, "/" + command + " is not registered");
         }
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void commandsSuggestLikeBukkit(GameTestHelper helper) {
         assertSuggestions(helper, "//bcpos s", List.of("set", "shift"));
@@ -75,14 +85,15 @@ public class CurveBuildingGameTests {
         String command = "//bcpos shift 5";
         Suggestion back = suggestions(helper, command).stream()
                 .filter(suggestion -> suggestion.getText().equals("5 back")).findFirst().orElse(null);
-        helper.assertTrue(back != null, Component.literal("no \"5 back\" for " + command));
+        assertTrue(helper, back != null, "no \"5 back\" for " + command);
         String applied = back.apply(command);
-        helper.assertTrue(applied.equals("//bcpos shift 5 back"), Component.literal("\"5 back\" gave " + applied));
+        assertTrue(helper, applied.equals("//bcpos shift 5 back"), "\"5 back\" gave " + applied);
         boolean isParsed = !parse(helper, applied).getReader().canRead();
-        helper.assertTrue(isParsed, Component.literal(applied + " does not parse"));
+        assertTrue(helper, isParsed, applied + " does not parse");
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void commandsFromTheConsoleNeedAPlayer(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
@@ -94,22 +105,24 @@ public class CurveBuildingGameTests {
                 error = e;
             }
             boolean needsPlayer = error != null && error.getType() == CommandSourceStack.ERROR_NOT_PLAYER;
-            helper.assertTrue(needsPlayer, Component.literal(command + " from the console gave " + error));
+            assertTrue(helper, needsPlayer, command + " from the console gave " + error);
         }
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void bcposRejectsArgumentsItDoesNotTake(GameTestHelper helper) {
         Player player = FabricCompat.adaptPlayer(newPlayer(helper));
         for (String[] args : new String[][]{{"set", "1", "extra"}, {"set", "3fx"}, {"insert", "1f"}}) {
             boolean isUsed = PosCommand.posCommand(player, args, CurveBuildingFabric.fabricConfig);
-            helper.assertTrue(!isUsed, Component.literal(String.join(" ", args) + " was used"));
+            assertTrue(helper, !isUsed, String.join(" ", args) + " was used");
         }
-        helper.assertTrue(PosManager.get(player) == null, Component.literal("a position was set"));
+        assertTrue(helper, PosManager.get(player) == null, "a position was set");
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void commandsReadTheArgumentsAsTyped(GameTestHelper helper) {
         Curve curve = new Curve(helper);
@@ -127,6 +140,7 @@ public class CurveBuildingGameTests {
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void straightCurveCopiesTheSelection(GameTestHelper helper) {
         Curve curve = new Curve(helper);
@@ -144,6 +158,7 @@ public class CurveBuildingGameTests {
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void bentCurveFollowsTheControlPoints(GameTestHelper helper) {
         Curve curve = new Curve(helper);
@@ -164,6 +179,7 @@ public class CurveBuildingGameTests {
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void segmentBetweenPositionsAtTheSamePlaceIsSkipped(GameTestHelper helper) {
         Curve curve = new Curve(helper);
@@ -182,6 +198,7 @@ public class CurveBuildingGameTests {
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void loopWithItsEndsAtTheSamePlaceIsBuilt(GameTestHelper helper) {
         Curve curve = new Curve(helper);
@@ -195,10 +212,11 @@ public class CurveBuildingGameTests {
         // The loop goes out along the control points and back, so it places more than its two ends
         List<BlockPos> stone = blocks(helper, Blocks.STONE);
         boolean isLoop = stone.contains(new BlockPos(1, 1, 1)) && stone.size() > 4;
-        helper.assertTrue(isLoop, Component.literal("expected a loop from (1, 1, 1), found stone at " + stone));
+        assertTrue(helper, isLoop, "expected a loop from (1, 1, 1), found stone at " + stone);
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void curveLongerThanTheLimitIsNotBuilt(GameTestHelper helper) {
         Curve curve = new Curve(helper);
@@ -212,6 +230,7 @@ public class CurveBuildingGameTests {
         helper.succeed();
     }
 
+    //$ game_test
     @GameTest
     public void builtCurveCanBeUndone(GameTestHelper helper) {
         Curve curve = new Curve(helper);
@@ -228,7 +247,7 @@ public class CurveBuildingGameTests {
     private static void assertBlocks(GameTestHelper helper, Block block, List<BlockPos> expected) {
         List<BlockPos> actual = blocks(helper, block);
         String message = "expected " + block + " at " + expected + ", found at " + actual;
-        helper.assertTrue(actual.equals(expected), Component.literal(message));
+        assertTrue(helper, actual.equals(expected), message);
     }
 
     /**
@@ -251,7 +270,7 @@ public class CurveBuildingGameTests {
     private static void assertSuggestions(GameTestHelper helper, String command, List<String> expected) {
         List<String> found = suggestions(helper, command).stream().map(Suggestion::getText).toList();
         String message = "expected " + expected + " for " + command + ", found " + found;
-        helper.assertTrue(found.equals(expected), Component.literal(message));
+        assertTrue(helper, found.equals(expected), message);
     }
 
     /** Every position in the test area with {@code block}, ordered by x, then y, then z. */
@@ -266,6 +285,23 @@ public class CurveBuildingGameTests {
             }
         }
         return found;
+    }
+
+    // Minecraft 1.21.1 takes the message of a failed check as text, 1.21.10 and later as a component
+    private static void assertTrue(GameTestHelper helper, boolean condition, String message) {
+        //? if >=1.21.10 {
+        helper.assertTrue(condition, Component.literal(message));
+        //?} else {
+        /*helper.assertTrue(condition, message);
+        *///?}
+    }
+
+    private static void fail(GameTestHelper helper, String message) {
+        //? if >=1.21.10 {
+        helper.fail(Component.literal(message));
+        //?} else {
+        /*helper.fail(message);
+        *///?}
     }
 
     /**
@@ -311,7 +347,7 @@ public class CurveBuildingGameTests {
             try {
                 BcEdit.build(player, BcArguments.parse(arguments), CurveBuildingFabric.fabricConfig);
             } catch (ArgumentException e) {
-                helper.fail(Component.literal("invalid arguments: " + String.join(" ", arguments)));
+                fail(helper, "invalid arguments: " + String.join(" ", arguments));
             }
         }
 
@@ -325,14 +361,14 @@ public class CurveBuildingGameTests {
                 // The first "/" is the one typed in the chat
                 server.getCommands().getDispatcher().execute(command.substring(1), source);
             } catch (CommandSyntaxException e) {
-                helper.fail(Component.literal(command + " failed: " + e.getMessage()));
+                fail(helper, command + " failed: " + e.getMessage());
             }
         }
 
         /** Undoes the last change of the player, as //undo does. */
         void undo() {
             LocalSession session = WorldEdit.getInstance().getSessionManager().get(player);
-            helper.assertTrue(session.undo(null, player) != null, Component.literal("nothing to undo"));
+            assertTrue(helper, session.undo(null, player) != null, "nothing to undo");
         }
     }
 }
