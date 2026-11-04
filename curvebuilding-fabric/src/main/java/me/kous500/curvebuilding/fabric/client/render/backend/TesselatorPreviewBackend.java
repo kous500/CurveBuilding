@@ -10,14 +10,18 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
+//? if >=1.21.4 {
+/^import net.minecraft.client.renderer.CoreShaders;
+^///?} else {
+/^import net.minecraft.client.renderer.GameRenderer;
+^///?}
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import java.util.function.Consumer;
 
-// Preview backend for Minecraft 1.21 - 1.21.1, which do not have RenderPipelines yet.
+// Preview backend for Minecraft 1.21 - 1.21.4, which do not have RenderPipelines yet.
 // Draws straight to the frame buffer with the position-color shader at the end of the world render
 // (WorldRenderEvents.LAST), after translucent terrain such as water. Fabric API has already turned the model view
 // matrix of RenderSystem toward the camera by then, so the vertices, relative to the camera, need no other pose.
@@ -78,7 +82,11 @@ public final class TesselatorPreviewBackend implements PreviewBackend {
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(isThroughWalls ? GL11.GL_ALWAYS : GL11.GL_LEQUAL);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        //? if >=1.21.4 {
+        /^RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        ^///?} else {
+        /^RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        ^///?}
         BufferUploader.drawWithShader(mesh);
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.enableCull();

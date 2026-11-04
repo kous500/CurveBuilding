@@ -287,7 +287,7 @@ public class CurveBuildingGameTests {
         return found;
     }
 
-    // Minecraft 1.21.1 takes the message of a failed check as text, 1.21.10 and later as a component
+    // Minecraft 1.21.4 and older take the message of a failed check as text, 1.21.10 and later as a component
     private static void assertTrue(GameTestHelper helper, boolean condition, String message) {
         //? if >=1.21.10 {
         helper.assertTrue(condition, Component.literal(message));
