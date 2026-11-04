@@ -166,6 +166,12 @@ jobs:
           - minecraft: "1.21"
             task: ":fabric-test-runs:1.21:runServer"
             args: -PtestRuns
+          - minecraft: "1.21.4"
+            task: ":curvebuilding-fabric:1.21.4:runServer"
+          # The 1.21.3 - 1.21.4 jar on the oldest version of its range
+          - minecraft: "1.21.3"
+            task: ":fabric-test-runs:1.21.3:runServer"
+            args: -PtestRuns
           - minecraft: "1.21.10"
             task: ":curvebuilding-fabric:1.21.10:runServer"
           - minecraft: "1.21.11"
@@ -305,6 +311,14 @@ jobs:
             task: ":fabric-test-runs:1.21:runGameTest"
             args: -PtestRuns
             dir: fabric-test-runs/1.21
+          - minecraft: "1.21.4"
+            task: ":curvebuilding-fabric:1.21.4:runGameTest"
+            dir: curvebuilding-fabric/versions/1.21.4
+          # The 1.21.3 - 1.21.4 jar and its tests on the oldest version of its range
+          - minecraft: "1.21.3"
+            task: ":fabric-test-runs:1.21.3:runGameTest"
+            args: -PtestRuns
+            dir: fabric-test-runs/1.21.3
           - minecraft: "1.21.10"
             task: ":curvebuilding-fabric:1.21.10:runGameTest"
             dir: curvebuilding-fabric/versions/1.21.10
