@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.fabric.client.render.backend;
 
-//? if <1.21.11 {
+//? if >=1.21.10 && <1.21.11 {
 /*import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -18,7 +18,7 @@ import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
 
-// Preview backend for Minecraft 1.21.10 and older.
+// Preview backend for Minecraft 1.21.10.
 // Draws with its own buffer source at the end of the world render (WorldRenderEvents.END_MAIN), after translucent
 // terrain such as water, so the usual depth test is enough. Lines are 1 pixel wide debug lines.
 // RenderPipelines.DEBUG_FILLED_SNIPPET and RenderType.create are opened by curvebuilding.accesswidener.

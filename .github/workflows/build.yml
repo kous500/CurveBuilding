@@ -160,6 +160,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - minecraft: "1.21.1"
+            task: ":curvebuilding-fabric:1.21.1:runServer"
+          # The 1.21 - 1.21.1 jar on the oldest version of its range
+          - minecraft: "1.21"
+            task: ":fabric-test-runs:1.21:runServer"
+            args: -PtestRuns
           - minecraft: "1.21.10"
             task: ":curvebuilding-fabric:1.21.10:runServer"
           - minecraft: "1.21.11"
@@ -291,6 +297,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - minecraft: "1.21.1"
+            task: ":curvebuilding-fabric:1.21.1:runGameTest"
+            dir: curvebuilding-fabric/versions/1.21.1
+          # The 1.21 - 1.21.1 jar and its tests on the oldest version of its range
+          - minecraft: "1.21"
+            task: ":fabric-test-runs:1.21:runGameTest"
+            args: -PtestRuns
+            dir: fabric-test-runs/1.21
           - minecraft: "1.21.10"
             task: ":curvebuilding-fabric:1.21.10:runGameTest"
             dir: curvebuilding-fabric/versions/1.21.10
