@@ -2,10 +2,10 @@ name: Build
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, java-17]
     types: [opened, synchronize, reopened, ready_for_review]
   push:
-    branches: [main]
+    branches: [main, java-17]
   # Called by the release workflow, which uses the jars of a successful run
   workflow_call:
     inputs:
@@ -120,15 +120,30 @@ jobs:
             done
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # A release of main has every jar. A release of java-17 has only the Fabric jars built with Java 17 (java_version
+      # of the version); main releases the others.
+      - name: Collect the jars for the release
+        if: ${{ env.RELEASE_VERSION != '' }}
+        run: |
+          mkdir release-jars
+          if [ "$GITHUB_REF" = refs/heads/java-17 ]; then
+            for props in curvebuilding-fabric/versions/*/gradle.properties; do
+              if tr -d '\r' < "$props" | grep -qx 'java_version=17'; then
+                cp "$(dirname "$props")"/build/libs/*.jar release-jars/
+              fi
+            done
+          else
+            cp curvebuilding-bukkit/build/libs/*.jar curvebuilding-fabric/versions/*/build/libs/*.jar release-jars/
+          fi
+          rm -f release-jars/*-sources.jar
+          ls release-jars
+
       - name: Keep the jars for the release
         if: ${{ env.RELEASE_VERSION != '' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: jars
-          path: |
-            curvebuilding-bukkit/build/libs/*.jar
-            curvebuilding-fabric/versions/*/build/libs/*.jar
-            !**/*-sources.jar
+          path: release-jars/*.jar
           if-no-files-found: error
           retention-days: 1
 

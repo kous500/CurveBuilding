@@ -22,8 +22,30 @@ notes are written by hand in the style below, and a maintainer pastes them into 
 4. Find the supported versions:
    - Fabric: one jar per `curvebuilding-fabric/versions/<version>/`; `minecraft_min` and `minecraft_max` in its
      `gradle.properties`.
-   - Bukkit: keep the range of the previous release notes unless a pull request changed it. Ask the maintainer
-     when unsure, for example after an `mc: Support Bukkit ...` pull request.
+   - Bukkit: `BUKKIT_GAME_VERSIONS` in `.github/workflows/publish.yml` of the release, such as
+     `[1.20.2,26.3]` for `1.20.2 to 26.3`.
+
+### A release of java-17
+
+For a tag `java-17-<version>`, the notes refer to the release `<version>` of `main` instead of listing its changes
+again. They have only the `## Mod` section:
+
+```markdown
+## Mod
+
+- Supported versions: Fabric `<min> to <max>`
+- Same changes as [<version>](https://github.com/kous500/CurveBuilding/releases/tag/<version>)
+- <each pull request merged into java-17 itself since the previous release of java-17>
+
+**Full Changelog**: https://github.com/kous500/CurveBuilding/compare/java-17-<previous>...java-17-<version>
+```
+
+- Supported versions: the jars of the release, those whose `gradle.properties` on `java-17` has `java_version=17`.
+- The previous release is the latest earlier `java-17-*` release. The pull requests merged into `java-17` itself are
+  the squash commits in `git log --first-parent --format=%s java-17-<previous>..java-17-<version>`; leave out the
+  merge commits, which bring in `main`. Write them like the entries of other releases.
+- When there is no earlier `java-17-*` release, write `- Added the mod for Minecraft <min> to <max> on Java 17`
+  instead of the "Same changes" line and the pull requests, and leave out the Full Changelog line.
 
 ## Write the notes
 

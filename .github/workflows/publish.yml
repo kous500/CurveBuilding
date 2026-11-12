@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Tag of a published release, for example 0.6.9
+        description: Tag of a published release, for example 0.6.9 or java-17-0.6.9
         type: string
         required: true
 
@@ -48,7 +48,7 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          if ! printf '%s' "$TAG" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|rc)\.[0-9]+)?$'; then
+          if ! printf '%s' "$TAG" | grep -qE '^(java-17-)?[0-9]+\.[0-9]+\.[0-9]+(-(alpha|rc)\.[0-9]+)?$'; then
             echo "::error::$TAG is not a release version."
             exit 1
           fi
@@ -79,6 +79,8 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
+          # The jars of java-17-<version> are named after <version>, like those of the release of main
+          version=${TAG#java-17-}
           case "$TAG" in
             *-alpha.*) echo "version-type=alpha" >> "$GITHUB_OUTPUT" ;;
             *-rc.*) echo "version-type=beta" >> "$GITHUB_OUTPUT" ;;
@@ -89,7 +91,7 @@ jobs:
               file=$(basename "$jar")
               case "$file" in
                 curvebuilding-bukkit-*)
-                  jq -n --arg file "$file" --arg tag "$TAG" --arg games "$BUKKIT_GAME_VERSIONS" '{
+                  jq -n --arg file "$file" --arg tag "$version" --arg games "$BUKKIT_GAME_VERSIONS" '{
                     platform: "bukkit", file: $file, version: $tag, name: "CurveBuilding \($tag) for Bukkit",
                     loaders: "bukkit spigot paper purpur", "game-versions": $games, java: "21",
                     dependencies: "worldedit(required){modrinth:worldedit}"
@@ -97,15 +99,18 @@ jobs:
                   ;;
                 curvebuilding-fabric-*)
                   # curvebuilding-fabric-<version>+<min>-<max>.jar, or +<version> for a jar of one Minecraft version
-                  range=${file#curvebuilding-fabric-"$TAG"+}
+                  range=${file#curvebuilding-fabric-"$version"+}
                   range=${range%.jar}
                   case "$range" in
                     *-*) games="[${range%-*},${range#*-}]"; label="${range%-*} - ${range#*-}" ;;
                     *) games=$range; label=$range ;;
                   esac
-                  # Minecraft 26.1 and newer need Java 25
-                  case "$range" in 1.*) java=21 ;; *) java=25 ;; esac
-                  jq -n --arg file "$file" --arg version "$TAG+$range" --arg name "CurveBuilding $TAG for Fabric $label" \
+                  # The jars of java-17 run on Java 17; of the others, those for Minecraft 26.1 and newer need Java 25
+                  case "$TAG" in
+                    java-17-*) java=17 ;;
+                    *) case "$range" in 1.*) java=21 ;; *) java=25 ;; esac ;;
+                  esac
+                  jq -n --arg file "$file" --arg version "$version+$range" --arg name "CurveBuilding $version for Fabric $label" \
                     --arg games "$games" --arg java "$java" '{
                     platform: "fabric", file: $file, version: $version, name: $name,
                     loaders: "fabric", "game-versions": $games, java: $java,

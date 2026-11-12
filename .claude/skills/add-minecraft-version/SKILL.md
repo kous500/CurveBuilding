@@ -42,7 +42,8 @@ A jar covers every version it can run on, so try the neighbours of the requested
 - Read in the jars how the world render event of that version sets up the matrices before relying on a pose: it
   differs between versions (see the comments of the backends).
 - A Java version not yet used: `java_version`, the `java` case in `publish.yml`, `java-version` and `GRADLE_TOOLCHAINS`
-  in `build.yml`, and the JDKs named in the README and CONTRIBUTING.md. `core` compiles for the oldest Java of any jar.
+  in `build.yml`, and the JDKs named in the README and CONTRIBUTING.md. `core` stays on Java 21; a Minecraft
+  version that needs an older Java is built on `java-17`.
 
 ### Files every new jar needs
 
@@ -74,8 +75,6 @@ Bukkit is a single jar, so a new version usually needs no code.
 - `.github/workflows/build.yml`, the `bukkit-server` matrix: the oldest and the newest version, with the Java it needs
   and a WorldEdit named by its Modrinth version ID, as the Fabric and Bukkit releases share version numbers.
 - `.github/workflows/publish.yml`: `BUKKIT_GAME_VERSIONS`, with the same ends as that matrix.
-- `.claude/skills/release-notes` takes the range from the previous release notes, so say the new range in the pull
-  request.
 - CI starts Paper only, reloads the plugin, and fails on any warning from CurveBuilding, such as ParticleNativeAPI
   failing to load. It does not see the particles or run `//bc`, and Spigot needs BuildTools, so ask the maintainer
   whether those were tried.

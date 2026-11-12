@@ -3,7 +3,7 @@ name: Pull request
 # Checks the pull request branch name against CONTRIBUTING.md.
 on:
   pull_request:
-    branches: [main]
+    branches: [main, java-17]
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions: {}
@@ -22,7 +22,12 @@ jobs:
       - name: Check the branch name format
         env:
           BRANCH: ${{ github.event.pull_request.head.ref }}
+          BASE: ${{ github.event.pull_request.base.ref }}
         run: |
+          # java-17 takes the changes of main through a pull request from main itself
+          if [ "$BASE" = java-17 ] && [ "$BRANCH" = main ]; then
+            exit 0
+          fi
           # <type>/<summary>-<yyyymmdd> or <type>/<issue>-<summary>-<yyyymmdd>, in lowercase
           if ! printf '%s' "$BRANCH" | grep -qE '^(feature|fix|mc|chore)/[a-z0-9][a-z0-9.-]*-[0-9]{8}$'; then
             echo "::error::The branch name must be '<type>/<summary>-<yyyymmdd>' or '<type>/<issue>-<summary>-<yyyymmdd>' in lowercase letters, digits, '.' and '-' (type: feature, fix, mc or chore). Example: 'fix/40-particles-disappear-on-clearall-20261024'. See CONTRIBUTING.md."

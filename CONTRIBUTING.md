@@ -111,16 +111,16 @@ To add a language, copy `en-US.yml`, translate the values (not the keys), and na
 
 ## Supported versions
 
-| Platform | Target support |
+| Platform | Jars |
 |---|---|
-| Bukkit (Spigot / Paper) | Minecraft 1.20 and later on Java 21 or newer, with a single jar |
-| Fabric | Major Minecraft versions from 1.20 onward on Java 21 or newer. Each jar covers as many Minecraft versions as it can run on |
+| Bukkit (Spigot / Paper) | A single jar for every supported Minecraft version, on Java 21 or newer |
+| Fabric | Each jar covers as many Minecraft versions as it can run on |
 
-All supported versions are built from `main`. We do not keep separate branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch. In the Fabric module, write it with [Stonecutter](https://stonecutter.kikugie.dev/) comments, for example `//? if >=26.1 {`.
+The repository targets Java 21. All supported versions are built from `main`, except the Fabric jars for the Minecraft versions that need Java 17, which are built from the [`java-17`](#java-17) branch. We do not keep other branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch. In the Fabric module, write it with [Stonecutter](https://stonecutter.kikugie.dev/) comments, for example `//? if >=26.1 {`.
 
 The Fabric sources in the repository are kept in the state of the newest supported Minecraft version, Stonecutter's `vcsVersion` in `settings.gradle`. When support for a newer Minecraft version is added, make it the `vcsVersion` in the same pull request. Before committing, run the `Reset active project` task so that the sources are in that state.
 
-> Support for more Fabric versions is being added. The Minecraft versions built right now are listed in `settings.gradle`.
+The Minecraft versions built are listed in `settings.gradle`.
 
 ## Branches (maintainers)
 
@@ -135,11 +135,18 @@ Contributors working in their own fork can name branches freely. Branches create
 - `<yyyymmdd>` is the date the branch was created. It keeps branch names unique, even for similar tasks.
 - Use **lowercase** letters, digits, `.` and `-` only. Do not use `/` inside the summary.
   Git on Windows does not distinguish upper and lower case, and `fix/a` cannot coexist with `fix/a/b`.
-- `main` is the only long-lived branch. Branches are deleted automatically after merging; continue follow-up work on a new branch.
+- `main` and `java-17` are the only long-lived branches. Other branches are deleted automatically after merging; continue follow-up work on a new branch.
 
 Examples: `fix/40-particles-disappear-on-clearall-20261024`, `mc/bukkit-26.4-20261024`, `chore/release-workflow-20261024`
 
 A branch that does not start with `<type>/` or does not end with `-<yyyymmdd>` cannot be pushed to this repository: GitHub rejects creating it. The rest of the name, such as upper case letters in the summary, is checked by CI when the pull request is opened. To fix a name, push the commits again under a correct name and open a new pull request.
+
+### java-17
+
+`java-17` is `main` with the changes that the Minecraft versions on Java 17 need. It is maintained only when needed; all other work happens on `main`.
+
+- It takes the changes of `main` through a pull request merged with a **merge commit**. Never merge `java-17` into `main`.
+- It is released separately: after merging `main` up to the tag of a release, run the **Release** workflow on `java-17` with the same version. It tags the commit `java-17-<version>` and creates a draft release with the Fabric jars built with Java 17.
 
 ## Versioning and releases (maintainers)
 

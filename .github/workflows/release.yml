@@ -4,6 +4,10 @@ name: Release
 # and creates a draft release with the jars. A maintainer writes the release notes and publishes the draft.
 # The tag is created only after every check passed, because tags cannot be moved or deleted (tags ruleset).
 #
+# Run on java-17 with the version of a release of main, it makes the release of java-17 for that version: the tag
+# java-17-<version> and a draft release with the Fabric jars built with Java 17. java-17 must contain the changes of
+# main up to the tag <version> and none after it.
+#
 # A dry run works on any branch and leaves nothing behind but the run: it builds with the version
 # <version>-dry-run.g<commit>, written into the jars so that they cannot pass for the release, keeps them for
 # 7 days and shows what the release would contain. It does not tag, create a release or attest the build.
@@ -34,8 +38,9 @@ jobs:
       contents: read
     outputs:
       build-version: ${{ steps.check.outputs.build-version }}
+      tag: ${{ steps.check.outputs.tag }}
     steps:
-      - name: Check the branch, the version format and that the tag is free
+      - name: Check the branch, the version format and the tag
         id: check
         env:
           VERSION: ${{ inputs.version }}
@@ -45,8 +50,8 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ "$DRY_RUN" != true ] && [ "$REF" != refs/heads/main ]; then
-            echo "::error::Run the release workflow on main, not on $REF."
+          if [ "$DRY_RUN" != true ] && [ "$REF" != refs/heads/main ] && [ "$REF" != refs/heads/java-17 ]; then
+            echo "::error::Run the release workflow on main or java-17, not on $REF."
             exit 1
           fi
           # CONTRIBUTING.md: no v prefix, pre-releases use -alpha.N or -rc.N
@@ -54,13 +59,34 @@ jobs:
             echo "::error::The version must look like 0.6.9, 0.7.0-alpha.1 or 0.7.0-rc.1."
             exit 1
           fi
-          # A tag on this commit is left over from a run that failed later, which may be run again.
-          # matching-refs gives an empty list when there is no such tag; a failed request fails the step.
-          tagged=$(gh api "repos/$REPO/git/matching-refs/tags/$VERSION" --jq ".[] | select(.ref == \"refs/tags/$VERSION\") | .object.sha")
+          # matching-refs gives an empty list when there is no such tag; a failed request fails the step
+          tag_commit() {
+            gh api "repos/$REPO/git/matching-refs/tags/$1" --jq ".[] | select(.ref == \"refs/tags/$1\") | .object.sha"
+          }
+          tag=$VERSION
+          if [ "$REF" = refs/heads/java-17 ]; then
+            tag=java-17-$VERSION
+            # The release of java-17 has the same changes of main as the release of main
+            if [ "$DRY_RUN" != true ]; then
+              main_tagged=$(tag_commit "$VERSION")
+              if [ -z "$main_tagged" ]; then
+                echo "::error::There is no tag $VERSION. Release $VERSION from main first."
+                exit 1
+              fi
+              merge_base=$(gh api "repos/$REPO/compare/main...$SHA" --jq .merge_base_commit.sha)
+              if [ "$merge_base" != "$main_tagged" ]; then
+                echo "::error::java-17 must contain the changes of main up to the tag $VERSION and none after it. Merge the tag into java-17 (see CONTRIBUTING.md)."
+                exit 1
+              fi
+            fi
+          fi
+          # A tag on this commit is left over from a run that failed later, which may be run again
+          tagged=$(tag_commit "$tag")
           if [ -n "$tagged" ] && [ "$tagged" != "$SHA" ]; then
-            echo "::error::The tag $VERSION already exists on another commit."
+            echo "::error::The tag $tag already exists on another commit."
             exit 1
           fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
           if [ "$DRY_RUN" = true ]; then
             echo "build-version=$VERSION-dry-run.g${SHA:0:7}" >> "$GITHUB_OUTPUT"
           else
@@ -79,7 +105,7 @@ jobs:
   preview:
     name: Show the release (dry run)
     if: ${{ inputs.dry-run }}
-    needs: build
+    needs: [check, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -127,21 +153,30 @@ jobs:
       - name: Show what the release would contain
         env:
           VERSION: ${{ inputs.version }}
+          TAG: ${{ needs.check.outputs.tag }}
+          REF: ${{ github.ref }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          # The same previous release as in the release-notes skill: for a release, the latest one that is not a
-          # pre-release; for a pre-release, the latest one of any kind
+          # The same previous release as in the release-notes skill: of the releases of the same branch, for a release
+          # the latest one that is not a pre-release; for a pre-release, the latest one of any kind
+          if [ "$REF" = refs/heads/java-17 ]; then
+            branch='startswith("java-17-")'
+          else
+            branch='startswith("java-17-") | not'
+          fi
           case "$VERSION" in
-            *-*) prerelease=yes; previous=$(gh release list --repo "$REPO" --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName // empty') ;;
-            *) prerelease=no; previous=$(gh release list --repo "$REPO" --exclude-drafts --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName // empty') ;;
+            *-*) prerelease=yes; kind=true ;;
+            *) prerelease=no; kind='.isPrerelease | not' ;;
           esac
+          previous=$(gh release list --repo "$REPO" --exclude-drafts --limit 100 --json tagName,isPrerelease \
+            --jq "[.[] | select((.tagName | $branch) and ($kind))][0].tagName // empty")
           {
-            echo "## Dry run of $VERSION"
+            echo "## Dry run of $TAG"
             echo
             echo "Nothing was tagged or released. The jars (named with the dry-run version) are kept in the \`dry-run\` artifact for 7 days."
             echo
-            echo "- Tag: \`$VERSION\` on \`${GITHUB_SHA:0:7}\`"
+            echo "- Tag: \`$TAG\` on \`${GITHUB_SHA:0:7}\`"
             echo "- Pre-release: $prerelease"
             echo "- Previous release: \`${previous:-none}\`"
             echo
@@ -163,7 +198,7 @@ jobs:
   release:
     name: Create the draft release
     if: ${{ !inputs.dry-run }}
-    needs: build
+    needs: [check, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -192,34 +227,42 @@ jobs:
 
       - name: Tag the commit
         env:
-          VERSION: ${{ inputs.version }}
+          TAG: ${{ needs.check.outputs.tag }}
           SHA: ${{ github.sha }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
           # An empty list when there is no such tag; a failed request fails the step
-          tagged=$(gh api "repos/$REPO/git/matching-refs/tags/$VERSION" --jq ".[] | select(.ref == \"refs/tags/$VERSION\") | .object.sha")
+          tagged=$(gh api "repos/$REPO/git/matching-refs/tags/$TAG" --jq ".[] | select(.ref == \"refs/tags/$TAG\") | .object.sha")
           if [ -z "$tagged" ]; then
-            gh api "repos/$REPO/git/refs" -f ref="refs/tags/$VERSION" -f sha="$SHA" > /dev/null
+            gh api "repos/$REPO/git/refs" -f ref="refs/tags/$TAG" -f sha="$SHA" > /dev/null
           elif [ "$tagged" != "$SHA" ]; then
-            echo "::error::The tag $VERSION already exists on another commit."
+            echo "::error::The tag $TAG already exists on another commit."
             exit 1
           fi
 
+      # The release of java-17 is never marked as the latest release, which stays the one of main
       - name: Create the draft release
         env:
           VERSION: ${{ inputs.version }}
+          TAG: ${{ needs.check.outputs.tag }}
+          REF: ${{ github.ref }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view "$VERSION" --repo "$REPO" > /dev/null 2>&1; then
-            echo "::error::A release for $VERSION already exists."
+          if gh release view "$TAG" --repo "$REPO" > /dev/null 2>&1; then
+            echo "::error::A release for $TAG already exists."
             exit 1
           fi
           prerelease=
           case "$VERSION" in *-*) prerelease=--prerelease ;; esac
-          gh release create "$VERSION" --repo "$REPO" --draft --verify-tag --title "$VERSION" \
-            --generate-notes $prerelease release/*.jar release/SHA256SUMS
+          if [ "$REF" = refs/heads/java-17 ]; then
+            gh release create "$TAG" --repo "$REPO" --draft --verify-tag --title "$VERSION for Java 17" --latest=false \
+              --notes "" $prerelease release/*.jar release/SHA256SUMS
+          else
+            gh release create "$TAG" --repo "$REPO" --draft --verify-tag --title "$VERSION" \
+              --generate-notes $prerelease release/*.jar release/SHA256SUMS
+          fi
           echo "Draft release created. Write the release notes and publish it." >> "$GITHUB_STEP_SUMMARY"
 
       # The build keeps the jars in the run for this job. Anyone signed in to GitHub can download artifacts of a
