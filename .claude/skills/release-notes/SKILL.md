@@ -22,8 +22,8 @@ notes are written by hand in the style below, and a maintainer pastes them into 
 4. Find the supported versions:
    - Fabric: one jar per `curvebuilding-fabric/versions/<version>/`; `minecraft_min` and `minecraft_max` in its
      `gradle.properties`.
-   - Bukkit: keep the range of the previous release notes unless a pull request changed it. Ask the maintainer
-     when unsure, for example after an `mc: Support Bukkit ...` pull request.
+   - Bukkit: `BUKKIT_GAME_VERSIONS` in `.github/workflows/publish.yml` of the release, such as
+     `[1.20.2,26.3]` for `1.20.2 to 26.3`.
 
 ### A release of java-17
 
