@@ -32,7 +32,7 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
 5. Install JDK 25 and JDK 21. Gradle runs on JDK 25 (set in `gradle/gradle-daemon-jvm.properties`) and finds installed JDKs automatically. Set the project SDK version to 25.
 
 All modules are part of a single Gradle build. The Fabric module uses [Stonecutter](https://stonecutter.kikugie.dev/) to build several jars from the same code. Each jar is built against one Minecraft version and can support a range of compatible versions; it has its own project `:curvebuilding-fabric:<minecraft version>` with settings in `curvebuilding-fabric/versions/<minecraft version>/gradle.properties`.
-Fabric is currently built for Minecraft 1.21 - 1.21.1, 1.21.3 - 1.21.4, 1.21.5 - 1.21.8, 1.21.10, 1.21.11 and 26.1 - 26.3 (one jar for each of these).
+Fabric is currently built for Minecraft 1.21 - 1.21.1, 1.21.3 - 1.21.4, 1.21.5 - 1.21.8, 1.21.10, 1.21.11 and 26.1 - 26.3 (one jar for each of these). The jars for the Minecraft versions that need Java 17 are built on the `java-17` branch.
 
 ### Running the Project
 

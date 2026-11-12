@@ -1,6 +1,6 @@
 ---
 name: release-notes
-description: Write the release notes of a CurveBuilding release from the changes since the previous release, in the style of the earlier releases. Use when a maintainer asks for release notes, for example "/release-notes 0.6.9".
+description: Write the release notes of a CurveBuilding release from the changes since the previous release, in the style of the earlier releases. Use when a maintainer asks for release notes, for example "/release-notes 0.6.9" or, for a release of the java-17 branch, "/release-notes java-17-0.6.9".
 ---
 
 # Release notes
@@ -24,6 +24,21 @@ notes are written by hand in the style below, and a maintainer pastes them into 
      `gradle.properties`.
    - Bukkit: keep the range of the previous release notes unless a pull request changed it. Ask the maintainer
      when unsure, for example after an `mc: Support Bukkit ...` pull request.
+
+### A release of java-17
+
+The argument is its tag, such as `java-17-0.6.9`. It is a release of the branch `java-17` (CONTRIBUTING.md,
+"Releases of java-17"), with only the Fabric jars for the Minecraft versions on Java 17.
+
+- The release is the tag, otherwise `origin/java-17`. Compare only with releases of `java-17`: the previous version
+  is chosen as above among the tags `java-17-*`, and the releases of `main` among the others.
+- The changes are those of `main` between the versions of the two releases
+  (`git log --first-parent <previous version>..<version>`, without the `java-17-` prefix), and the pull requests
+  merged into `java-17` itself between the two tags (`git log --first-parent java-17-<previous>..java-17-<version>`,
+  leaving out the merges of `main`). Ask the maintainer what to compare with when there is no earlier release
+  of `java-17`.
+- Only the Fabric mod is released, so leave out changes that only affect the Bukkit plugin and the `## Plugin`
+  section. The supported versions are the jars whose `gradle.properties` on `java-17` has `java_version=17`.
 
 ## Write the notes
 
