@@ -42,7 +42,8 @@ A jar covers every version it can run on, so try the neighbours of the requested
 - Read in the jars how the world render event of that version sets up the matrices before relying on a pose: it
   differs between versions (see the comments of the backends).
 - A Java version not yet used: `java_version`, the `java` case in `publish.yml`, `java-version` and `GRADLE_TOOLCHAINS`
-  in `build.yml`, and the JDKs named in the README and CONTRIBUTING.md. `core` compiles for the oldest Java of any jar.
+  in `build.yml`, and the JDKs named in the README and CONTRIBUTING.md. `core` stays on Java 21; a Minecraft
+  version that needs an older Java is built on `java-17`.
 
 ### Files every new jar needs
 

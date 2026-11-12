@@ -116,7 +116,7 @@ To add a language, copy `en-US.yml`, translate the values (not the keys), and na
 | Bukkit (Spigot / Paper) | A single jar for every supported Minecraft version, on Java 21 or newer |
 | Fabric | Each jar covers as many Minecraft versions as it can run on |
 
-All supported versions are built from `main`, except the Fabric jars for the Minecraft versions that need Java 17, which are built from the [`java-17`](#java-17) branch. We do not keep other branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch. In the Fabric module, write it with [Stonecutter](https://stonecutter.kikugie.dev/) comments, for example `//? if >=26.1 {`.
+The repository targets Java 21. All supported versions are built from `main`, except the Fabric jars for the Minecraft versions that need Java 17, which are built from the [`java-17`](#java-17) branch. We do not keep other branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch. In the Fabric module, write it with [Stonecutter](https://stonecutter.kikugie.dev/) comments, for example `//? if >=26.1 {`.
 
 The Fabric sources in the repository are kept in the state of the newest supported Minecraft version, Stonecutter's `vcsVersion` in `settings.gradle`. When support for a newer Minecraft version is added, make it the `vcsVersion` in the same pull request. Before committing, run the `Reset active project` task so that the sources are in that state.
 

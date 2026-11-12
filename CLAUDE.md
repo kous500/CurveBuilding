@@ -2,9 +2,9 @@
 
 ## Compatibility
 
-- `main` builds the Minecraft versions that run on Java 21 or newer. Bukkit is a single jar. A
-  Fabric jar should cover every Minecraft version it can run on (a version range in
-  `fabric.mod.json`); add a jar only where the API breaks.
+- The repository targets Java 21: `main` builds the Minecraft versions that run on Java 21 or
+  newer. Bukkit is a single jar. A Fabric jar should cover every Minecraft version it can run on (a
+  version range in `fabric.mod.json`); add a jar only where the API breaks.
 - Work on `main`. Change the long-lived branch `java-17` only when asked (see CONTRIBUTING.md).
 - Never create other branches for older Minecraft versions; handle version differences with
   version-specific code (Stonecutter comments). Keep Fabric rendering differences in the preview
