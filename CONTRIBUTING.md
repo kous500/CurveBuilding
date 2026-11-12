@@ -26,7 +26,7 @@ See [Edit the Code](README.md#edit-the-code) in the README for setting up Intell
 
 ## Pull requests
 
-- **Target branch**: `main`. Changes that only the Minecraft versions on Java 17 need go to `java-17` (see [Branches](#branches-maintainers)).
+- **Target branch**: `main`.
 - **Allow edits by maintainers**: please keep this option enabled, so maintainers can fix the title or make small adjustments.
 - **One topic per pull request.** Pull requests are merged with **squash merge**, so the pull request becomes a single commit on `main`. Commits inside your branch can be anything.
 
@@ -116,7 +116,7 @@ To add a language, copy `en-US.yml`, translate the values (not the keys), and na
 | Bukkit (Spigot / Paper) | A single jar for every supported Minecraft version, on Java 21 or newer |
 | Fabric | Each jar covers as many Minecraft versions as it can run on |
 
-The versions on Java 21 or newer are built from `main`. The Fabric jars for the Minecraft versions that need Java 17 are built from the long-lived branch `java-17`, which is `main` with the changes for Java 17 (see [Branches](#branches-maintainers)). We do not keep other branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch. In the Fabric module, write it with [Stonecutter](https://stonecutter.kikugie.dev/) comments, for example `//? if >=26.1 {`.
+All supported versions are built from `main`, except the Fabric jars for the Minecraft versions that need Java 17, which are built from the [`java-17`](#java-17) branch. We do not keep other branches for older Minecraft versions. If a change cannot work on every supported version, it needs version-specific code instead of a separate branch. In the Fabric module, write it with [Stonecutter](https://stonecutter.kikugie.dev/) comments, for example `//? if >=26.1 {`.
 
 The Fabric sources in the repository are kept in the state of the newest supported Minecraft version, Stonecutter's `vcsVersion` in `settings.gradle`. When support for a newer Minecraft version is added, make it the `vcsVersion` in the same pull request. Before committing, run the `Reset active project` task so that the sources are in that state.
 
@@ -143,15 +143,14 @@ A branch that does not start with `<type>/` or does not end with `-<yyyymmdd>` c
 
 ### java-17
 
-`java-17` is `main` with what the Minecraft versions on Java 17 need: core and the Fabric mod compiled for Java 17, and the Fabric jars for those versions. It also needs JDK 17 for development. It has releases of its own with only those Fabric jars (see [Releases of java-17](#releases-of-java-17)). The Bukkit plugin needs Java 21 on every Minecraft version, so its jar is released from `main` only.
+`java-17` is `main` with the changes that the Minecraft versions on Java 17 need. It is maintained only when needed; all other work happens on `main`.
 
-- Make every other change on `main`. To bring the changes of `main` to `java-17`, open a pull request from `main` into `java-17` and merge it with a **merge commit**, not a squash merge, so the next one brings only the newer changes. When the merge has conflicts, merge `main` into a branch made from `java-17`, such as `chore/merge-main-20261120`, resolve them there and open the pull request from that branch, also merged with a merge commit.
-- A change that only `java-17` needs, such as replacing an API that is newer than Java 17 or a Fabric jar for a Minecraft version on Java 17, goes into a pull request from a branch made from `java-17`, squash merged like the others.
-- Never merge `java-17` into `main`.
+- It takes the changes of `main` through a pull request merged with a **merge commit**. Never merge `java-17` into `main`.
+- It is released separately: after merging `main` up to the tag of a release, run the **Release** workflow on `java-17` with the same version. It tags the commit `java-17-<version>` and creates a draft release with the Fabric jars built with Java 17.
 
 ## Versioning and releases (maintainers)
 
-A release is a **tag on `main`**, and a release of `java-17` is a tag `java-17-<version>` on `java-17`. The tag is the only place where the version number is decided; it is not written in the source. The release workflow creates the tag, so maintainers do not tag by hand.
+A release is a **tag on `main`**. The tag is the only place where the version number is decided; it is not written in the source. The release workflow creates the tag, so maintainers do not tag by hand.
 
 ### Version numbers
 
@@ -165,7 +164,7 @@ While the version is `0.x`, the person who creates the tag picks the version fro
 - Pre-releases come before the version they lead to, in this order:
   - `-alpha.N`, for example `0.7.0-alpha.1`: early builds for trying out unfinished features or a new Minecraft version. They may have known bugs.
   - `-rc.N`, for example `0.7.0-rc.1`: release candidates, feature-complete and meant to become the release unchanged.
-- Tags have no `v` prefix: `0.6.9`, and `java-17-0.6.9` for the release of `java-17`.
+- Tags have no `v` prefix: `0.6.9`.
 - Other builds are named after the latest release and the commit, as `git describe` prints them: `0.6.8-5-g3db5589` is 5 commits after 0.6.8 at commit `3db5589`, with `-dirty` added when there are uncommitted changes. They are not distributed.
 
 ### Jar names
@@ -194,15 +193,6 @@ Both ends must be versions the jar has been tested on; a new Minecraft patch is 
 If publishing fails, start only the failed jobs again, or run the **Publish** workflow with the tag. When the Minecraft versions supported by the Bukkit plugin change, update `BUKKIT_GAME_VERSIONS` in `.github/workflows/publish.yml` and the versions of the Bukkit server start in `.github/workflows/build.yml`.
 
 To try the release first, check **Dry run** in step 2. A dry run works on any branch, so changes to the release or build workflows can be tried before they are merged, and leaves no tag or release. It builds the jars with the version `<version>-dry-run.g<commit>`, keeps them in the run for 7 days (for testing only, do not share them) and shows the files and the pull requests the release would contain.
-
-### Releases of java-17
-
-`java-17` is released separately, with the version of a release of `main` that it contains, and only when the Fabric jars for the Minecraft versions on Java 17 should get that release. Its release has the same changes of `main` as that release, and none after it, so the release workflow checks that `java-17` contains `main` up to the tag and nothing newer.
-
-1. Bring `main` up to the tag into `java-17`: make a branch from the tag, such as `chore/merge-0.6.9-20261120` from `0.6.9`, merge `java-17` into it to resolve any conflicts, open a pull request into `java-17` and merge it with a merge commit (see [java-17](#java-17)). When `main` has no changes after the tag, a pull request from `main` works too.
-2. Run the **Release** workflow on `java-17` with the same version, for example `0.6.9`.
-3. CI runs the same checks on `java-17`, tags the commit `java-17-0.6.9` and creates a draft release, "0.6.9 for Java 17", with the Fabric jars built with Java 17 and `SHA256SUMS`. It is never marked as the latest release.
-4. Write its release notes (`/release-notes java-17-0.6.9`) and publish it. The **Publish** workflow publishes the jars as for a release of `main`, with mod versions named the same way, such as `0.6.9+1.20-1.20.4`.
 
 ## What you can expect from maintainers
 

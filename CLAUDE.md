@@ -2,13 +2,10 @@
 
 ## Compatibility
 
-- `main` builds the Minecraft versions that run on Java 21 or newer. The long-lived branch
-  `java-17` is `main` plus what Java 17 needs, and the Fabric jars of the versions that need
-  Java 17 are released from there. Bukkit is a single jar. A Fabric jar should cover every
-  Minecraft version it can run on (a version range in `fabric.mod.json`); add a jar only where the
-  API breaks.
-- Make every change on `main`, except what only Java 17 needs. `java-17` takes `main` through a
-  pull request from `main` merged with a merge commit; never merge `java-17` into `main`.
+- `main` builds the Minecraft versions that run on Java 21 or newer. Bukkit is a single jar. A
+  Fabric jar should cover every Minecraft version it can run on (a version range in
+  `fabric.mod.json`); add a jar only where the API breaks.
+- Work on `main`. Change the long-lived branch `java-17` only when asked (see CONTRIBUTING.md).
 - Never create other branches for older Minecraft versions; handle version differences with
   version-specific code (Stonecutter comments). Keep Fabric rendering differences in the preview
   backends (`client/render/backend`, one file per version range, picked by `PreviewBackends`) and
@@ -53,7 +50,6 @@
 
 - Follow CONTRIBUTING.md for branch names, commit messages and pull request titles and descriptions.
   Write the description with the headings of `.github/PULL_REQUEST_TEMPLATE.md`.
-- Never push to `main` or `java-17`, or force-push. Pull requests are squash-merged, except those
-  that merge `main` into `java-17`.
+- Never push to `main` or `java-17`, or force-push. Pull requests into `main` are squash-merged.
 - When reusing code from someone else's pull request, credit them with a `Co-authored-by:` trailer
   at the end of the pull request description, which becomes the squash commit message.
