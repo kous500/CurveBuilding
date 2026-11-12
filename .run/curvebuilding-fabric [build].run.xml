@@ -10,6 +10,9 @@
       </option>
       <option name="taskNames">
         <list>
+          <option value=":curvebuilding-fabric:1.21.1:build" />
+          <option value=":curvebuilding-fabric:1.21.4:build" />
+          <option value=":curvebuilding-fabric:1.21.8:build" />
           <option value=":curvebuilding-fabric:1.21.10:build" />
           <option value=":curvebuilding-fabric:1.21.11:build" />
           <option value=":curvebuilding-fabric:26.3:build" />
