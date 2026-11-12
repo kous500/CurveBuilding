@@ -22,7 +22,7 @@ dependencies {
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.4.2") {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    compileOnly "org.jspecify:jspecify:1.0.0"
+    compileOnly "org.jspecify:jspecify:1.0.1"
     api "com.github.fierioziy.particlenativeapi:ParticleNativeAPI-core:4.5.1"
     api project(':curvebuilding-core')
 }
@@ -72,6 +72,6 @@ tasks.withType(Javadoc).configureEach {
 
 configurations.configureEach {
     resolutionStrategy {
-        force 'com.google.code.gson:gson:2.14.0'
+        force 'com.google.code.gson:gson:2.15.0'
     }
 }
