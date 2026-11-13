@@ -80,8 +80,9 @@ tasks.register("gametestJar", Jar) {
 loom {
     // The access widener differs between Minecraft versions, so each version has its own.
     accessWidenerPath = file("curvebuilding.accesswidener")
+    // IntelliJ IDEA runs these through the Gradle run configurations in .run/. Loom generates IDE run configurations
+    // only for the root project.
     runConfigs.configureEach {
-        ideConfigGenerated = true
         // Separate per version, so a world is not upgraded by a newer version and mods of other versions are not loaded.
         // Not for the game tests: their directory (build/run/gameTest) is deleted before each run.
         if (name != "gameTest") {
