@@ -145,7 +145,7 @@ A branch that does not start with `<type>/` or does not end with `-<yyyymmdd>` c
 
 `java-17` is `main` with the changes that the Minecraft versions on Java 17 need. It is maintained only when needed; all other work happens on `main`.
 
-- It takes the changes of `main` through a pull request merged with a **merge commit**. Never merge `java-17` into `main`.
+- Pull requests into `java-17` are merged with a **merge commit**, not a squash merge. It takes the changes of `main` through a pull request from `main`. Never merge `java-17` into `main`.
 - It is released separately: after merging `main` up to the tag of a release, run the **Release** workflow on `java-17` with the same version. It tags the commit `java-17-<version>` and creates a draft release with the Fabric jars built with Java 17.
 
 ## Versioning and releases (maintainers)
