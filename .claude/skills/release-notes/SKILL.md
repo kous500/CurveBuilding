@@ -41,9 +41,10 @@ again. They have only the `## Mod` section:
 ```
 
 - Supported versions: the jars of the release, those whose `gradle.properties` on `java-17` has `java_version=17`.
-- The previous release is the latest earlier `java-17-*` release. The pull requests merged into `java-17` itself are
-  the squash commits in `git log --first-parent --format=%s java-17-<previous>..java-17-<version>`; leave out the
-  merge commits, which bring in `main`. Write them like the entries of other releases.
+- The previous release is the latest earlier `java-17-*` release. Pull requests into `java-17` are merged with a
+  merge commit, "Merge pull request #<number> from <owner>/<branch>" with the pull request title as its body:
+  `git log --first-parent --format='%s%n  %b' java-17-<previous>..java-17-<version>`. The pull requests merged into
+  `java-17` itself are those from a branch other than `main`. Write them like the entries of other releases.
 - When there is no earlier `java-17-*` release, write `- Added the mod for Minecraft <min> to <max> on Java 17`
   instead of the "Same changes" line and the pull requests, and leave out the Full Changelog line.
 
