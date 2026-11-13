@@ -36,8 +36,17 @@ tasks.named("test") {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
-    // Gradle runs on Java 25, so pin the bytecode level used by Bukkit and every Fabric version
-    options.release = 21
+    // Gradle runs on Java 25, so pin the bytecode level to the oldest Java that a jar with core inside runs on: Java
+    // 17, which Minecraft asks for on Fabric 1.20 - 1.20.4
+    options.release = 17
+}
+
+// WorldEdit 7.4.2, which core compiles against, is published for Java 21, and Gradle would refuse it for Java 17 code.
+// The game tests on 1.20 check that what core calls is also in the WorldEdit for those versions, which runs on Java 17.
+["compileClasspath", "testCompileClasspath", "testRuntimeClasspath"].each { name ->
+    configurations.named(name) {
+        attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
+    }
 }
 
 tasks.withType(Javadoc).configureEach {

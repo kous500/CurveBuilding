@@ -105,8 +105,8 @@ class LoadResourcesTest {
 
     private void assertOneWarning(String containing) {
         assertEquals(1, console.entries.size(), String.valueOf(console.entries));
-        assertEquals("warning", console.entries.getFirst().level());
-        assertTrue(console.entries.getFirst().message().contains(containing), console.entries.getFirst().message());
+        assertEquals("warning", console.entries.get(0).level());
+        assertTrue(console.entries.get(0).message().contains(containing), console.entries.get(0).message());
     }
 
     private static void write(Path file, String content) throws IOException {

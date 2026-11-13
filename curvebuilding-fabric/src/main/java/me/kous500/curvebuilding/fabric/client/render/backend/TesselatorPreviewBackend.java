@@ -1,6 +1,6 @@
 package me.kous500.curvebuilding.fabric.client.render.backend;
 
-//? if <1.21.8 {
+//? if >=1.21 && <1.21.8 {
 /*import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;

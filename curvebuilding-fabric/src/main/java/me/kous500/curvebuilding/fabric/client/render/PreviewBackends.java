@@ -7,8 +7,10 @@ import me.kous500.curvebuilding.fabric.client.render.backend.SubmitPreviewBacken
 /*import me.kous500.curvebuilding.fabric.client.render.backend.RenderSetupPreviewBackend;
 *///?} else if >=1.21.8 {
 /*import me.kous500.curvebuilding.fabric.client.render.backend.LegacyPreviewBackend;
-*///?} else {
+*///?} else if >=1.21 {
 /*import me.kous500.curvebuilding.fabric.client.render.backend.TesselatorPreviewBackend;
+*///?} else {
+/*import me.kous500.curvebuilding.fabric.client.render.backend.BufferBuilderPreviewBackend;
 *///?}
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +29,10 @@ public final class PreviewBackends {
     /*private static final PreviewBackend BACKEND = new RenderSetupPreviewBackend();
     *///?} else if >=1.21.8 {
     /*private static final PreviewBackend BACKEND = new LegacyPreviewBackend();
-    *///?} else {
+    *///?} else if >=1.21 {
     /*private static final PreviewBackend BACKEND = new TesselatorPreviewBackend();
+    *///?} else {
+    /*private static final PreviewBackend BACKEND = new BufferBuilderPreviewBackend();
     *///?}
 
     private static boolean isFailed = false;

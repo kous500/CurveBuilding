@@ -23,8 +23,8 @@ concurrency:
 
 env:
   # Gradle does not find the JDKs installed by setup-java by itself; they are passed through these variables.
-  # Gradle runs on JDK 25 (JAVA_HOME), and Minecraft 1.21.x is compiled with JDK 21.
-  GRADLE_TOOLCHAINS: -Porg.gradle.java.installations.fromEnv=JAVA_HOME_21_X64,JAVA_HOME_25_X64
+  # Gradle runs on JDK 25 (JAVA_HOME), Minecraft 1.20.5 - 1.21.x is compiled with JDK 21 and 1.20 - 1.20.4 with JDK 17.
+  GRADLE_TOOLCHAINS: -Porg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64,JAVA_HOME_21_X64,JAVA_HOME_25_X64
   # Empty except when called by the release workflow
   RELEASE_VERSION: ${{ inputs.release-version }}
 
@@ -48,6 +48,7 @@ jobs:
           distribution: temurin
           # The last one becomes JAVA_HOME
           java-version: |
+            17
             21
             25
 
@@ -175,6 +176,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - minecraft: "1.20.4"
+            task: ":curvebuilding-fabric:1.20.4:runServer"
+          # The 1.20 - 1.20.4 jar on the oldest version of its range
+          - minecraft: "1.20"
+            task: ":fabric-test-runs:1.20:runServer"
+            args: -PtestRuns
           - minecraft: "1.21.1"
             task: ":curvebuilding-fabric:1.21.1:runServer"
           # The 1.21 - 1.21.1 jar on the oldest version of its range
@@ -218,6 +225,7 @@ jobs:
         with:
           distribution: temurin
           java-version: |
+            17
             21
             25
 
@@ -324,6 +332,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - minecraft: "1.20.4"
+            task: ":curvebuilding-fabric:1.20.4:runGameTest"
+            dir: curvebuilding-fabric/versions/1.20.4
+          # The 1.20 - 1.20.4 jar and its tests on the oldest version of its range
+          - minecraft: "1.20"
+            task: ":fabric-test-runs:1.20:runGameTest"
+            args: -PtestRuns
+            dir: fabric-test-runs/1.20
           - minecraft: "1.21.1"
             task: ":curvebuilding-fabric:1.21.1:runGameTest"
             dir: curvebuilding-fabric/versions/1.21.1
@@ -373,6 +389,7 @@ jobs:
         with:
           distribution: temurin
           java-version: |
+            17
             21
             25
 
@@ -434,6 +451,7 @@ jobs:
         with:
           distribution: temurin
           java-version: |
+            17
             21
             25
 

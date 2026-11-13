@@ -20,7 +20,7 @@ class ChatTest {
         List<Component> parts = Chat.problemHereText("set", "0").children();
         assertEquals(4, parts.size(), String.valueOf(parts));
 
-        TextComponent before = assertInstanceOf(TextComponent.class, parts.getFirst());
+        TextComponent before = assertInstanceOf(TextComponent.class, parts.get(0));
         assertEquals("...set", before.content());
         assertEquals(TextColor.GRAY, before.color());
 

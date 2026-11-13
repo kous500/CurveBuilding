@@ -21,6 +21,7 @@
   },
   "accessWidener": "curvebuilding.accesswidener",
   "depends": {
+    "java": ">=17",
     "minecraft": "${minecraft_dependency}",
     "fabricloader": ">=0.14.0",
     "fabric-command-api-v2": "*",
