@@ -11,7 +11,7 @@ final class CommandInput {
 
     /** The arguments of the command being run, as typed; core reads them, not the values Brigadier parsed. */
     static String[] arguments(CommandContext<CommandSourceStack> context) {
-        int commandEnd = context.getNodes().getFirst().getRange().getEnd();
+        int commandEnd = context.getNodes().get(0).getRange().getEnd();
         return split(context.getInput().substring(commandEnd));
     }
 

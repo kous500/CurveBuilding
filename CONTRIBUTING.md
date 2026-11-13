@@ -22,7 +22,7 @@ Thank you for your interest in improving CurveBuilding! Bug reports, feature ide
 
 ## Development setup
 
-See [Edit the Code](README.md#edit-the-code) in the README for setting up IntelliJ IDEA and building the Bukkit and Fabric jars. JDK 25 and JDK 21 are required for development: Gradle runs on Java 25, and the jars for older Minecraft versions are compiled with Java 21.
+See [Edit the Code](README.md#edit-the-code) in the README for setting up IntelliJ IDEA and building the Bukkit and Fabric jars. JDK 25, JDK 21 and JDK 17 are required for development: Gradle runs on Java 25, and the jars for older Minecraft versions are compiled with Java 21 and Java 17.
 
 ## Pull requests
 

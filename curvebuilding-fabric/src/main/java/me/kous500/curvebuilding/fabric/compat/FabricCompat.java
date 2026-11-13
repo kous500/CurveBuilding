@@ -2,12 +2,14 @@ package me.kous500.curvebuilding.fabric.compat;
 
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.fabric.FabricAdapter;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+//? if >=1.20.5 {
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.server.level.ServerPlayer;
+//?}
 //? if >=1.21.11 {
 import net.minecraft.commands.Commands;
 import net.minecraft.resources.Identifier;
@@ -55,6 +57,7 @@ public final class FabricCompat {
         *///?}
     }
 
+    //? if >=1.20.5 {
     /**
      * The type of a payload of CurveBuilding, in its namespace {@code curvebuilding}.
      *
@@ -86,4 +89,15 @@ public final class FabricCompat {
         /*PayloadTypeRegistry.playS2C().register(type, codec);
         *///?}
     }
+    //?} else {
+    /*/^*
+     * The id of a packet of this mod, on the versions before 1.20.5, which have no payload types.
+     *
+     * @param path the path of the id
+     * @return the id
+     ^/
+    public static ResourceLocation packetId(String path) {
+        return new ResourceLocation("curvebuilding", path);
+    }
+    *///?}
 }

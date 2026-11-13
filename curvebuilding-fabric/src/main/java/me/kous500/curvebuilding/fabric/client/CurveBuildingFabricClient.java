@@ -22,12 +22,17 @@ public class CurveBuildingFabricClient implements ClientModInitializer {
      */
     @Override
     public void onInitializeClient() {
+        //? if >=1.20.5 {
         ClientPlayNetworking.registerGlobalReceiver(PosDataPayload.ID, (payload, context) -> {
             LocalPlayer clientPlayer = Minecraft.getInstance().player;
             if (clientPlayer == null) return;
 
             context.client().execute(() -> RenderPreview.posData = new PosData(payload.sendPosData()));
         });
+        //?} else {
+        /*ClientPlayNetworking.registerGlobalReceiver(PosDataPayload.ID, (payload, player, responseSender) ->
+                RenderPreview.posData = new PosData(payload.sendPosData()));
+        *///?}
 
         ClientLoginConnectionEvents.INIT.register((ClientHandshakePacketListenerImpl handler, Minecraft client) -> {
             // In single player the server runs in this game and keeps its positions from one world to the next

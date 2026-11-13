@@ -41,7 +41,9 @@ public class CurveBuildingFabric implements ModInitializer {
             setBcBuilder(dispatcher, () -> fabricConfig);
         });
 
+        //? if >=1.20.5 {
         FabricCompat.registerClientboundPayload(PosDataPayload.ID, PosDataPayload.CODEC);
+        //?}
 
         PacketSender.start();
     }

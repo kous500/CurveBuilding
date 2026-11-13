@@ -30,7 +30,7 @@ final class CoreSuggestions {
 
     /** The arguments after the command name; the last is the one being typed, up to the cursor. */
     private static String[] arguments(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-        int commandEnd = context.getNodes().getFirst().getRange().getEnd();
+        int commandEnd = context.getNodes().get(0).getRange().getEnd();
         String typed = builder.getInput().substring(commandEnd, builder.getStart());
         List<String> args = new ArrayList<>(Arrays.asList(CommandInput.split(typed)));
         args.add(builder.getRemaining());

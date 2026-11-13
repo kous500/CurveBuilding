@@ -12,7 +12,7 @@
   other differences in `FabricCompat`; the preview geometry code must not branch by version.
 - Stonecutter's `vcsVersion` is the newest supported Minecraft version; when adding a newer one,
   make it the `vcsVersion`. Commit only with the sources in that state (`Reset active project`).
-- Core and Bukkit target Java 21. Do not use Java 22+ language features or APIs there.
+- Core targets Java 17 and Bukkit Java 21. Do not use newer language features or APIs there.
 - When adding a message key, add it to every message file in both the Bukkit and the Fabric module.
 
 ## Code comments
