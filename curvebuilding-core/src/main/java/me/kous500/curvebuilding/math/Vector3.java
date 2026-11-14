@@ -115,6 +115,16 @@ public record Vector3(double x, double y, double z) {
     }
 
     /**
+     * Perform scalar multiplication and return a new vector.
+     *
+     * @param n the value to multiply by
+     * @return a new vector
+     */
+    public Vector3 multiply(double n) {
+        return at(x * n, y * n, z * n);
+    }
+
+    /**
      * Divide this vector by another vector on each component.
      *
      * @param x the value to divide by

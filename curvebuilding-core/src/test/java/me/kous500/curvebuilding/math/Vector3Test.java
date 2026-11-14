@@ -24,6 +24,12 @@ class Vector3Test {
     }
 
     @Test
+    void multiply() {
+        assertVector(2, -4, 6, Vector3.at(1, -2, 3).multiply(2));
+        assertVector(0, 0, 0, Vector3.at(1, -2, 3).multiply(0));
+    }
+
+    @Test
     void withLengthKeepsTheDirection() {
         assertVector(6, 8, 0, Vector3.at(3, 4, 0).withLength(10));
     }
