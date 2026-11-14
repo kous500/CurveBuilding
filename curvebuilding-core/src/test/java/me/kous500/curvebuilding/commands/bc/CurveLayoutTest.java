@@ -86,6 +86,19 @@ class CurveLayoutTest {
     }
 
     @Test
+    void crossSectionIsAcrossTheCurveAtItsEnd() throws Exception {
+        // With one step per block, the last step is at the end, where the segment has no handle
+        CurveLayout.Selection selection = new CurveLayout.Selection(1, 1, 3, Vector3.at(0, 0, 1));
+        BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(4, 64, 0));
+        CurveLayout layout = new CurveLayout(selection, NO_ARGUMENTS, NEVER_AIR, 0, 10000, 1);
+        layout.add(line);
+        NavigableMap<BlockVector3, BlockVector3> blocks = layout.blocks();
+
+        assertEquals(Set.of(0, 1, 2, 3, 4), xs(blocks));
+        assertEquals(5 * 3, blocks.size());
+    }
+
+    @Test
     void crossSectionTurnsWithTheCurve() throws Exception {
         CurveLayout.Selection selection = new CurveLayout.Selection(1, 3, 3, Vector3.at(0, 1, 1));
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(0, 64, 4));

@@ -112,6 +112,25 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
     }
 
     /**
+     * The direction that the curve goes at {@code t}, like {@link #direction}, but also where that is zero, as at an
+     * end whose handle is at its point. There the curve leaves {@code p0} towards {@code p2}, or arrives at {@code p3}
+     * from {@code p1}, as {@link #direction} does just beside it; when that is zero too, from {@code p0} to
+     * {@code p3}.
+     *
+     * @param t where on the segment, from 0 to 1
+     * @return the direction, not scaled to any length; zero when none of these tells it, as when all four positions
+     * are at one place
+     */
+    public Vector3 tangent(double t) {
+        Vector3 direction = direction(t);
+        if (direction.lengthSq() != 0) return direction;
+
+        Vector3 besideTheEnd = t < 0.5 ? p2.subtract(p0) : p3.subtract(p1);
+        if (besideTheEnd.lengthSq() != 0) return besideTheEnd;
+        return p3.subtract(p0);
+    }
+
+    /**
      * The length of the curve, measured along {@code fineness} straight steps.
      *
      * @param fineness the number of steps, greater than 0; the steps stop short of the end when it is not a whole

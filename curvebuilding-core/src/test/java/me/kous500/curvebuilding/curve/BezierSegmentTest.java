@@ -91,6 +91,36 @@ class BezierSegmentTest {
     }
 
     @Nested
+    class Tangent {
+        @Test
+        void isTheDirectionWhereThereIsOne() {
+            assertVector(5, 0, 0, ARCH.tangent(0.5));
+            assertVector(0, 10, 0, ARCH.tangent(0));
+        }
+
+        @Test
+        void straightSegmentGoesFromEndToEndAtItsEnds() {
+            BezierSegment segment = straight(Vector3.at(0, 64, 0), Vector3.at(10, 64, 0));
+            assertVector(10, 0, 0, segment.tangent(0));
+            assertVector(10, 0, 0, segment.tangent(1));
+        }
+
+        @Test
+        void endWithoutHandleGoesTowardsTheOtherHandle() {
+            Vector3 start = Vector3.at(0, 64, 0);
+            BezierSegment segment = new BezierSegment(start, start, Vector3.at(0, 64, 10), Vector3.at(10, 64, 10));
+            assertVector(0, 0, 10, segment.tangent(0));
+            assertVector(10, 0, 0, segment.tangent(1));
+        }
+
+        @Test
+        void segmentAtOnePlaceHasNoDirection() {
+            Vector3 a = Vector3.at(3, 64, 3);
+            assertVector(0, 0, 0, new BezierSegment(a, a, a, a).tangent(0));
+        }
+    }
+
+    @Nested
     class Length {
         @ParameterizedTest
         @ValueSource(doubles = {1, 10, 100, 1000})
