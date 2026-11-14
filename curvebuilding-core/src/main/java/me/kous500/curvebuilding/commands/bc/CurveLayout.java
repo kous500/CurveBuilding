@@ -120,12 +120,11 @@ final class CurveLayout {
         List<Sample> samples = new ArrayList<>();
         Vector3 before = segment.p0();
         double distance = 0;
-        for (double t = 0; t <= 1; t += 1.0 / fineness) {
-            // At 0 a handle can be at the point itself, where the curve has no direction yet
-            double at = t == 0 ? 0.00001 : t;
-            Vector3 point = segment.point(at);
+        for (int step = 0; step <= fineness; step++) {
+            double t = step / fineness;
+            Vector3 point = segment.point(t);
             distance += before.distance(point);
-            samples.add(new Sample(point, across(segment.direction(at)), distance));
+            samples.add(new Sample(point, across(segment.tangent(t)), distance));
             before = point;
         }
         return samples;
