@@ -31,8 +31,11 @@ final class CurveLayout {
         }
     }
 
-    /** A step along a segment: where the curve is, which way it goes, and how far it is from the segment start. */
-    private record Sample(Vector3 point, double angle, double distance) {
+    /**
+     * A step along a segment: where the curve is, which way is across it on the xz plane (of length 1), and how far it
+     * is from the segment start.
+     */
+    private record Sample(Vector3 point, Vector3 across, double distance) {
     }
 
     private final Selection selection;
@@ -121,13 +124,21 @@ final class CurveLayout {
             // At 0 a handle can be at the point itself, where the curve has no direction yet
             double at = t == 0 ? 0.00001 : t;
             Vector3 point = segment.point(at);
-            distance += Math.sqrt((point.x() - before.x()) * (point.x() - before.x())
-                    + (point.y() - before.y()) * (point.y() - before.y())
-                    + (point.z() - before.z()) * (point.z() - before.z()));
-            samples.add(new Sample(point, segment.angle(at), distance));
+            distance += before.distance(point);
+            samples.add(new Sample(point, across(segment.direction(at)), distance));
             before = point;
         }
         return samples;
+    }
+
+    /**
+     * {@code direction} on the xz plane, turned a quarter turn the way that takes +z to +x, and of length 1. +x when it
+     * does not move on the xz plane, as for a curve towards +z.
+     */
+    private static Vector3 across(Vector3 direction) {
+        double length = Math.hypot(direction.x(), direction.z());
+        if (length == 0) return Vector3.at(1, 0, 0);
+        return Vector3.at(direction.z() / length, 0, -direction.x() / length);
     }
 
     /**
@@ -167,8 +178,8 @@ final class CurveLayout {
     private void layColumn(List<Sample> samples, int side, int y, Vector3 column) throws MaxChangedBlocksException {
         BlockVector3 before = null;
         for (Sample sample : samples) {
-            Vector3 across = Vector3.at(side * Math.cos(-sample.angle()), y, side * Math.sin(-sample.angle()));
-            BlockVector3 target = BlockVector3.round(sample.point().add(across));
+            Vector3 fromCurve = sample.across().multiply(side).add(0, y, 0);
+            BlockVector3 target = BlockVector3.round(sample.point().add(fromCurve));
 
             if (!target.equals(before)) {
                 // How far into the repeating selection this block is
