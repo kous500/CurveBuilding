@@ -85,6 +85,16 @@ class CurveLayoutTest {
         assertEquals(5 * 9, blocks.size());
     }
 
+    @Test
+    void crossSectionTurnsWithTheCurve() throws Exception {
+        CurveLayout.Selection selection = new CurveLayout.Selection(1, 3, 3, Vector3.at(0, 1, 1));
+        BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(0, 64, 4));
+        NavigableMap<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
+
+        assertEquals(Set.of(-1, 0, 1), xs(blocks));
+        assertEquals(5 * 9, blocks.size());
+    }
+
     /** Which of the four blocks of {@link #FOUR_ALONG_X} each block of the curve gets, from the start of the curve. */
     private static List<Integer> blocksUsed(int offset, BezierSegment... segments) throws Exception {
         List<Integer> used = new ArrayList<>();

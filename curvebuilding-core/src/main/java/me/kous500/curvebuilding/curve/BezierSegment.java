@@ -90,15 +90,13 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
     }
 
     /**
-     * The direction of the curve at {@code t} on the xz plane, as the angle in radians from +z towards +x, from
-     * {@code -Math.PI} to {@code Math.PI}. 0 when the curve does not move on the xz plane there.
+     * The direction that the curve goes at {@code t}: its derivative divided by 3, the steps between the points
+     * weighted by the quadratic Bernstein polynomials. Zero at an end whose handle is at its point.
      *
      * @param t where on the segment, from 0 to 1
-     * @return the angle in radians
+     * @return the direction, not scaled to any length
      */
-    public double angle(double t) {
-        // The direction of the curve, its derivative divided by 3: the steps between the points, weighted by the
-        // quadratic Bernstein polynomials
+    public Vector3 direction(double t) {
         double u = 1 - t;
         double quadratic0 = u * u;
         double quadratic1 = 2 * u * t;
@@ -108,13 +106,9 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
         Vector3 step1 = p2.subtract(p1);
         Vector3 step2 = p3.subtract(p2);
 
-        Vector3 direction = step0.multiply(quadratic0)
+        return step0.multiply(quadratic0)
                 .add(step1.multiply(quadratic1))
                 .add(step2.multiply(quadratic2));
-
-        // atan2 gives Math.PI or -Math.PI for a zero vector when z is -0.0
-        if (direction.x() == 0 && direction.z() == 0) return 0;
-        return Math.atan2(direction.x(), direction.z());
     }
 
     /**
@@ -134,9 +128,7 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
         Vector3 before = blockCenter(0);
         for (int step = 1; step <= fineness; step++) {
             Vector3 p = blockCenter(step / fineness);
-            length += Math.sqrt((p.x() - before.x()) * (p.x() - before.x())
-                    + (p.y() - before.y()) * (p.y() - before.y())
-                    + (p.z() - before.z()) * (p.z() - before.z()));
+            length += before.distance(p);
             before = p;
         }
         return length;

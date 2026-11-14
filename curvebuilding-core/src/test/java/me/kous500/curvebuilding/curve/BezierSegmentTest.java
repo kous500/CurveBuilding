@@ -4,7 +4,6 @@ import me.kous500.curvebuilding.math.Vector3;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
@@ -70,22 +69,24 @@ class BezierSegmentTest {
     }
 
     @Nested
-    class Angle {
-        // dx and dz of the direction; the angle goes from +z towards +x
-        @ParameterizedTest
-        @CsvSource({
-                "0,  1,  0",
-                "1,  0,  1.5707963267948966",
-                "0,  -1, 3.141592653589793",
-                "-1, 0,  -1.5707963267948966",
-                "1,  1,  0.7853981633974483",
-                "-1, -1, -2.356194490192345",
-                "0,  0,  0",
-        })
-        void followsTheCurveOnTheXzPlane(double dx, double dz, double expected) {
-            BezierSegment segment = straight(Vector3.at(0, 64, 0), Vector3.at(dx * 10, 70, dz * 10));
-            // The middle, as a straight segment without handles has no direction at its ends
-            assertEquals(expected, segment.angle(0.5), 1e-12);
+    class Direction {
+        @Test
+        void endsGoTowardsTheirHandles() {
+            assertVector(0, 10, 0, ARCH.direction(0));
+            assertVector(0, -10, 0, ARCH.direction(1));
+        }
+
+        @Test
+        void midpointUsesQuadraticBernsteinWeights() {
+            // weights at t = 0.5 are 1/4, 1/2, 1/4 on the steps (0, 10, 0), (10, 0, 0) and (0, -10, 0)
+            assertVector(5, 0, 0, ARCH.direction(0.5));
+        }
+
+        @Test
+        void endWithoutHandleHasNoDirection() {
+            BezierSegment segment = straight(Vector3.at(0, 64, 0), Vector3.at(10, 64, 0));
+            assertVector(0, 0, 0, segment.direction(0));
+            assertVector(5, 0, 0, segment.direction(0.5));
         }
     }
 

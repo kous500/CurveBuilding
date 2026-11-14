@@ -132,15 +132,16 @@ public final class ParticleLayout {
         // Each line of the cross goes from a corner of the block to its center, sqrt(3) / 2 blocks, and has at least
         // its two ends
         int density = Math.max(1, (int) (settings.pointDensity() * Math.sqrt(3) / 2));
+        Vector3 center = block.add(0.5, 0.5, 0.5);
 
         for (int x = 0; x <= 1; x++) {
             for (int y = 0; y <= 1; y++) {
                 for (int z = 0; z <= 1; z++) {
+                    Vector3 corner = block.add(x, y, z);
+                    Vector3 toCenter = center.subtract(corner);
                     for (int i = 0; i <= density; i++) {
-                        double ax = 0.5 * x + (double) (density * x + (-x * 2 + 1) * i) / density * 0.5;
-                        double ay = 0.5 * y + (double) (density * y + (-y * 2 + 1) * i) / density * 0.5;
-                        double az = 0.5 * z + (double) (density * z + (-z * 2 + 1) * i) / density * 0.5;
-                        particles.add(new Particle(block.add(ax, ay, az), kind));
+                        Vector3 position = corner.add(toCenter.multiply((double) i / density));
+                        particles.add(new Particle(position, kind));
                     }
                 }
             }
@@ -153,12 +154,11 @@ public final class ParticleLayout {
         int distance = (int) point.distance(handle);
         if (distance > settings.maxLength()) return;
 
+        Vector3 start = point.add(0.5, 0.5, 0.5);
+        Vector3 toHandle = handle.subtract(point);
         List<Vector3> candidates = new ArrayList<>();
         for (double t = 0; t <= 1; t += 1.0 / (distance * settings.lineDensity())) {
-            candidates.add(Vector3.at(
-                    (1 - t) * point.x() + t * handle.x() + 0.5,
-                    (1 - t) * point.y() + t * handle.y() + 0.5,
-                    (1 - t) * point.z() + t * handle.z() + 0.5));
+            candidates.add(start.add(toHandle.multiply(t)));
         }
         addDots(candidates, point, Kind.HANDLE_LINE);
     }
