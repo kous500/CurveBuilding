@@ -66,17 +66,17 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
             throw new IllegalArgumentException("t must be in the range 0 to 1");
         }
 
+        // The cubic Bernstein polynomials: how much each point pulls the curve at t
         double u = 1 - t;
-        double bernstein0 = u * u * u;
-        double bernstein1 = 3 * u * u * t;
-        double bernstein2 = 3 * u * t * t;
-        double bernstein3 = t * t * t;
+        double cubic0 = u * u * u;
+        double cubic1 = 3 * u * u * t;
+        double cubic2 = 3 * u * t * t;
+        double cubic3 = t * t * t;
 
-        return Vector3.at(
-                bernstein0 * p0.x() + bernstein1 * p1.x() + bernstein2 * p2.x() + bernstein3 * p3.x(),
-                bernstein0 * p0.y() + bernstein1 * p1.y() + bernstein2 * p2.y() + bernstein3 * p3.y(),
-                bernstein0 * p0.z() + bernstein1 * p1.z() + bernstein2 * p2.z() + bernstein3 * p3.z()
-        );
+        return p0.multiply(cubic0)
+                .add(p1.multiply(cubic1))
+                .add(p2.multiply(cubic2))
+                .add(p3.multiply(cubic3));
     }
 
     /**
@@ -90,24 +90,31 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
     }
 
     /**
-     * The direction of the curve at {@code t} on the xz plane, as the angle in radians from +z towards +x. 0 when the
-     * curve does not move on the xz plane there.
+     * The direction of the curve at {@code t} on the xz plane, as the angle in radians from +z towards +x, from
+     * {@code -Math.PI} to {@code Math.PI}. 0 when the curve does not move on the xz plane there.
      *
      * @param t where on the segment, from 0 to 1
      * @return the angle in radians
      */
     public double angle(double t) {
-        double dx = 3 * t * t * (-p0.x() + 3 * p1.x() - 3 * p2.x() + p3.x()) + 6 * t * (p0.x() - 2 * p1.x() + p2.x())
-                + 3 * (-p0.x() + p1.x());
-        double dz = 3 * t * t * (-p0.z() + 3 * p1.z() - 3 * p2.z() + p3.z()) + 6 * t * (p0.z() - 2 * p1.z() + p2.z())
-                + 3 * (-p0.z() + p1.z());
+        // The direction of the curve, its derivative divided by 3: the steps between the points, weighted by the
+        // quadratic Bernstein polynomials
+        double u = 1 - t;
+        double quadratic0 = u * u;
+        double quadratic1 = 2 * u * t;
+        double quadratic2 = t * t;
 
-        double angle = Math.atan(dx / dz);
-        if (Double.isNaN(angle)) {
-            angle = dx > 0 ? Math.PI / 2 : dx < 0 ? -Math.PI / 2 : 0;
-        }
-        if (dz < 0) angle += Math.PI;
-        return angle;
+        Vector3 step0 = p1.subtract(p0);
+        Vector3 step1 = p2.subtract(p1);
+        Vector3 step2 = p3.subtract(p2);
+
+        Vector3 direction = step0.multiply(quadratic0)
+                .add(step1.multiply(quadratic1))
+                .add(step2.multiply(quadratic2));
+
+        // atan2 gives Math.PI or -Math.PI for a zero vector when z is -0.0
+        if (direction.x() == 0 && direction.z() == 0) return 0;
+        return Math.atan2(direction.x(), direction.z());
     }
 
     /**

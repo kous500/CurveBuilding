@@ -79,6 +79,7 @@ class BezierSegmentTest {
                 "0,  -1, 3.141592653589793",
                 "-1, 0,  -1.5707963267948966",
                 "1,  1,  0.7853981633974483",
+                "-1, -1, -2.356194490192345",
                 "0,  0,  0",
         })
         void followsTheCurveOnTheXzPlane(double dx, double dz, double expected) {
