@@ -57,7 +57,6 @@ dependencies {
 
 loom {
     runConfigs.configureEach {
-        ideConfigGenerated = true
         // Not for the game tests: their directory (build/run/gameTest) is deleted before each run.
         if (name != "gameTest") {
             runDir = "../../curvebuilding-fabric/run/${minecraftVersion}"
