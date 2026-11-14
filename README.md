@@ -29,7 +29,7 @@ If you want to contribute to the CurveBuilding project by adding features, fixin
 2. Download and install [IntelliJ IDEA](https://www.jetbrains.com/idea/download/).
 3. Install the **Minecraft Development** plugin in IDEA.
 4. In the IDEA, open the folder where you saved CurveBuilding's code. This will create a new project in IDEA.
-5. Install JDK 25 and JDK 21. Gradle runs on JDK 25 (set in `gradle/gradle-daemon-jvm.properties`) and finds installed JDKs automatically. Set the project SDK version to 25.
+5. Install a JDK to start Gradle with. Gradle runs on JDK 25 and compiles the jars for older Minecraft versions with JDK 21; it uses them when they are installed and otherwise downloads them into `~/.gradle/jdks`. Set the project SDK version to 25.
 
 All modules are part of a single Gradle build. The Fabric module uses [Stonecutter](https://stonecutter.kikugie.dev/) to build several jars from the same code. Each jar is built against one Minecraft version and can support a range of compatible versions; it has its own project `:curvebuilding-fabric:<minecraft version>` with settings in `curvebuilding-fabric/versions/<minecraft version>/gradle.properties`.
 Fabric is currently built for Minecraft 1.21 - 1.21.1, 1.21.3 - 1.21.4, 1.21.5 - 1.21.8, 1.21.10, 1.21.11 and 26.1 - 26.3 (one jar for each of these).

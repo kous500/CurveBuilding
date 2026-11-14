@@ -14,6 +14,10 @@ pluginManagement {
 
 plugins {
     id "dev.kikugie.stonecutter" version "0.9.8"
+    // Downloads the JDKs that the build needs and does not find: those that the jars are compiled with, and Java 25 for
+    // Gradle itself, which Loom 1.18 requires. gradle/gradle-daemon-jvm.properties is written by
+    // `./gradlew updateDaemonJvm --jvm-version=25`.
+    id "org.gradle.toolchains.foojay-resolver-convention" version "1.0.0"
 }
 
 rootProject.name = "CurveBuilding"
