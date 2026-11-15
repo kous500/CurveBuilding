@@ -18,3 +18,8 @@ messages:
   max-changed-blocks: "Se alcanzó el límite máximo de bloques modificados ({0})."
   max-set-length: "Se alcanzó la longitud máxima de curva en una operación ({0})."
   max-pos-value: "Se alcanzó el valor máximo de posición en una operación ({0})."
+  config-value: "{0}: {1}"
+  config-set: "Se estableció {0} en {1}."
+  config-unknown-key: "No existe la configuración {0}."
+  config-invalid-value: "No se puede usar {1} para {0}."
+  config-not-saved: "No se pudo guardar la configuración. Revisa la consola."

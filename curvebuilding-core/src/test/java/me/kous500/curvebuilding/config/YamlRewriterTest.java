@@ -20,6 +20,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -229,6 +230,33 @@ class YamlRewriterTest {
                 console.entries.getFirst().message());
     }
 
+    @Test
+    void newValuesAreWrittenInPlaceOfThoseOfTheFile() throws IOException {
+        write(file, TEMPLATE.replace("fineness: 10", "fineness: abc"));
+
+        assertTrue(rewrite(Map.of("curve.fineness", "20", "color", "0xFF0000")));
+
+        assertEquals(TEMPLATE.replace("fineness: 10", "fineness: 20").replace("0x00FFFF", "0xFF0000"),
+                Files.readString(file));
+        assertLogs("info: " + file + " was rewritten. The previous file is saved as " + backups.resolve(BACKUP_NAME));
+    }
+
+    @Test
+    void newValuesAreWrittenToANewFile() throws IOException {
+        assertTrue(rewrite(Map.of("curve.fineness", "20")));
+
+        assertEquals(TEMPLATE.replace("fineness: 10", "fineness: 20"), Files.readString(file));
+    }
+
+    @Test
+    void fileThatIsNotRewrittenIsReported() throws IOException {
+        write(backups, "");
+        write(file, "curve:\n  fineness: 20\n");
+
+        assertFalse(rewrite(Map.of("curve.fineness", "30")));
+        assertEquals("curve:\n  fineness: 20\n", Files.readString(file));
+    }
+
     /** The default files of the platforms stay as they are, so that a new installation gets no backups. */
     @TestFactory
     Stream<DynamicTest> defaultFilesAreAlreadyInTheirLayout() {
@@ -248,7 +276,8 @@ class YamlRewriterTest {
                     write(copy, content);
 
                     try (URLClassLoader classLoader = classLoader(jarFolder)) {
-                        YamlRewriter.rewrite(copy, classLoader, "default.yml", backups, config -> { }, CLOCK);
+                        Consumer<YamlConfig> read = config -> { };
+                        YamlRewriter.rewrite(copy, classLoader, "default.yml", backups, read, Map.of(), CLOCK);
                     }
 
                     assertEquals(content, Files.readString(copy, StandardCharsets.UTF_8));
@@ -269,9 +298,13 @@ class YamlRewriterTest {
     }
 
     private void rewrite() throws IOException {
+        rewrite(Map.of());
+    }
+
+    private boolean rewrite(Map<String, String> newValues) throws IOException {
         Consumer<YamlConfig> read = Config::new;
         try (URLClassLoader classLoader = classLoader(jar)) {
-            YamlRewriter.rewrite(file, classLoader, "config.yml", backups, read, CLOCK);
+            return YamlRewriter.rewrite(file, classLoader, "config.yml", backups, read, newValues, CLOCK);
         }
     }
 

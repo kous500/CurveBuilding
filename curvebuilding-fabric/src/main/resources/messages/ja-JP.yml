@@ -18,3 +18,8 @@ messages:
   max-changed-blocks: "変更できるブロックの最大値は ({0}) に設定されています。"
   max-set-length: "設定できる曲線の最大長は ({0}) に設定されています。"
   max-pos-value: "設定できるposの最大値は ({0}) に設定されています。"
+  config-value: "{0}: {1}"
+  config-set: "{0} を {1} にしました。"
+  config-unknown-key: "{0} という設定はありません。"
+  config-invalid-value: "{0} に {1} は使えません。"
+  config-not-saved: "設定を保存できませんでした。コンソールを確認してください。"
