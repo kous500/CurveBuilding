@@ -1,6 +1,7 @@
 plugins {
     id "java-library"
     id "com.gradleup.shadow" version "9.6.1"
+    id "xyz.jpenilla.run-paper" version "3.1.0"
 }
 
 repositories {
@@ -35,6 +36,19 @@ shadowJar {
 
 jar {
     enabled = false
+}
+
+// A Paper server in run/ with the plugin jar and WorldEdit, for trying the plugin in the game
+tasks.named("runServer") {
+    minecraftVersion("26.3")
+    downloadPlugins {
+        // WorldEdit 7.4.6 for Bukkit, by its Modrinth version ID: its Fabric and Bukkit releases share version numbers
+        modrinth("worldedit", "YFnqiUlL")
+    }
+    // The Java version that Paper 26.3 needs at least
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
 def targetJavaVersion = 21
