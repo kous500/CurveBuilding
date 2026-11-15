@@ -54,8 +54,11 @@ Each task can be started from the Run/Debug Configurations in IDEA or with Gradl
 | Fabric client | `curvebuilding-fabric <version> [runClient]` | `./gradlew :curvebuilding-fabric:<version>:runClient` |
 | Fabric server (localhost) | `curvebuilding-fabric <version> [runServer]` | `./gradlew :curvebuilding-fabric:<version>:runServer` |
 | A Fabric jar on another version in its range, for example the 26.1 - 26.3 jar on 26.1 | `fabric-test-runs <version> [runClient]` or `[runServer]` | `./gradlew -PtestRuns :fabric-test-runs:<version>:runClient` |
+| Bukkit server (Paper 26.3, localhost) | `curvebuilding-bukkit [runServer]` | `./gradlew :curvebuilding-bukkit:runServer` |
 
 Each Minecraft version runs in its own folder, `curvebuilding-fabric/run/<version>`. The other versions in a jar's range are set up in `fabric-test-runs/<version>/gradle.properties`; add a folder there to run another version.
+
+The Bukkit server runs in `curvebuilding-bukkit/run`. It builds the plugin, downloads Paper and WorldEdit when needed, and loads the plugin from `build/libs` without copying it into `plugins`. Set `eula=true` in `run/eula.txt` after the first start.
 
 #### Testing
 

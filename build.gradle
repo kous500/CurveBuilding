@@ -29,10 +29,10 @@ allprojects {
     version = buildVersion
 }
 
-// runServer gets a server.properties that runClient, which plays under an offline name, can join from this computer
-// only; Minecraft's defaults would keep it out. An existing file is left as it is.
+// The runServer of Fabric gets a server.properties that runClient, which plays under an offline name, can join from
+// this computer only; Minecraft's defaults would keep it out. An existing file is left as it is.
 subprojects {
-    tasks.matching { it.name == "runServer" }.configureEach {
+    tasks.matching { it.name == "runServer" && it.project.extensions.findByName("loom") != null }.configureEach {
         doFirst {
             def properties = file("${loom.runConfigs.getByName("server").runDir}/server.properties")
             if (!properties.exists()) {

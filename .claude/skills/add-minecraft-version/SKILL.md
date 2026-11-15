@@ -75,6 +75,8 @@ Bukkit is a single jar, so a new version usually needs no code.
 - `.github/workflows/build.yml`, the `bukkit-server` matrix: the oldest and the newest version, with the Java it needs
   and a WorldEdit named by its Modrinth version ID, as the Fabric and Bukkit releases share version numbers.
 - `.github/workflows/publish.yml`: `BUKKIT_GAME_VERSIONS`, with the same ends as that matrix.
+- `curvebuilding-bukkit/build.gradle`, `runServer`: the newest version, with the same Java and WorldEdit as the
+  matrix. Update the version in the `README.md` row of `curvebuilding-bukkit [runServer]` too.
 - CI starts Paper only, reloads the plugin, and fails on any warning from CurveBuilding, such as ParticleNativeAPI
   failing to load. It does not see the particles or run `//bc`, and Spigot needs BuildTools, so ask the maintainer
   whether those were tried.
