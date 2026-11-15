@@ -33,7 +33,8 @@ class ParticleLayoutTest {
 
     @Test
     void pointHasTheEdgesOfItsBlockAndACenter() {
-        NavigableMap<Integer, CurvePoint> point = points(new CurvePoint(Vector3.at(10, 64, 10), null, null));
+        // The center of block (10, 64, 10)
+        NavigableMap<Integer, CurvePoint> point = points(new CurvePoint(Vector3.at(10.5, 64.5, 10.5), null, null));
         List<Particle> particles = ParticleLayout.layout(point, VIEWER, 0, SETTINGS);
 
         // 8 corners and 3 more particles on each of the 12 edges, with 4 particles per block
@@ -41,6 +42,7 @@ class ParticleLayoutTest {
         assertEquals(1, count(particles, Kind.CENTER));
         for (Particle particle : particles) {
             Vector3 position = particle.position();
+            if (particle.kind() == Kind.CENTER) assertEquals(Vector3.at(10.5, 64.5, 10.5), position);
             boolean isInBlock = position.x() >= 10 && position.x() <= 11 && position.z() >= 10 && position.z() <= 11;
             assertTrue(isInBlock, particle.toString());
         }

@@ -178,7 +178,7 @@ final class CurveLayout {
         BlockVector3 before = null;
         for (Sample sample : samples) {
             Vector3 fromCurve = sample.across().multiply(side).add(0, y, 0);
-            BlockVector3 target = BlockVector3.round(sample.point().add(fromCurve));
+            BlockVector3 target = BlockVector3.floor(sample.point().add(fromCurve));
 
             if (!target.equals(before)) {
                 // How far into the repeating selection this block is

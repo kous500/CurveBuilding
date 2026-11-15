@@ -31,8 +31,14 @@ class CurveLayoutTest {
     /** A selection of four blocks along x, from 0 to 3. */
     private static final CurveLayout.Selection FOUR_ALONG_X = new CurveLayout.Selection(4, 1, 1, Vector3.at(1.5, 0, 0));
 
+    /**
+     * A straight segment without handles from the center of block {@code from} to that of block {@code to}, as
+     * {@code //bcpos} sets points where the player stands.
+     */
     private static BezierSegment straight(Vector3 from, Vector3 to) {
-        return new BezierSegment(from, from, to, to);
+        Vector3 start = from.add(0.5, 0.5, 0.5);
+        Vector3 end = to.add(0.5, 0.5, 0.5);
+        return new BezierSegment(start, start, end, end);
     }
 
     private static CurveLayout layout(

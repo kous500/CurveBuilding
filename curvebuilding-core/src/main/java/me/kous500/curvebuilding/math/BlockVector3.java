@@ -44,16 +44,6 @@ public record BlockVector3(int x, int y, int z) implements Comparable<BlockVecto
     }
 
     /**
-     * Each component of {@code vector3} rounded to the closest integer, halves up.
-     *
-     * @param vector3 the vector
-     * @return a new vector
-     */
-    public static BlockVector3 round(Vector3 vector3) {
-        return at(Math.round(vector3.x()), Math.round(vector3.y()), Math.round(vector3.z()));
-    }
-
-    /**
      * Each component of {@code vector3} rounded up.
      *
      * @param vector3 the vector

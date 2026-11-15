@@ -29,51 +29,50 @@ class PosCoordinatesTest {
         }
 
         @Test
-        void tildeAloneIsHalfABlockFromTheFeetOnXAndZ() throws ArgumentException {
-            assertVector(10.2, 64.2, -3.9, parse("~", "~", "~").position(FEET, 0, 0));
-            assertVector(10.7, 64.2, -3.4, parse("~0.5", "~", "~0.5").position(FEET, 0, 0));
+        void tildeAloneIsHalfABlockAboveTheFeet() throws ArgumentException {
+            assertVector(10.7, 64.7, -3.4, parse("~", "~", "~").position(FEET, 0, 0));
         }
 
         @Test
-        void tildeAloneInTheMiddleOfABlockIsItsCorner() throws ArgumentException {
-            assertVector(10, 64, -4, parse("~", "~", "~").position(Vector3.at(10.5, 64, -3.5), 0, 0));
+        void tildeAloneInTheMiddleOfABlockIsItsCenter() throws ArgumentException {
+            assertVector(10.5, 64.5, -3.5, parse("~", "~", "~").position(Vector3.at(10.5, 64, -3.5), 0, 0));
         }
 
         @Test
         void tildeAddsToThatPosition() throws ArgumentException {
-            assertVector(11.7, 63.2, -3.9, parse("~1.5", "~-1", "~").position(FEET, 0, 0));
+            assertVector(12.2, 63.7, -3.4, parse("~1.5", "~-1", "~").position(FEET, 0, 0));
         }
 
         @Test
         void tildeAndNumbersMix() throws ArgumentException {
-            assertVector(100, 64.2, -20, parse("100", "~", "-20").position(FEET, 90, -30));
+            assertVector(100, 64.7, -20, parse("100", "~", "-20").position(FEET, 90, -30));
         }
     }
 
     @Nested
     class Local {
-        // In the middle of the block at the origin, so that the coordinates count from its corner
+        // In the middle of the block at the origin, standing on the block below it
         private static final Vector3 FEET = Vector3.at(0.5, 64, 0.5);
 
         @Test
         void facingSouthLeftIsEastAndForwardIsSouth() throws ArgumentException {
-            assertVector(2, 65, 3, parse("^2", "^1", "^3").position(FEET, 0, 0));
+            assertVector(2.5, 65.5, 3.5, parse("^2", "^1", "^3").position(FEET, 0, 0));
         }
 
         @Test
         void facingWestForwardIsWest() throws ArgumentException {
-            assertVector(-3, 64, 0, parse("^", "^", "^3").position(FEET, 90, 0));
+            assertVector(-2.5, 64.5, 0.5, parse("^", "^", "^3").position(FEET, 90, 0));
         }
 
         @Test
         void lookingStraightUpForwardIsUpAndUpIsBack() throws ArgumentException {
-            assertVector(0, 67, 0, parse("^", "^", "^3").position(FEET, 0, -90));
-            assertVector(0, 64, -2, parse("^", "^2", "^").position(FEET, 0, -90));
+            assertVector(0.5, 67.5, 0.5, parse("^", "^", "^3").position(FEET, 0, -90));
+            assertVector(0.5, 64.5, -1.5, parse("^", "^2", "^").position(FEET, 0, -90));
         }
 
         @Test
         void caretAloneIsLikeTildeAlone() throws ArgumentException {
-            assertVector(0, 64, 0, parse("^", "^", "^").position(FEET, 37, 12));
+            assertVector(0.5, 64.5, 0.5, parse("^", "^", "^").position(FEET, 37, 12));
         }
     }
 

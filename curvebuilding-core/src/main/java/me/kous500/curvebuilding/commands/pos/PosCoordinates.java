@@ -8,8 +8,9 @@ import me.kous500.curvebuilding.message.GameMessage;
  * The x, y and z of a position in {@code //bcpos}, read as Minecraft reads a position in its commands, such as those of
  * {@code /tp}. {@code 100.5} is the coordinate itself. {@code ~5} is 5 blocks from the player on that axis. {@code ^1
  * ^2 ^3} is 1 block to the left, 2 up and 3 forward from where the player looks, and all three use {@code ^} then.
- * Unlike in Minecraft, {@code ~} and {@code ^} count from the feet of the player moved half a block towards -x and -z:
- * from the middle of a block, {@code ~ ~ ~} is its corner, where {@code //bcpos} puts a point without coordinates.
+ * Unlike in Minecraft, {@code ~} and {@code ^} count from half a block above the feet of the player: from the middle
+ * of a block they stand on, {@code ~ ~ ~} is the center of the block their feet are in, where {@code //bcpos} puts a
+ * point without coordinates.
  */
 public final class PosCoordinates {
     // Minecraft's sine table has 65536 steps per turn; this is the number of steps per radian
@@ -81,7 +82,7 @@ public final class PosCoordinates {
      * @return the position
      */
     public Vector3 position(Vector3 feet, float yaw, float pitch) {
-        Vector3 base = feet.add(-0.5, 0, -0.5);
+        Vector3 base = feet.add(0, 0.5, 0);
         if (local) return local(base, yaw, pitch);
 
         double x = relative[0] ? base.x() + values[0] : values[0];

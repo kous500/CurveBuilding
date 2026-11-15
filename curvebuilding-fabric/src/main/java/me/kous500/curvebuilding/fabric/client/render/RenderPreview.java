@@ -52,7 +52,7 @@ public class RenderPreview {
         for (PreviewCurve.ShownSegment shown : PreviewCurve.segments(pos, fabricConfig.lineRenderLength, 5)) {
             int divisions = Math.max(1, (int) Math.ceil(shown.length() * fabricConfig.lineRenderAccuracy));
             Vec3 bc = null;
-            for (Vector3 point : shown.segment().blockCenters(divisions)) {
+            for (Vector3 point : shown.segment().points(divisions)) {
                 Vec3 c = adaptVec(point);
                 if (bc != null) render.addLine(color, bc, c);
                 bc = c;
@@ -66,23 +66,24 @@ public class RenderPreview {
         if (p.f() != null && p.point().distance(p.f()) <= fabricConfig.lineRenderLength) {
             render.addLine(
                     fabricConfig.lineFColor,
-                    adaptVec(p.point()).add(0.5, 0.5, 0.5),
-                    adaptVec(p.f()).add(0.5, 0.5, 0.5)
+                    adaptVec(p.point()),
+                    adaptVec(p.f())
             );
         }
 
         if (p.b() != null && p.point().distance(p.b()) <= fabricConfig.lineRenderLength) {
             render.addLine(
                     fabricConfig.lineBColor,
-                    adaptVec(p.point()).add(0.5, 0.5, 0.5),
-                    adaptVec(p.b()).add(0.5, 0.5, 0.5)
+                    adaptVec(p.point()),
+                    adaptVec(p.b())
             );
         }
     }
 
     private static void renderPos(PosVector pos, PreviewLayer render) {
         Color colorLine = pos.getLineColor();
-        Vec3 block = adaptVec(pos.vector);
+        // The block around the position, by its minimum corner
+        Vec3 block = adaptVec(pos.vector).add(-0.5, -0.5, -0.5);
 
         if (pos.part != CurvePoint.Part.POINT) {
             render.addBlockCrossing(colorLine, block);
