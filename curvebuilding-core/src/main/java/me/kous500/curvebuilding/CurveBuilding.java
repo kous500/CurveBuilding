@@ -1,6 +1,7 @@
 package me.kous500.curvebuilding;
 
 import me.kous500.curvebuilding.config.Config;
+import me.kous500.curvebuilding.config.ConfigFile;
 import me.kous500.curvebuilding.config.ResourceFiles;
 import me.kous500.curvebuilding.config.YamlConfig;
 import me.kous500.curvebuilding.config.YamlRewriter;
@@ -15,6 +16,9 @@ import static me.kous500.curvebuilding.log.Log.console;
 
 /** Reads the files that every platform shares. */
 public final class CurveBuilding {
+    private static final String CONFIG = "config.yml";
+    private static final String BACKUPS = "backups";
+
     private CurveBuilding() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
@@ -37,15 +41,30 @@ public final class CurveBuilding {
             ClassLoader jar,
             Function<YamlConfig, C> readConfig) {
         ResourceFiles.copyDefaults(dataFolder, jar);
-        Path backups = dataFolder.resolve("backups");
+        Path backups = dataFolder.resolve(BACKUPS);
 
-        Path configFile = dataFolder.resolve("config.yml");
-        YamlRewriter.rewrite(configFile, jar, "config.yml", backups, readConfig::apply);
-        C loadedConfig = readConfig.apply(YamlConfig.load(configFile, jar, "config.yml"));
+        Path configFile = dataFolder.resolve(CONFIG);
+        YamlRewriter.rewrite(configFile, jar, CONFIG, backups, readConfig::apply);
+        C loadedConfig = readConfig.apply(YamlConfig.load(configFile, jar, CONFIG));
 
         Path messageFile = messageFile(loadedConfig.messageFilePath, dataFolder);
         Messages.use(Messages.load(messageFile, jar, backups.resolve("messages")));
         return loadedConfig;
+    }
+
+    /**
+     * The config file of the data folder, as {@link #loadResources} reads it, to read and set its values.
+     *
+     * @param dataFolder the folder of the config and the message files
+     * @param jar the class loader that has the default files
+     * @param readConfig makes the config of the platform from config.yml
+     * @return the config file
+     */
+    public static ConfigFile configFile(
+            Path dataFolder,
+            ClassLoader jar,
+            Function<YamlConfig, ? extends Config> readConfig) {
+        return new ConfigFile(dataFolder.resolve(CONFIG), jar, dataFolder.resolve(BACKUPS), readConfig::apply);
     }
 
     private static Path messageFile(@Nullable String setting, Path dataFolder) {

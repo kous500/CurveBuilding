@@ -35,6 +35,8 @@ commands:
     permission-message: You do not have <permission>.
     usage: |
       Example: /<command> reload - Reload configuration files.
+      Example: /<command> config <key> - Show a value of config.yml.
+      Example: /<command> config <key> <value|default> - Set a value of config.yml.
 
 permissions:
   CurveBuilding.*:

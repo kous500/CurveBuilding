@@ -73,7 +73,7 @@ public class CurveBuildingGameTests {
     @GameTest
     public void commandsAreRegistered(GameTestHelper helper) {
         var root = helper.getLevel().getServer().getCommands().getDispatcher().getRoot();
-        for (String command : new String[]{"/bc", "/bcpos"}) {
+        for (String command : new String[]{"/bc", "/bcpos", "curvebuilding"}) {
             assertTrue(helper, root.getChild(command) != null, "/" + command + " is not registered");
         }
         helper.succeed();

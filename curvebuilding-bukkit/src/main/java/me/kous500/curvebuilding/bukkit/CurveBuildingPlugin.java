@@ -4,16 +4,20 @@ import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
 import com.github.fierioziy.particlenativeapi.api.particle.ParticleList_1_13;
 import com.github.fierioziy.particlenativeapi.api.utils.ParticleException;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
+import me.kous500.curvebuilding.CurveBuilding;
 import me.kous500.curvebuilding.bukkit.commands.Bc;
 import me.kous500.curvebuilding.bukkit.commands.CurveBuildingCommand;
 import me.kous500.curvebuilding.bukkit.commands.Pos;
 import me.kous500.curvebuilding.bukkit.config.BukkitConfig;
+import me.kous500.curvebuilding.commands.config.ConfigCommand;
+import me.kous500.curvebuilding.config.ConfigFile;
 import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.log.Console;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static me.kous500.curvebuilding.CurveBuilding.loadResources;
@@ -55,7 +59,12 @@ public final class CurveBuildingPlugin extends JavaPlugin {
         requireNonNull(this.getCommand("/bcpos")).setExecutor(pos);
         requireNonNull(this.getCommand("/bcpos")).setTabCompleter(pos);
 
-        CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this::reloadConfigAndResources);
+        ConfigFile configFile = CurveBuilding.configFile(DATA_FOLDER, getClassLoader(), BukkitConfig::new);
+        // The particles are sent by the server, so their settings can be changed too
+        ConfigCommand configCommand =
+                new ConfigCommand(configFile, List.of("curve", "particles"), this::reloadConfigAndResources);
+        CurveBuildingCommand curveBuildingCommand =
+                new CurveBuildingCommand(this::reloadConfigAndResources, configCommand);
         requireNonNull(this.getCommand("curvebuilding")).setExecutor(curveBuildingCommand);
         requireNonNull(this.getCommand("curvebuilding")).setTabCompleter(curveBuildingCommand);
     }

@@ -18,3 +18,8 @@ messages:
   max-changed-blocks: "達到操作中的最大方塊更改數量限制（{0}）。"
   max-set-length: "達到操作中的最大曲線長度限制（{0}）。"
   max-pos-value: "達到操作中的最大位置值限制（{0}）。"
+  config-value: "{0}: {1}"
+  config-set: "已將 {0} 設為 {1}。"
+  config-unknown-key: "沒有設定 {0}。"
+  config-invalid-value: "{1} 無法用於 {0}。"
+  config-not-saved: "無法儲存設定。請查看主控台。"

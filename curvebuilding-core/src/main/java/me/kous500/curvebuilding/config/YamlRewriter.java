@@ -30,6 +30,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -64,55 +65,80 @@ public final class YamlRewriter {
      * @param template the name of the template in the jar
      * @param backupFolder the folder for the backups, created when needed
      * @param read reads the values of the file as the platform does, so that the values it cannot use are known
+     * @return whether the file holds the rewritten text, either written or already there
      */
-    public static void rewrite(
+    public static boolean rewrite(
             Path file,
             ClassLoader jar,
             String template,
             Path backupFolder,
             Consumer<YamlConfig> read) {
-        rewrite(file, jar, template, backupFolder, read, Clock.systemDefaultZone());
+        return rewrite(file, jar, template, backupFolder, read, Map.of());
     }
 
     /**
-     * {@link #rewrite(Path, ClassLoader, String, Path, Consumer)} with the backups named after the time of
-     * {@code clock}.
+     * {@link #rewrite(Path, ClassLoader, String, Path, Consumer)}, with {@code newValues} in place of the values of
+     * the file. Each new value is a single YAML value, written as it is given, such as {@code 0xFF0000}; one at a path
+     * that the template does not have is left out. The new values are not checked: check them before.
+     *
+     * @param file the YAML file
+     * @param jar the class loader that has the template
+     * @param template the name of the template in the jar
+     * @param backupFolder the folder for the backups, created when needed
+     * @param read reads the values of the file as the platform does, so that the values it cannot use are known
+     * @param newValues the new values by their paths, with their keys separated by dots
+     * @return whether the file holds the rewritten text, either written or already there
      */
-    static void rewrite(
+    public static boolean rewrite(
             Path file,
             ClassLoader jar,
             String template,
             Path backupFolder,
             Consumer<YamlConfig> read,
+            Map<String, String> newValues) {
+        return rewrite(file, jar, template, backupFolder, read, newValues, Clock.systemDefaultZone());
+    }
+
+    /**
+     * {@link #rewrite(Path, ClassLoader, String, Path, Consumer, Map)} with the backups named after the time of
+     * {@code clock}.
+     */
+    static boolean rewrite(
+            Path file,
+            ClassLoader jar,
+            String template,
+            Path backupFolder,
+            Consumer<YamlConfig> read,
+            Map<String, String> newValues,
             Clock clock) {
         String templateText = readTemplate(jar, template);
-        if (templateText == null) return;
+        if (templateText == null) return false;
         Yaml yaml = yaml();
-        if (!(yaml.compose(new StringReader(templateText)) instanceof MappingNode layout)) return;
-        String defaultText = serialize(yaml, layout);
+        if (!(yaml.compose(new StringReader(templateText)) instanceof MappingNode layout)) return false;
+        Map<String, Node> newNodes = new HashMap<>();
+        newValues.forEach((path, value) -> newNodes.put(path, yaml.compose(new StringReader(value))));
+
+        String defaultText = defaultText(yaml, templateText, newNodes);
 
         String text;
         try {
             text = Files.exists(file) ? readText(file) : "";
         } catch (IOException e) {
             // YamlConfig logs the file that cannot be read
-            return;
+            return false;
         }
         if (text.isBlank()) {
-            write(file, defaultText);
-            return;
+            return write(file, defaultText);
         }
 
         Object values;
         try {
             values = new Yaml().load(text);
         } catch (YAMLException e) {
-            moveAside(file, backupFolder, clock, defaultText, "could not be read as YAML", e.getMessage());
-            return;
+            return moveAside(file, backupFolder, clock, defaultText, "could not be read as YAML", e.getMessage());
         }
         if (values != null && !(values instanceof Map)) {
-            moveAside(file, backupFolder, clock, defaultText, "does not hold keys and values", null);
-            return;
+            return moveAside(file, backupFolder, clock, defaultText, "does not hold keys and values", null);
         }
 
         MappingNode fileNodes;
@@ -120,7 +146,7 @@ public final class YamlRewriter {
             fileNodes = yaml.compose(new StringReader(text)) instanceof MappingNode mapping ? mapping : emptyMapping();
         } catch (YAMLException e) {
             console().warning("Could not read the comments of " + file + ", so it was not rewritten", e);
-            return;
+            return false;
         }
 
         Map<?, ?> defaults = new Yaml().load(templateText) instanceof Map<?, ?> map ? map : Map.of();
@@ -128,9 +154,9 @@ public final class YamlRewriter {
         read.accept(config);
 
         List<Runnable> logs = new ArrayList<>();
-        putValues(layout, fileNodes, "", config.invalidValues(), file, logs);
+        putValues(layout, fileNodes, "", config.invalidValues(), newNodes, file, logs);
         String rewritten = serialize(yaml, layout);
-        if (rewritten.equals(text.replace("\r\n", "\n"))) return;
+        if (rewritten.equals(text.replace("\r\n", "\n"))) return true;
 
         Path backup;
         try {
@@ -139,22 +165,24 @@ public final class YamlRewriter {
             Files.copy(file, backup);
         } catch (IOException e) {
             console().warning("Could not copy " + file + " into " + backupFolder + ", so it was not rewritten", e);
-            return;
+            return false;
         }
-        if (!write(file, rewritten)) return;
+        if (!write(file, rewritten)) return false;
         logs.forEach(Runnable::run);
         console().info(file + " was rewritten. The previous file is saved as " + backup);
+        return true;
     }
 
     /**
      * Puts the values of {@code fileNodes} into {@code layout}, and adds a log for each value that is missing or
-     * invalid, which leaves the default there.
+     * invalid, which leaves the default there. The values of {@code newNodes} go in place of those of the file.
      */
     private static void putValues(
             MappingNode layout,
             MappingNode fileNodes,
             String parentPath,
             Map<String, InvalidValue> invalidValues,
+            Map<String, Node> newNodes,
             Path file,
             List<Runnable> logs) {
         List<NodeTuple> entries = layout.getValue();
@@ -167,10 +195,15 @@ public final class YamlRewriter {
 
             if (defaultNode instanceof MappingNode defaultMapping) {
                 MappingNode fileMapping = fileNode instanceof MappingNode mapping ? mapping : emptyMapping();
-                putValues(defaultMapping, fileMapping, path + ".", invalidValues, file, logs);
+                putValues(defaultMapping, fileMapping, path + ".", invalidValues, newNodes, file, logs);
                 continue;
             }
             if (!(defaultNode instanceof ScalarNode defaultValue)) continue;
+
+            if (newNodes.get(path) instanceof ScalarNode newValue) {
+                entries.set(i, valueEntry(entry, newValue));
+                continue;
+            }
 
             String defaultText = defaultValue.getValue();
             if (fileNode == null || fileNode instanceof ScalarNode scalar && scalar.getTag().equals(Tag.NULL)) {
@@ -189,13 +222,39 @@ public final class YamlRewriter {
                 continue;
             }
 
-            // The value as it is written, so that its quotes and the 0x of a color stay
-            ScalarNode fileValue = (ScalarNode) fileNode;
-            ScalarNode value = new ScalarNode(
-                    fileValue.getTag(), fileValue.getValue(), null, null, fileValue.getScalarStyle());
-            value.setInLineComments(defaultValue.getInLineComments());
-            entries.set(i, new NodeTuple(entry.getKeyNode(), value));
+            entries.set(i, valueEntry(entry, (ScalarNode) fileNode));
         }
+    }
+
+    /** The template with the values of {@code newNodes}, read from its text again so that it is a copy of its own. */
+    private static String defaultText(Yaml yaml, String templateText, Map<String, Node> newNodes) {
+        MappingNode layout = (MappingNode) yaml.compose(new StringReader(templateText));
+        putNewValues(layout, "", newNodes);
+        return serialize(yaml, layout);
+    }
+
+    /** Puts the values of {@code newNodes} into {@code layout}. */
+    private static void putNewValues(MappingNode layout, String parentPath, Map<String, Node> newNodes) {
+        List<NodeTuple> entries = layout.getValue();
+        for (int i = 0; i < entries.size(); i++) {
+            NodeTuple entry = entries.get(i);
+            String path = parentPath + ((ScalarNode) entry.getKeyNode()).getValue();
+            if (entry.getValueNode() instanceof MappingNode mapping) {
+                putNewValues(mapping, path + ".", newNodes);
+            } else if (newNodes.get(path) instanceof ScalarNode newValue) {
+                entries.set(i, valueEntry(entry, newValue));
+            }
+        }
+    }
+
+    /**
+     * {@code entry} of the template with {@code value} as it is written, so that its quotes and the 0x of a color
+     * stay, and with the comment after the value in the template.
+     */
+    private static NodeTuple valueEntry(NodeTuple entry, ScalarNode value) {
+        ScalarNode copy = new ScalarNode(value.getTag(), value.getValue(), null, null, value.getScalarStyle());
+        copy.setInLineComments(entry.getValueNode().getInLineComments());
+        return new NodeTuple(entry.getKeyNode(), copy);
     }
 
     /** The value of {@code key}; the last one when the key is there twice, as SnakeYAML reads the values. */
@@ -213,8 +272,12 @@ public final class YamlRewriter {
         return new MappingNode(Tag.MAP, new ArrayList<>(), DumperOptions.FlowStyle.BLOCK);
     }
 
-    /** Moves {@code file}, which cannot be read as keys and values, into the backup folder, and writes the template. */
-    private static void moveAside(
+    /**
+     * Moves {@code file}, which cannot be read as keys and values, into the backup folder, and writes the template.
+     *
+     * @return whether the template was written
+     */
+    private static boolean moveAside(
             Path file,
             Path backupFolder,
             Clock clock,
@@ -229,11 +292,11 @@ public final class YamlRewriter {
             Files.move(file, backup);
         } catch (IOException e) {
             console().warning(file + " " + problem + ", and could not be moved into " + backupFolder + where, e);
-            return;
+            return false;
         }
         console().warning(file + " " + problem + ", so it was moved to " + backup + " and the defaults were written"
                 + where);
-        write(file, defaultText);
+        return write(file, defaultText);
     }
 
     /** A file in {@code folder} that does not exist yet, named after {@code file} and the time. */
@@ -279,7 +342,7 @@ public final class YamlRewriter {
         }
     }
 
-    private static @Nullable String readTemplate(ClassLoader jar, String template) {
+    static @Nullable String readTemplate(ClassLoader jar, String template) {
         try (InputStream stream = jar.getResourceAsStream(template)) {
             return stream == null ? null : readText(stream.readAllBytes());
         } catch (IOException e) {
@@ -288,7 +351,7 @@ public final class YamlRewriter {
         }
     }
 
-    private static String readText(Path file) throws IOException {
+    static String readText(Path file) throws IOException {
         return readText(Files.readAllBytes(file));
     }
 

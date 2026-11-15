@@ -18,3 +18,8 @@ messages:
   max-changed-blocks: "Max blocks changed in an operation reached ({0})."
   max-set-length: "Max curve length in an operation reached ({0})."
   max-pos-value: "Max pos value in an operation reached ({0})."
+  config-value: "{0}: {1}"
+  config-set: "Set {0} to {1}."
+  config-unknown-key: "There is no setting {0}."
+  config-invalid-value: "{1} cannot be used for {0}."
+  config-not-saved: "Could not save the setting. See the console."

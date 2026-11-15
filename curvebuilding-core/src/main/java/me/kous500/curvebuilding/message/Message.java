@@ -23,7 +23,12 @@ public enum Message {
     INCOMPLETE_POS("incomplete-pos"),
     MAX_CHANGED_BLOCKS("max-changed-blocks"),
     MAX_SET_LENGTH("max-set-length"),
-    MAX_POS_VALUE("max-pos-value");
+    MAX_POS_VALUE("max-pos-value"),
+    CONFIG_VALUE("config-value"),
+    CONFIG_SET("config-set"),
+    CONFIG_UNKNOWN_KEY("config-unknown-key"),
+    CONFIG_INVALID_VALUE("config-invalid-value"),
+    CONFIG_NOT_SAVED("config-not-saved");
 
     /** The path of the message in the message files. */
     public final String path;
