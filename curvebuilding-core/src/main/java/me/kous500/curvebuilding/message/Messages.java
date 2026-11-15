@@ -1,6 +1,7 @@
 package me.kous500.curvebuilding.message;
 
 import me.kous500.curvebuilding.config.YamlConfig;
+import me.kous500.curvebuilding.config.YamlRewriter;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Files;
@@ -22,20 +23,29 @@ public class Messages {
     }
 
     /**
-     * Reads the message file {@code file}. When it does not exist, a warning is logged and the messages come from the
-     * jar.
+     * Rewrites the message file {@code file} in the layout of its default file in the jar (see
+     * {@link YamlRewriter#rewrite(Path, ClassLoader, String, Path, java.util.function.Consumer)}), then reads it. When
+     * it does not exist, a warning is logged and the messages come from the jar.
      *
      * @param file the message file
      * @param jar the class loader that has the default message files
+     * @param backupFolder the folder for the copy of the file before it is rewritten
      * @return the messages
      */
-    public static Messages load(Path file, ClassLoader jar) {
+    public static Messages load(Path file, ClassLoader jar, Path backupFolder) {
         String sameName = "messages/" + file.getFileName();
         String defaults = jar.getResource(sameName) != null ? sameName : "messages/en-US.yml";
         if (!Files.exists(file)) {
             console().warning("The message file " + file + " does not exist, using " + defaults + " in the jar");
         }
+        YamlRewriter.rewrite(file, jar, defaults, backupFolder, Messages::readAll);
         return new Messages(YamlConfig.load(file, jar, defaults));
+    }
+
+    private static void readAll(YamlConfig file) {
+        for (Message message : Message.values()) {
+            file.getString(message.path);
+        }
     }
 
     /**

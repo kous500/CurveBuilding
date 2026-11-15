@@ -3,6 +3,7 @@ package me.kous500.curvebuilding;
 import me.kous500.curvebuilding.config.Config;
 import me.kous500.curvebuilding.config.ResourceFiles;
 import me.kous500.curvebuilding.config.YamlConfig;
+import me.kous500.curvebuilding.config.YamlRewriter;
 import me.kous500.curvebuilding.message.Messages;
 import org.jspecify.annotations.Nullable;
 
@@ -19,8 +20,11 @@ public final class CurveBuilding {
     }
 
     /**
-     * Copies the default files that are missing into the data folder, then reads config.yml and the message file it
-     * names. The messages are used from now on; the platform keeps the config and gives it to the commands.
+     * Copies the default files that are missing into the data folder, then rewrites config.yml and the message file it
+     * names in the layout of their default files (see
+     * {@link YamlRewriter#rewrite(Path, ClassLoader, String, Path, java.util.function.Consumer)}), with the backups
+     * in {@code backups} of the data folder, and reads them. The messages are used from now on; the platform keeps the
+     * config and gives it to the commands.
      *
      * @param dataFolder the folder of the config and the message files
      * @param jar the class loader that has the default files
@@ -33,10 +37,14 @@ public final class CurveBuilding {
             ClassLoader jar,
             Function<YamlConfig, C> readConfig) {
         ResourceFiles.copyDefaults(dataFolder, jar);
+        Path backups = dataFolder.resolve("backups");
 
-        C loadedConfig = readConfig.apply(YamlConfig.load(dataFolder.resolve("config.yml"), jar, "config.yml"));
+        Path configFile = dataFolder.resolve("config.yml");
+        YamlRewriter.rewrite(configFile, jar, "config.yml", backups, readConfig::apply);
+        C loadedConfig = readConfig.apply(YamlConfig.load(configFile, jar, "config.yml"));
 
-        Messages.use(Messages.load(messageFile(loadedConfig.messageFilePath, dataFolder), jar));
+        Path messageFile = messageFile(loadedConfig.messageFilePath, dataFolder);
+        Messages.use(Messages.load(messageFile, jar, backups.resolve("messages")));
         return loadedConfig;
     }
 
