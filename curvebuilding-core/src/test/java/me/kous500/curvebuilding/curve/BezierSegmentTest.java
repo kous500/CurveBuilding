@@ -55,12 +55,6 @@ class BezierSegmentTest {
             assertVector(10.0 * 10 / 64, 10.0 * 36 / 64, 0, ARCH.point(0.25));
         }
 
-        @Test
-        void blockCenterIsHalfABlockFurther() {
-            assertVector(0.5, 0.5, 0.5, ARCH.blockCenter(0));
-            assertVector(5.5, 8.0, 0.5, ARCH.blockCenter(0.5));
-        }
-
         @ParameterizedTest
         @ValueSource(doubles = {-0.001, 1.001})
         void rejectsPositionOutsideCurve(double t) {
@@ -248,21 +242,21 @@ class BezierSegmentTest {
     }
 
     @Nested
-    class BlockCenters {
+    class Points {
         @Test
         void includesBothEndsAndEvenSteps() {
-            List<Vector3> points = ARCH.blockCenters(4);
+            List<Vector3> points = ARCH.points(4);
 
             assertEquals(5, points.size());
-            assertVector(0.5, 0.5, 0.5, points.get(0));
-            assertVector(5.5, 8.0, 0.5, points.get(2));
-            assertVector(10.5, 0.5, 0.5, points.get(4));
+            assertVector(0, 0, 0, points.get(0));
+            assertVector(5, 7.5, 0, points.get(2));
+            assertVector(10, 0, 0, points.get(4));
         }
 
         @ParameterizedTest
         @ValueSource(ints = {0, -1})
         void rejectsFewerThanOneDivision(int divisions) {
-            assertThrows(IllegalArgumentException.class, () -> ARCH.blockCenters(divisions));
+            assertThrows(IllegalArgumentException.class, () -> ARCH.points(divisions));
         }
     }
 }

@@ -11,8 +11,8 @@ import static java.util.Objects.requireNonNullElse;
 
 /**
  * A cubic Bézier curve from {@code p0} to {@code p3}, pulled towards {@code p1} and {@code p2}: the part of a curve
- * between two of its points. Each position is the corner of a block, so the curve goes through the corners; {@link
- * #blockCenter} gives the centers that the previews draw.
+ * between two of its points. The curve goes through the positions themselves; a point set where a player stands is the
+ * center of their block.
  *
  * @param p0 where the segment starts
  * @param p1 the handle on the side of {@code p0}
@@ -80,16 +80,6 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
     }
 
     /**
-     * The center of the block whose corner is {@link #point} at {@code t}.
-     *
-     * @param t where on the segment, from 0 to 1
-     * @return the center of the block
-     */
-    public Vector3 blockCenter(double t) {
-        return point(t).add(0.5, 0.5, 0.5);
-    }
-
-    /**
      * The direction that the curve goes at {@code t}: its derivative divided by 3, the steps between the points
      * weighted by the quadratic Bernstein polynomials. Zero at an end whose handle is at its point.
      *
@@ -144,9 +134,9 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
         }
 
         double length = 0;
-        Vector3 before = blockCenter(0);
+        Vector3 before = point(0);
         for (int step = 1; step <= fineness; step++) {
-            Vector3 p = blockCenter(step / fineness);
+            Vector3 p = point(step / fineness);
             length += before.distance(p);
             before = p;
         }
@@ -177,19 +167,19 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
     }
 
     /**
-     * {@link #blockCenter Block centers} at evenly spaced positions from 0 to 1, both ends included.
+     * {@link #point Points} at evenly spaced positions from 0 to 1, both ends included.
      *
      * @param divisions the number of parts to split the curve into, at least 1
-     * @return the {@code divisions + 1} block centers, from {@code p0} to {@code p3}
+     * @return the {@code divisions + 1} points, from {@code p0} to {@code p3}
      */
-    public List<Vector3> blockCenters(int divisions) {
+    public List<Vector3> points(int divisions) {
         if (divisions < 1) {
             throw new IllegalArgumentException("divisions must be at least 1");
         }
 
         List<Vector3> points = new ArrayList<>(divisions + 1);
         for (int step = 0; step <= divisions; step++) {
-            points.add(blockCenter((double) step / divisions));
+            points.add(point((double) step / divisions));
         }
         return points;
     }

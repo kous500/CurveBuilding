@@ -103,7 +103,7 @@ public final class ParticleLayout {
                     case F -> addCross(position, Kind.F);
                     case B -> addCross(position, Kind.B);
                 }
-                particles.add(new Particle(position.add(0.5, 0.5, 0.5), Kind.CENTER));
+                particles.add(new Particle(position, Kind.CENTER));
             }
 
             addHandleLine(point.point(), point.f());
@@ -111,7 +111,9 @@ public final class ParticleLayout {
         }
     }
 
-    private void addEdges(Vector3 block, Kind kind) {
+    /** The edges of the block around {@code center}. */
+    private void addEdges(Vector3 center, Kind kind) {
+        Vector3 block = center.add(-0.5, -0.5, -0.5);
         int density = settings.pointDensity();
         double step = 1.0 / density;
         for (int x = 0; x <= density; x++) {
@@ -128,11 +130,12 @@ public final class ParticleLayout {
         }
     }
 
-    private void addCross(Vector3 block, Kind kind) {
+    /** A cross in the block around {@code center}. */
+    private void addCross(Vector3 center, Kind kind) {
         // Each line of the cross goes from a corner of the block to its center, sqrt(3) / 2 blocks, and has at least
         // its two ends
         int density = Math.max(1, (int) (settings.pointDensity() * Math.sqrt(3) / 2));
-        Vector3 center = block.add(0.5, 0.5, 0.5);
+        Vector3 block = center.add(-0.5, -0.5, -0.5);
 
         for (int x = 0; x <= 1; x++) {
             for (int y = 0; y <= 1; y++) {
@@ -154,11 +157,10 @@ public final class ParticleLayout {
         int distance = (int) point.distance(handle);
         if (distance > settings.maxLength()) return;
 
-        Vector3 start = point.add(0.5, 0.5, 0.5);
         Vector3 toHandle = handle.subtract(point);
         List<Vector3> candidates = new ArrayList<>();
         for (double t = 0; t <= 1; t += 1.0 / (distance * settings.lineDensity())) {
-            candidates.add(start.add(toHandle.multiply(t)));
+            candidates.add(point.add(toHandle.multiply(t)));
         }
         addDots(candidates, point, Kind.HANDLE_LINE);
     }
@@ -166,7 +168,7 @@ public final class ParticleLayout {
     private void addCurve(NavigableMap<Integer, CurvePoint> points) {
         for (PreviewCurve.ShownSegment shown : PreviewCurve.segments(points, settings.maxLength(), 20)) {
             int divisions = Math.max(1, (int) Math.ceil(shown.lengthToEnd() * settings.lineDensity()));
-            addDots(shown.segment().blockCenters(divisions), shown.segment().blockCenter(0), Kind.CURVE);
+            addDots(shown.segment().points(divisions), shown.segment().p0(), Kind.CURVE);
         }
     }
 

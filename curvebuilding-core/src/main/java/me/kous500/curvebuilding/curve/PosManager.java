@@ -38,10 +38,10 @@ public final class PosManager {
      * @param player the player, whose position is used
      * @param n the point number
      * @param part the part to set
-     * @return the position set: the corner of the block the player stands in
+     * @return the position set: the center of the block the player stands in
      */
     public static Vector3 addPos(Player player, int n, Part part) {
-        Vector3 location = adapt(player.getLocation().toVector()).floor();
+        Vector3 location = adapt(player.getLocation().toVector()).blockCenter();
         addPos(player, n, part, location);
         return location;
     }

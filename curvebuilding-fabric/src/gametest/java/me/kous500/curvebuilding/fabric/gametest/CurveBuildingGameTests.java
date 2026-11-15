@@ -155,13 +155,13 @@ public class CurveBuildingGameTests {
         // Written out in full, as Double.toString can use an exponent
         String x = BigDecimal.valueOf(first.getX() + 0.25).toPlainString();
         curve.run("//bcpos set 1 " + x + " " + first.getY() + " " + first.getZ(), new BlockPos(0, 1, 0));
-        // The player stands in the middle of the block, so ~ counts from its corner
+        // The player stands in the middle of the block, so ~ counts from its center
         curve.run("//bcpos set 2 ~3 ~ ~", new BlockPos(1, 1, 5));
         curve.run("//bcpos insert 2 ~ ~1 ~", new BlockPos(4, 1, 4));
 
-        assertPoint(helper, curve.player, 1, at(helper, new BlockPos(2, 1, 3), 0.25), 0);
-        assertPoint(helper, curve.player, 2, at(helper, new BlockPos(4, 2, 4), 0), 0);
-        assertPoint(helper, curve.player, 3, at(helper, new BlockPos(4, 1, 5), 0), 0);
+        assertPoint(helper, curve.player, 1, new Vec3(first.getX() + 0.25, first.getY(), first.getZ()), 0);
+        assertPoint(helper, curve.player, 2, center(helper, new BlockPos(4, 2, 4)), 0);
+        assertPoint(helper, curve.player, 3, center(helper, new BlockPos(4, 1, 5)), 0);
         helper.succeed();
     }
 
@@ -174,12 +174,12 @@ public class CurveBuildingGameTests {
         serverPlayer.setXRot(-20);
         curve.run("//bcpos set 1 ^1 ^2 ^5", new BlockPos(3, 1, 3));
 
-        // Where Minecraft's own position argument puts the same coordinates, from the feet moved half a block towards
-        // -x and -z as //bcpos counts. Some versions, such as 1.21.1, read its table of sines with float arithmetic,
-        // which can be one step off.
+        // Where Minecraft's own position argument puts the same coordinates, from half a block above the feet as
+        // //bcpos counts. Some versions, such as 1.21.1, read its table of sines with float arithmetic, which can be
+        // one step off.
         CommandSourceStack source = helper.getLevel().getServer().createCommandSourceStack()
                 .withEntity(serverPlayer)
-                .withPosition(serverPlayer.position().add(-0.5, 0, -0.5))
+                .withPosition(serverPlayer.position().add(0, 0.5, 0))
                 .withRotation(serverPlayer.getRotationVector());
         try {
             Vec3 expected = vec3(false).parse(new StringReader("^1 ^2 ^5")).getPosition(source);
@@ -300,10 +300,10 @@ public class CurveBuildingGameTests {
         assertTrue(helper, actual.equals(expected), message);
     }
 
-    /** The position {@code dx} from the corner of {@code block} towards +x, relative to the test. */
-    private static Vec3 at(GameTestHelper helper, BlockPos block, double dx) {
+    /** The center of {@code block}, relative to the test. */
+    private static Vec3 center(GameTestHelper helper, BlockPos block) {
         BlockPos absolute = helper.absolutePos(block);
-        return new Vec3(absolute.getX() + dx, absolute.getY(), absolute.getZ());
+        return new Vec3(absolute.getX() + 0.5, absolute.getY() + 0.5, absolute.getZ() + 0.5);
     }
 
     /** Checks that point {@code n} of the curve of {@code player} is at most {@code delta} from {@code expected}. */

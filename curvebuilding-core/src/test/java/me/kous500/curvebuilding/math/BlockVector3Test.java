@@ -15,10 +15,9 @@ class BlockVector3Test {
     }
 
     @Test
-    void floorRoundAndCeil() {
+    void floorAndCeil() {
         Vector3 v = Vector3.at(-1.5, 2.5, 0.2);
         assertEquals(BlockVector3.at(-2, 2, 0), BlockVector3.floor(v));
-        assertEquals(BlockVector3.at(-1, 3, 0), BlockVector3.round(v));
         assertEquals(BlockVector3.at(-1, 3, 1), BlockVector3.ceil(v));
     }
 
