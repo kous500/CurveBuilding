@@ -25,9 +25,9 @@ commands:
     usage: |
       Example: /<command> clear <posType> - Delete the specified connection or control point.
       Example: /<command> clearall - Delete all connection and control points.
-      Example: /<command> insert <posType> - Insert a connection point at your current position.
+      Example: /<command> insert <posType> [x y z] - Insert a connection point at your current position, or at x y z.
       Example: /<command> remove <posType> - Remove a connection point.
-      Example: /<command> set <posType> - Sets a connection point at your current position.
+      Example: /<command> set <posType> [x y z] - Sets a connection point at your current position, or at x y z.
       Example: /<command> shift <Length> [Direction] - Shift all your pos.
   curvebuilding:
     description: CurveBuilding management commands.

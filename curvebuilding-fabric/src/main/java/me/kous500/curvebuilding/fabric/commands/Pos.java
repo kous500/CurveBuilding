@@ -23,6 +23,7 @@ import static me.kous500.curvebuilding.fabric.compat.FabricCompat.adaptPlayer;
 import static me.kous500.curvebuilding.fabric.network.PacketSender.sendPosPacket;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
+import static net.minecraft.commands.arguments.coordinates.Vec3Argument.vec3;
 
 /**
  * The command {@code //bcpos} on Fabric.
@@ -44,10 +45,16 @@ public class Pos implements RunCommand {
 
         for (PosSubcommand subcommand : PosSubcommand.values()) {
             LiteralArgumentBuilder<CommandSourceStack> builder = literal(subcommand.label);
-            // word() rather than string(), which also takes quoted text, so that the input is what core reads
+            // word() rather than string(), which also takes quoted text, so that the input is what core reads.
+            // vec3(false) takes ~, ^ and decimals, which word() does not, and leaves whole numbers as they are; core
+            // reads the coordinates as typed too.
             switch (subcommand.arguments) {
                 case NONE -> builder.executes(run);
                 case POS_TYPE, POINT -> builder.then(argument("pos", word()).suggests(suggestions).executes(run));
+                case POS_TYPE_AND_POSITION, POINT_AND_POSITION -> builder.then(argument("pos", word())
+                        .suggests(suggestions)
+                        .executes(run)
+                        .then(argument("position", vec3(false)).executes(run)));
                 case LENGTH_AND_DIRECTION -> builder.then(argument("length", integer(0))
                         .suggests(suggestions)
                         .executes(run)

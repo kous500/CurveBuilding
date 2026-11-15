@@ -11,9 +11,9 @@ import org.jspecify.annotations.Nullable;
 public enum PosSubcommand {
     CLEAR("clear", Arguments.POS_TYPE),
     CLEARALL("clearall", Arguments.NONE),
-    INSERT("insert", Arguments.POINT),
+    INSERT("insert", Arguments.POINT_AND_POSITION),
     REMOVE("remove", Arguments.POINT),
-    SET("set", Arguments.POS_TYPE),
+    SET("set", Arguments.POS_TYPE_AND_POSITION),
     SHIFT("shift", Arguments.LENGTH_AND_DIRECTION);
 
     public enum Arguments {
@@ -22,6 +22,10 @@ public enum PosSubcommand {
         POS_TYPE(1),
         /** A point number only, such as {@code 2}. */
         POINT(1),
+        /** A {@link #POS_TYPE}, then an optional position as {@link PosCoordinates}. */
+        POS_TYPE_AND_POSITION(4),
+        /** A {@link #POINT}, then an optional position as {@link PosCoordinates}. */
+        POINT_AND_POSITION(4),
         /** A length, then an optional {@link Direction}. */
         LENGTH_AND_DIRECTION(2);
 

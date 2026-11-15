@@ -42,6 +42,20 @@ public final class PosManager {
      */
     public static Vector3 addPos(Player player, int n, Part part) {
         Vector3 location = adapt(player.getLocation().toVector()).floor();
+        addPos(player, n, part, location);
+        return location;
+    }
+
+    /**
+     * Sets {@code part} of point {@code n} at {@code position}, in the world {@code player} is in. A point in another
+     * world starts a new curve.
+     *
+     * @param player the player
+     * @param n the point number
+     * @param part the part to set
+     * @param position the position to set
+     */
+    public static void addPos(Player player, int n, Part part, Vector3 position) {
         World world = player.getWorld();
 
         PosData posData = POS_MAP.computeIfAbsent(player.getUniqueId(), k -> new PosData());
@@ -49,8 +63,7 @@ public final class PosManager {
             posData.reset(world);
         }
 
-        posData.set(n, part, location);
-        return location;
+        posData.set(n, part, position);
     }
 
     /**

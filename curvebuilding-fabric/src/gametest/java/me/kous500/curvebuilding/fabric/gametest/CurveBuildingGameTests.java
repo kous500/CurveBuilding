@@ -15,10 +15,13 @@ import me.kous500.curvebuilding.commands.ArgumentException;
 import me.kous500.curvebuilding.commands.bc.BcArguments;
 import me.kous500.curvebuilding.commands.bc.BcEdit;
 import me.kous500.curvebuilding.commands.pos.PosCommand;
+import me.kous500.curvebuilding.curve.CurvePoint;
 import me.kous500.curvebuilding.curve.CurvePoint.Part;
+import me.kous500.curvebuilding.curve.PosData;
 import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
 import me.kous500.curvebuilding.fabric.compat.FabricCompat;
+import me.kous500.curvebuilding.math.Vector3;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -28,6 +31,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 //? if >=1.21.8 {
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 //?} else {
@@ -35,11 +39,14 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.gametest.framework.GameTest;
 *///?}
 
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static net.minecraft.commands.arguments.coordinates.Vec3Argument.vec3;
 
 /**
  * Tests on a real server with WorldEdit, run with runGameTest. Each test gets an empty 8x8x8 area, and positions in
@@ -137,6 +144,49 @@ public class CurveBuildingGameTests {
                 new BlockPos(1, 1, 3), new BlockPos(2, 1, 3), new BlockPos(3, 1, 3),
                 new BlockPos(4, 1, 3), new BlockPos(5, 1, 3), new BlockPos(6, 1, 3)
         ));
+        helper.succeed();
+    }
+
+    //$ game_test
+    @GameTest
+    public void bcposSetsAtTheCoordinatesTyped(GameTestHelper helper) {
+        Curve curve = new Curve(helper);
+        BlockPos first = helper.absolutePos(new BlockPos(2, 1, 3));
+        // Written out in full, as Double.toString can use an exponent
+        String x = BigDecimal.valueOf(first.getX() + 0.25).toPlainString();
+        curve.run("//bcpos set 1 " + x + " " + first.getY() + " " + first.getZ(), new BlockPos(0, 1, 0));
+        // The player stands in the middle of the block, so ~ counts from its corner
+        curve.run("//bcpos set 2 ~3 ~ ~", new BlockPos(1, 1, 5));
+        curve.run("//bcpos insert 2 ~ ~1 ~", new BlockPos(4, 1, 4));
+
+        assertPoint(helper, curve.player, 1, at(helper, new BlockPos(2, 1, 3), 0.25), 0);
+        assertPoint(helper, curve.player, 2, at(helper, new BlockPos(4, 2, 4), 0), 0);
+        assertPoint(helper, curve.player, 3, at(helper, new BlockPos(4, 1, 5), 0), 0);
+        helper.succeed();
+    }
+
+    //$ game_test
+    @GameTest
+    public void localCoordinatesAreThoseOfMinecraft(GameTestHelper helper) {
+        Curve curve = new Curve(helper);
+        ServerPlayer serverPlayer = curve.serverPlayer;
+        serverPlayer.setYRot(37);
+        serverPlayer.setXRot(-20);
+        curve.run("//bcpos set 1 ^1 ^2 ^5", new BlockPos(3, 1, 3));
+
+        // Where Minecraft's own position argument puts the same coordinates, from the feet moved half a block towards
+        // -x and -z as //bcpos counts. Some versions, such as 1.21.1, read its table of sines with float arithmetic,
+        // which can be one step off.
+        CommandSourceStack source = helper.getLevel().getServer().createCommandSourceStack()
+                .withEntity(serverPlayer)
+                .withPosition(serverPlayer.position().add(-0.5, 0, -0.5))
+                .withRotation(serverPlayer.getRotationVector());
+        try {
+            Vec3 expected = vec3(false).parse(new StringReader("^1 ^2 ^5")).getPosition(source);
+            assertPoint(helper, curve.player, 1, expected, 0.01);
+        } catch (CommandSyntaxException e) {
+            fail(helper, "Minecraft cannot read the coordinates: " + e.getMessage());
+        }
         helper.succeed();
     }
 
@@ -248,6 +298,22 @@ public class CurveBuildingGameTests {
         List<BlockPos> actual = blocks(helper, block);
         String message = "expected " + block + " at " + expected + ", found at " + actual;
         assertTrue(helper, actual.equals(expected), message);
+    }
+
+    /** The position {@code dx} from the corner of {@code block} towards +x, relative to the test. */
+    private static Vec3 at(GameTestHelper helper, BlockPos block, double dx) {
+        BlockPos absolute = helper.absolutePos(block);
+        return new Vec3(absolute.getX() + dx, absolute.getY(), absolute.getZ());
+    }
+
+    /** Checks that point {@code n} of the curve of {@code player} is at most {@code delta} from {@code expected}. */
+    private static void assertPoint(GameTestHelper helper, Player player, int n, Vec3 expected, double delta) {
+        PosData posData = PosManager.get(player);
+        CurvePoint point = posData != null ? posData.points().get(n) : null;
+        Vector3 position = point != null ? point.point() : null;
+        boolean isThere = position != null && Math.abs(position.x() - expected.x()) <= delta
+                && Math.abs(position.y() - expected.y()) <= delta && Math.abs(position.z() - expected.z()) <= delta;
+        assertTrue(helper, isThere, "point " + n + " is at " + position + ", not at " + expected);
     }
 
     /**
