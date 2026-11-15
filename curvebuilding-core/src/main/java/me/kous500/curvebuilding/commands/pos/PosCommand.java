@@ -12,6 +12,7 @@ import me.kous500.curvebuilding.message.Chat;
 import me.kous500.curvebuilding.message.GameMessage;
 import me.kous500.curvebuilding.message.Message;
 
+import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
 import static me.kous500.curvebuilding.commands.CommandArguments.read;
 import static me.kous500.curvebuilding.message.Messages.getMessage;
 
@@ -19,6 +20,9 @@ import static me.kous500.curvebuilding.message.Messages.getMessage;
  * Runs {@code //bcpos} on every platform, and replies to the player.
  */
 public final class PosCommand {
+    /** The index of the x coordinate in the arguments of {@code set} and {@code insert}. */
+    private static final int COORDINATES = 2;
+
     private PosCommand() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
@@ -50,12 +54,14 @@ public final class PosCommand {
                 }
                 case SET -> {
                     PosPoint point = read(args, 1, text -> PosPoint.parse(text, maxPosValue));
-                    set(player, point.n(), point.part());
+                    set(player, point.n(), point.part(), position(player, args));
                 }
                 case INSERT -> {
                     int n = read(args, 1, text -> PosPoint.parseNumber(text, maxPosValue));
+                    // Read before inserting, so that coordinates that cannot be used change nothing
+                    Vector3 position = position(player, args);
                     if (PosManager.insertAt(player, n)) {
-                        set(player, n, Part.POINT);
+                        set(player, n, Part.POINT, position);
                     } else {
                         Chat.error(player, Message.POS_NOT_EXIST, n);
                     }
@@ -83,9 +89,20 @@ public final class PosCommand {
         }
     }
 
-    private static void set(Player player, int n, Part part) {
-        Vector3 position = PosManager.addPos(player, n, part);
+    private static void set(Player player, int n, Part part, Vector3 position) {
+        PosManager.addPos(player, n, part, position);
         Chat.info(player, Message.POS_SET, posToString(n, part), position);
+    }
+
+    /**
+     * The position at the coordinates after the point, as in {@code set 2 x y z}, or the corner of the block the
+     * player stands in when there are none.
+     */
+    private static Vector3 position(Player player, String[] args) throws ArgumentException {
+        Location location = player.getLocation();
+        Vector3 feet = adapt(location.toVector());
+        if (args.length <= COORDINATES) return feet.floor();
+        return PosCoordinates.parse(args, COORDINATES).position(feet, location.getYaw(), location.getPitch());
     }
 
     private static String posToString(int n, Part part) {

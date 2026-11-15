@@ -36,6 +36,47 @@ class PosCompletionTest {
     }
 
     @Test
+    void tildesUpToTheLastCoordinate() {
+        for (String subcommand : new String[]{"set", "insert"}) {
+            assertEquals(List.of("~", "~ ~", "~ ~ ~"), complete(subcommand, "2", ""), subcommand);
+        }
+        assertEquals(List.of("~", "~ ~", "~ ~ ~"), complete("set", "2", "~"));
+        assertEquals(List.of("~", "~ ~"), complete("set", "2", "~", ""));
+        assertEquals(List.of("~", "~ ~"), complete("set", "2", "100", ""));
+        assertEquals(List.of("~"), complete("set", "2", "~", "~", ""));
+        assertEquals(List.of("~"), complete("set", "2", "100", "64", ""));
+    }
+
+    @Test
+    void numberWithTildesAfterIt() {
+        assertEquals(List.of("100 ~", "100 ~ ~"), complete("set", "2", "100"));
+        assertEquals(List.of("~5 ~", "~5 ~ ~"), complete("set", "2", "~5"));
+        assertEquals(List.of("64 ~"), complete("set", "2", "100", "64"));
+        // Nothing after the last coordinate, nor after something that is not a number
+        assertEquals(List.of(), complete("set", "2", "100", "64", "-20"));
+        assertEquals(List.of(), complete("set", "2", "abc"));
+    }
+
+    @Test
+    void caretOnlyAfterACaretFirst() {
+        assertEquals(List.of("^ ^ ^"), complete("set", "2", "^"));
+        assertEquals(List.of("^5 ^ ^"), complete("set", "2", "^5"));
+        assertEquals(List.of("^ ^"), complete("set", "2", "^", ""));
+        assertEquals(List.of("^3 ^"), complete("set", "2", "^", "^3"));
+        assertEquals(List.of("^"), complete("set", "2", "^", "^", ""));
+        // A caret cannot follow other coordinates, nor others a caret
+        assertEquals(List.of(), complete("set", "2", "100", "^"));
+        assertEquals(List.of(), complete("set", "2", "^", "5"));
+    }
+
+    @Test
+    void noCoordinatesAfterTheLastOneOrForOtherSubcommands() {
+        assertEquals(List.of(), complete("set", "2", "~", "~", "~", ""));
+        assertEquals(List.of(), complete("clear", "2", ""));
+        assertEquals(List.of(), complete("remove", "2", ""));
+    }
+
+    @Test
     void moreDigitsAfterAPointNumber() {
         assertEquals(List.of("20", "21", "22", "23", "24", "25", "26", "27", "28", "29"), complete("insert", "2"));
     }

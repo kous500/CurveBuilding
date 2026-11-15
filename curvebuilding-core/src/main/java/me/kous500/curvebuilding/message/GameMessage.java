@@ -17,6 +17,12 @@ public enum GameMessage {
     INTEGER_TOO_LOW("argument.integer.low"),
     /** Argument: the value found. */
     INVALID_INTEGER("parsing.int.invalid"),
+    /** Argument: the value found. */
+    INVALID_DOUBLE("parsing.double.invalid"),
+    /** Coordinates of a position with {@code ^} mixed with others. */
+    MIXED_COORDINATES("argument.pos.mixed"),
+    /** Fewer than three coordinates of a position. */
+    INCOMPLETE_POSITION("argument.pos3d.incomplete"),
     /** {@code <--[HERE]}, after the argument with the problem. */
     HERE("command.context.here");
 
