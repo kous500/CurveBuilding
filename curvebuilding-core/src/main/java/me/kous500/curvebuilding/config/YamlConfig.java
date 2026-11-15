@@ -12,28 +12,40 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static me.kous500.curvebuilding.log.Log.console;
 
 /**
  * The values of a YAML file, with those missing from it taken from a default file in the jar. A value of the wrong
- * type is logged once as a warning, and the default is used instead.
+ * type or out of its range is logged once as a warning, and the default is used instead.
  */
 public class YamlConfig {
+    /**
+     * A value that could not be used.
+     *
+     * @param found the value in the file
+     * @param problem what is wrong with it, to follow "is" or "was", such as {@code not an integer}
+     */
+    record InvalidValue(Object found, String problem) {
+    }
+
     private final Path file;
     private final Map<?, ?> values;
     private final Map<?, ?> defaults;
-    private final Set<String> warned = ConcurrentHashMap.newKeySet();
+    private final boolean logsInvalidValues;
+    private final Map<String, InvalidValue> invalidValues = Collections.synchronizedMap(new LinkedHashMap<>());
 
-    private YamlConfig(Path file, Map<?, ?> values, Map<?, ?> defaults) {
+    private YamlConfig(Path file, Map<?, ?> values, Map<?, ?> defaults, boolean logsInvalidValues) {
         this.file = file;
         this.values = values;
         this.defaults = defaults;
+        this.logsInvalidValues = logsInvalidValues;
     }
 
     /**
@@ -46,7 +58,20 @@ public class YamlConfig {
      * @return the values
      */
     public static YamlConfig load(Path file, ClassLoader jar, String defaultResource) {
-        return new YamlConfig(file, readFile(file), readResource(jar, defaultResource));
+        return new YamlConfig(file, readFile(file), readResource(jar, defaultResource), true);
+    }
+
+    /**
+     * The values {@code values} of {@code file}, with {@code defaults} for those missing. The invalid values are kept
+     * for {@link #invalidValues} instead of being logged.
+     *
+     * @param file the YAML file, named in the descriptions of the values
+     * @param values the values of the file
+     * @param defaults the default values
+     * @return the values
+     */
+    static YamlConfig withoutWarnings(Path file, Map<?, ?> values, Map<?, ?> defaults) {
+        return new YamlConfig(file, values, defaults, false);
     }
 
     private static Map<?, ?> readFile(Path file) {
@@ -91,7 +116,7 @@ public class YamlConfig {
      * @return the value, the default, or null when neither is there
      */
     public @Nullable String getString(String path) {
-        return get(path, "text", YamlConfig::toText, null);
+        return get(path, "text", YamlConfig::toText, value -> true, null);
     }
 
     /**
@@ -101,7 +126,21 @@ public class YamlConfig {
      * @return the value, the default, or 0 when neither is there
      */
     public int getInteger(String path) {
-        return get(path, "an integer", YamlConfig::toInteger, 0);
+        return get(path, "an integer", YamlConfig::toInteger, value -> true, 0);
+    }
+
+    /**
+     * A value as an integer from {@code min} to {@code max}. A value out of that range is invalid, like one of the
+     * wrong type.
+     *
+     * @param path the keys of the value, separated by dots
+     * @param min the lowest value allowed
+     * @param max the highest value allowed
+     * @return the value, the default, or the allowed value nearest to 0 when neither is there
+     */
+    public int getInteger(String path, int min, int max) {
+        int fallback = Math.clamp(0, min, max);
+        return get(path, "an integer", YamlConfig::toInteger, value -> value >= min && value <= max, fallback);
     }
 
     /**
@@ -111,7 +150,7 @@ public class YamlConfig {
      * @return the color as an int, the default, or 0 when neither is there
      */
     public int getArgb(String path) {
-        return get(path, "a color such as 0xFFFFFFFF", YamlConfig::toArgb, 0);
+        return get(path, "a color such as 0xFFFFFFFF", YamlConfig::toArgb, value -> true, 0);
     }
 
     /**
@@ -121,26 +160,39 @@ public class YamlConfig {
      * @return the value, the default, or false when neither is there
      */
     public boolean getBoolean(String path) {
-        return get(path, "true or false", YamlConfig::toBoolean, false);
+        return get(path, "true or false", YamlConfig::toBoolean, value -> true, false);
+    }
+
+    /**
+     * The values read so far that could not be used, by their paths, in the order they were first read.
+     *
+     * @return a copy of the invalid values
+     */
+    Map<String, InvalidValue> invalidValues() {
+        synchronized (invalidValues) {
+            return new LinkedHashMap<>(invalidValues);
+        }
     }
 
     /**
      * The value at {@code path}, with its keys separated by dots, made by {@code convert}, which returns null for a
-     * value of the wrong type. Without a value in the file, or with a wrong one, the default; without a default,
-     * {@code fallback}.
+     * value of the wrong type. Without a value in the file, with one of the wrong type, or with one that
+     * {@code allowed} rejects, the default; without a default, {@code fallback}.
      */
     private <T extends @Nullable Object> T get(
             String path,
             String expected,
             Function<Object, @Nullable T> convert,
+            Predicate<T> allowed,
             T fallback) {
         Optional<Object> value = find(values, path);
         if (value.isPresent()) {
             Object found = value.get();
             T converted = convert.apply(found);
-            if (converted != null) return converted;
-            if (warned.add(path)) {
-                console().warning(path + " in " + file + " is not " + expected + ": " + found + ", using the default");
+            if (converted != null && allowed.test(converted)) return converted;
+            String problem = converted == null ? "not " + expected : "out of range";
+            if (invalidValues.putIfAbsent(path, new InvalidValue(found, problem)) == null && logsInvalidValues) {
+                console().warning(path + " in " + file + " is " + problem + ": " + found + ", using the default");
             }
         }
         return find(defaults, path).map(convert).orElse(fallback);

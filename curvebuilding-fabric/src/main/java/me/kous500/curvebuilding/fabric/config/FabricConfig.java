@@ -49,8 +49,8 @@ public final class FabricConfig extends Config {
         posBFilledColor = new Color(config.getArgb("render-preview.pos.format.b.filled-color"), true);
 
         lineRenderThroughWalls = config.getBoolean("render-preview.line.render-through-walls");
-        lineRenderAccuracy = Math.max(1, config.getInteger("render-preview.line.accuracy"));
-        lineRenderLength = Math.max(0, config.getInteger("render-preview.line.maxLength"));
+        lineRenderAccuracy = config.getInteger("render-preview.line.accuracy", 1, Integer.MAX_VALUE);
+        lineRenderLength = config.getInteger("render-preview.line.maxLength", 0, Integer.MAX_VALUE);
         lineFColor = new Color(config.getArgb("render-preview.line.format.line-f-color"), true);
         lineBColor = new Color(config.getArgb("render-preview.line.format.line-b-color"), true);
         lineCurveColor = new Color(config.getArgb("render-preview.line.format.curve-color"), true);

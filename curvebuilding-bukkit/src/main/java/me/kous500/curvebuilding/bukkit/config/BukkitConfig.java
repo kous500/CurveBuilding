@@ -33,12 +33,12 @@ public final class BukkitConfig extends Config {
         fColor = fromRGB(getRgb(config, "particles.pos.color.f"));
         bColor = fromRGB(getRgb(config, "particles.pos.color.b"));
 
-        posDensity = Math.max(1, config.getInteger("particles.pos.density"));
-        lineDensity = Math.max(1, config.getInteger("particles.line.density"));
-        lineMaxLength = Math.max(0, config.getInteger("particles.line.max-length"));
+        posDensity = config.getInteger("particles.pos.density", 1, Integer.MAX_VALUE);
+        lineDensity = config.getInteger("particles.line.density", 1, Integer.MAX_VALUE);
+        lineMaxLength = config.getInteger("particles.line.max-length", 0, Integer.MAX_VALUE);
     }
 
     private static int getRgb(YamlConfig config, String path) {
-        return Math.clamp(config.getInteger(path), 0x000000, 0xFFFFFF);
+        return config.getInteger(path, 0x000000, 0xFFFFFF);
     }
 }

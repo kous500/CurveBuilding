@@ -27,9 +27,10 @@ public class Config {
     public Config(YamlConfig config) {
         messageFilePath = config.getString("message-file");
 
-        fineness = Math.max(1, config.getInteger("curve.fineness"));
-        maxSetLength = Math.max(0, config.getInteger("curve.max-set-length"));
-        maxPosValue = Math.max(1, config.getInteger("curve.max-pos-value"));
+        fineness = config.getInteger("curve.fineness", 1, Integer.MAX_VALUE);
+        maxSetLength = config.getInteger("curve.max-set-length", 0, Integer.MAX_VALUE);
+        maxPosValue = config.getInteger("curve.max-pos-value", 1, Integer.MAX_VALUE);
+        // Every negative number means no limit
         defaultMaxChangeLimit = Math.max(-1, config.getInteger("curve.default-max-change-limit"));
     }
 }

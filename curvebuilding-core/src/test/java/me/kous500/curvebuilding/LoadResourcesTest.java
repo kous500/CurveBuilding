@@ -16,6 +16,8 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,7 +76,29 @@ class LoadResourcesTest {
 
         assertEquals("Moved", Messages.getMessage(Message.POS_SHIFT));
         assertEquals("Removed 2", Messages.getMessage(Message.POS_REMOVE, 2));
-        assertEquals(0, console.entries.size(), String.valueOf(console.entries));
+        assertEquals(List.of(), warnings());
+    }
+
+    @Test
+    void configAndMessageFileAreRewrittenWithBackups() throws IOException {
+        write(dataFolder.resolve("config.yml"), "message-file: \"%datafolder%/messages/ja-JP.yml\"\nold-key: 1\n");
+        write(dataFolder.resolve("messages/ja-JP.yml"), "messages:\n  pos-shift: 移動しました\n");
+
+        Config config = load();
+
+        assertEquals(3, config.fineness);
+        assertEquals("message-file: \"%datafolder%/messages/ja-JP.yml\"\ncurve:\n  fineness: 3\n",
+                Files.readString(dataFolder.resolve("config.yml")));
+        assertEquals("messages:\n  pos-shift: 移動しました\n  pos-remove: \"{0} を削除\"\n",
+                Files.readString(dataFolder.resolve("messages/ja-JP.yml"), StandardCharsets.UTF_8));
+        assertEquals("2 を削除", Messages.getMessage(Message.POS_REMOVE, 2));
+        try (Stream<Path> backups = Files.list(dataFolder.resolve("backups"))) {
+            assertEquals(2, backups.count(), "the backup of config.yml and the messages folder");
+        }
+        try (Stream<Path> backups = Files.list(dataFolder.resolve("backups/messages"))) {
+            assertTrue(backups.allMatch(backup -> backup.getFileName().toString().startsWith("ja-JP-")));
+        }
+        assertEquals(List.of(), warnings());
     }
 
     @Test
@@ -97,16 +121,21 @@ class LoadResourcesTest {
         assertOneWarning("message-file");
     }
 
-    private void load() throws IOException {
+    private Config load() throws IOException {
         try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jar.toUri().toURL()}, null)) {
-            CurveBuilding.loadResources(dataFolder, classLoader, Config::new);
+            return CurveBuilding.loadResources(dataFolder, classLoader, Config::new);
         }
     }
 
+    /** The warnings, without the information that the files were rewritten. */
+    private List<RecordingConsole.Entry> warnings() {
+        return console.entries.stream().filter(entry -> entry.level().equals("warning")).toList();
+    }
+
     private void assertOneWarning(String containing) {
-        assertEquals(1, console.entries.size(), String.valueOf(console.entries));
-        assertEquals("warning", console.entries.getFirst().level());
-        assertTrue(console.entries.getFirst().message().contains(containing), console.entries.getFirst().message());
+        List<RecordingConsole.Entry> warnings = warnings();
+        assertEquals(1, warnings.size(), String.valueOf(warnings));
+        assertTrue(warnings.getFirst().message().contains(containing), warnings.getFirst().message());
     }
 
     private static void write(Path file, String content) throws IOException {

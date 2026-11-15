@@ -92,6 +92,22 @@ class YamlConfigTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {"0", "11"})
+    void integerOutOfRangeIsTheDefaultWithOneWarning(String value) throws IOException {
+        assertEquals(3, load("number: " + value + "\n").getInteger("number", 1, 10));
+        assertOneWarning("number in " + file + " is out of range: " + value);
+    }
+
+    @Test
+    void integerInRangeIsUsed() throws IOException {
+        YamlConfig config = load("number: 10\n");
+
+        assertEquals(10, config.getInteger("number", 1, 10));
+        assertEquals(5, config.getInteger("missing", 5, 10), "the lowest allowed value without a default");
+        assertEquals(0, console.entries.size(), String.valueOf(console.entries));
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"1", "abc", "\"yes please\""})
     void invalidBooleanIsTheDefaultWithOneWarning(String value) throws IOException {
         assertTrue(load("flag: " + value + "\n").getBoolean("flag"));
