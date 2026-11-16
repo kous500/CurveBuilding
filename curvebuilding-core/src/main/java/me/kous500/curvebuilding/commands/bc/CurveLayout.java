@@ -49,9 +49,8 @@ final class CurveLayout {
 
     /** For each block to place, how often each block of the selection fell on it. */
     private final NavigableMap<BlockVector3, NavigableMap<BlockVector3, Integer>> votes = new TreeMap<>();
-    /** The length of the segments laid so far, each counted in whole blocks, where the selection goes on from. */
-    private int length;
-    private double exactLength;
+    /** The length of the segments laid so far, where the selection goes on from. */
+    private double laidLength;
 
     /**
      * @param isAir whether the block at a position in the world is air, for {@code -a}
@@ -84,21 +83,18 @@ final class CurveLayout {
     void add(BezierSegment segment) throws TooLongException, MaxChangedBlocksException {
         if (!segment.isWithin(maxLength)) throw new TooLongException();
 
-        double segmentLength = segment.length(segment.fineness(20));
+        double roughLength = segment.length(segment.fineness(20));
         // Two positions at the same place with no handles between them: nothing to place
-        if (segmentLength == 0) return;
-        double fineness = stepsPerBlock * segmentLength;
-        double laidLength = segment.length(fineness);
-        int newLength = length + (int) laidLength;
-        if (newLength > maxLength) throw new TooLongException();
+        if (roughLength == 0) return;
+        List<Sample> samples = samples(segment, (int) Math.ceil(stepsPerBlock * roughLength));
+        double segmentLength = samples.getLast().distance();
+        if (laidLength + segmentLength > maxLength) throw new TooLongException();
 
-        List<Sample> samples = samples(segment, fineness);
         double below = Math.floor(selection.height() / 2.0 - 0.5);
         for (int y = 0; y < selection.height(); y++) {
             layRow(samples, y, selection.center().add(0, y - below, 0));
         }
-        length = newLength;
-        exactLength += laidLength;
+        laidLength += segmentLength;
     }
 
     /** For each block to place, the block of the selection to place there. */
@@ -113,15 +109,16 @@ final class CurveLayout {
 
     /** The length of the curve laid so far. */
     double length() {
-        return exactLength;
+        return laidLength;
     }
 
-    private static List<Sample> samples(BezierSegment segment, double fineness) {
+    /** {@code steps} even steps along {@code segment}, from its start to its end, both included. */
+    private static List<Sample> samples(BezierSegment segment, int steps) {
         List<Sample> samples = new ArrayList<>();
         Vector3 before = segment.p0();
         double distance = 0;
-        for (int step = 0; step <= fineness; step++) {
-            double t = step / fineness;
+        for (int step = 0; step <= steps; step++) {
+            double t = (double) step / steps;
             Vector3 point = segment.point(t);
             distance += before.distance(point);
             samples.add(new Sample(point, across(segment.tangent(t)), distance));
@@ -182,7 +179,7 @@ final class CurveLayout {
 
             if (!target.equals(before)) {
                 // How far into the repeating selection this block is
-                double into = sample.distance() + length + offset + 0.5;
+                double into = sample.distance() + laidLength + offset + 0.5;
                 BlockVector3 source;
                 if (axis == BcOptions.Axis.X) {
                     double along = wrap(into, selection.width()) - (selection.width() / 2.0);
