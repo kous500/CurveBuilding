@@ -11,8 +11,7 @@ import static java.util.Objects.requireNonNullElse;
 
 /**
  * A cubic Bézier curve from {@code p0} to {@code p3}, pulled towards {@code p1} and {@code p2}: the part of a curve
- * between two of its points. The curve goes through the positions themselves; a point set where a player stands is the
- * center of their block.
+ * between two of its points. The curve goes through the positions themselves.
  *
  * @param p0 where the segment starts
  * @param p1 the handle on the side of {@code p0}

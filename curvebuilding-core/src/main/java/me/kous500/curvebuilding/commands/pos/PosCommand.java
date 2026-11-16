@@ -95,13 +95,13 @@ public final class PosCommand {
     }
 
     /**
-     * The position at the coordinates after the point, as in {@code set 2 x y z}, or the center of the block the
-     * player stands in when there are none.
+     * The position at the coordinates after the point, as in {@code set 2 x y z}, or where the player stands when there
+     * are none.
      */
     private static Vector3 position(Player player, String[] args) throws ArgumentException {
         Location location = player.getLocation();
         Vector3 feet = adapt(location.toVector());
-        if (args.length <= COORDINATES) return feet.blockCenter();
+        if (args.length <= COORDINATES) return PosManager.standingPosition(feet);
         return PosCoordinates.parse(args, COORDINATES).position(feet, location.getYaw(), location.getPitch());
     }
 
