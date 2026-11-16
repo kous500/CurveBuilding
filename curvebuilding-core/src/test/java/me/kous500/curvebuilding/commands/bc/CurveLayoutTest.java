@@ -144,6 +144,26 @@ class CurveLayoutTest {
         assertEquals(List.of(1, 2, 3, 0, 1, 2, 3, 0, 1, 2), blocksUsed(1, first, second));
     }
 
+    /** Straight segments along x on y = 64, {@code length} blocks each, end to end from the middle of block 0. */
+    private static BezierSegment[] segmentsOf(double length, int count) {
+        BezierSegment[] segments = new BezierSegment[count];
+        for (int i = 0; i < count; i++) {
+            Vector3 from = Vector3.at(0.5 + length * i, 64.5, 0.5);
+            Vector3 to = Vector3.at(0.5 + length * (i + 1), 64.5, 0.5);
+            segments[i] = new BezierSegment(from, from, to, to);
+        }
+        return segments;
+    }
+
+    @Test
+    void selectionGoesOnAcrossSegmentsOfAnyLength() throws Exception {
+        BezierSegment[] whole = segmentsOf(19, 1);
+        BezierSegment[] pieces = segmentsOf(1.9, 10);
+
+        assertEquals(List.of(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3), blocksUsed(0, whole));
+        assertEquals(blocksUsed(0, whole), blocksUsed(0, pieces));
+    }
+
     @Test
     void airOnlyPlacesNothingWhereThereIsNoAir() throws Exception {
         CurveLayout layout = new CurveLayout(ONE_BLOCK, new BcArguments(0, true, null), NEVER_AIR, 0, 10000, 10);
@@ -171,6 +191,17 @@ class CurveLayoutTest {
     }
 
     @Test
+    void curveLongerThanTheMaximumIsRejectedByItsWholeLength() throws Exception {
+        CurveLayout layout = new CurveLayout(ONE_BLOCK, NO_ARGUMENTS, NEVER_AIR, 0, 3, 10);
+        BezierSegment[] segments = segmentsOf(1.4, 3);
+
+        // 1.4 + 1.4 is within the maximum of 3, and 1.4 more goes over it
+        layout.add(segments[0]);
+        layout.add(segments[1]);
+        assertThrows(CurveLayout.TooLongException.class, () -> layout.add(segments[2]));
+    }
+
+    @Test
     void lengthAddsTheSegmentsWithoutRoundingThem() throws Exception {
         List<BezierSegment> diagonals = List.of(
                 straight(Vector3.at(0, 64, 0), Vector3.at(1, 64, 1)),
@@ -178,8 +209,15 @@ class CurveLayoutTest {
 
         CurveLayout layout = layout(ONE_BLOCK, NO_ARGUMENTS, 0, diagonals.toArray(BezierSegment[]::new));
 
-        // Each segment is measured in steps that stop just short of its end, and is not cut to whole blocks
-        assertEquals(2 * Math.sqrt(2), layout.length(), 1e-2);
+        assertEquals(2 * Math.sqrt(2), layout.length(), 1e-9);
         assertFalse(layout.blocks().isEmpty());
+    }
+
+    @Test
+    void lengthReachesTheEndOfEachSegment() throws Exception {
+        // 10 steps per block do not make a whole number of steps along 1.95 blocks
+        CurveLayout layout = layout(ONE_BLOCK, NO_ARGUMENTS, 0, segmentsOf(1.95, 10));
+
+        assertEquals(19.5, layout.length(), 1e-9);
     }
 }
