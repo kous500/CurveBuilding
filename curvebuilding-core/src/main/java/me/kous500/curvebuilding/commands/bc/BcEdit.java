@@ -74,7 +74,7 @@ public final class BcEdit {
                     region.getWidth(),
                     region.getHeight(),
                     region.getLength(),
-                    adapt(region.getCenter())
+                    adapt(region.getMinimumPoint())
             );
             CurveLayout layout = new CurveLayout(
                     selection,

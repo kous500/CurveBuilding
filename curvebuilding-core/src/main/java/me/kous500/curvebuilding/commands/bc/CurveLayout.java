@@ -6,23 +6,43 @@ import me.kous500.curvebuilding.math.BlockVector3;
 import me.kous500.curvebuilding.math.Vector3;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 /**
- * Where {@code //bc} places which block of the selection along a curve, without touching the world. The selection is
- * read along one axis: its cross section across that axis is laid along the curve, turned with it, and the selection
- * repeats along the curve, starting {@code offset} blocks into it. A block that several blocks of the selection fall
- * on gets the one that falls on it most.
+ * Where {@code //bc} places which block of the selection along a curve. The selection is read along one axis: its
+ * cross section across that axis is laid along the curve, turned with it and centered on it, with its bottom row at the
+ * curve, and the selection repeats along the curve, starting {@code offset} blocks into it.
+ *
+ * <p>A block that several blocks of the selection fall on keeps the first: the one from an earlier segment, then from
+ * a lower row, then from a column nearer the middle of the cross section, then from earlier along the curve.
+ *
+ * <p>Add the segments of the curve in order with {@link #add}, then take the blocks with {@link #blocks}. The world is
+ * only read through {@code isAir}, for {@code -a}, and nothing is placed.
  */
 final class CurveLayout {
-    /** The size of the selection, as WorldEdit gives it, and its center. */
-    record Selection(int width, int height, int length, Vector3 center) {
+    /**
+     * The selection, as WorldEdit gives it.
+     *
+     * @param width the size along x
+     * @param height the size along y
+     * @param length the size along z
+     * @param min the corner with the lowest coordinates
+     */
+    record Selection(int width, int height, int length, BlockVector3 min) {
     }
+
+    /**
+     * Added to a position before taking its block, so that a position on the edge between two blocks goes to the one
+     * with the higher coordinate, also when rounding puts it just below the edge.
+     */
+    private static final double EDGE = 1e-6;
 
     /** The curve, or a segment of it, is longer than the {@code max-set-length} of the config. */
     static final class TooLongException extends Exception {
@@ -32,8 +52,11 @@ final class CurveLayout {
     }
 
     /**
-     * A step along a segment: where the curve is, which way is across it on the xz plane (of length 1), and how far it
-     * is from the segment start.
+     * A step along a segment.
+     *
+     * @param point where the curve is
+     * @param across the way to the left of the curve, on the xz plane and of length 1
+     * @param distance how far along the curve the step is from the start of the segment
      */
     private record Sample(Vector3 point, Vector3 across, double distance) {
     }
@@ -47,12 +70,19 @@ final class CurveLayout {
     private final int maxLength;
     private final int stepsPerBlock;
 
-    /** For each block to place, how often each block of the selection fell on it. */
-    private final NavigableMap<BlockVector3, NavigableMap<BlockVector3, Integer>> votes = new TreeMap<>();
+    /** For each block to place, the block of the selection that fell on it first. */
+    private final NavigableMap<BlockVector3, BlockVector3> sources = new TreeMap<>();
+    /** The blocks found not to be air, for {@code -a}, so that the world is read once for each block. */
+    private final Set<BlockVector3> notAir = new HashSet<>();
     /** The length of the segments laid so far, where the selection goes on from. */
     private double laidLength;
 
     /**
+     * A layout with nothing laid yet. The selection is read along the axis of {@code arguments}, or without one along
+     * the shorter of x and z, x when they are the same.
+     *
+     * @param selection the selection to lay along the curve
+     * @param arguments the arguments of {@code //bc}
      * @param isAir whether the block at a position in the world is air, for {@code -a}
      * @param maxBlocks the most blocks to place, or 0 or less for no limit
      * @param maxLength the longest curve, from the {@code max-set-length} of the config
@@ -79,7 +109,15 @@ final class CurveLayout {
         this.stepsPerBlock = stepsPerBlock;
     }
 
-    /** Lays the selection along {@code segment}, after the segments laid before. */
+    /**
+     * Lays the selection along {@code segment}, going on from the segments laid before. After an exception, the layout
+     * is left half laid and is not to be used.
+     *
+     * @param segment the next segment of the curve
+     * @throws TooLongException when the ends of the segment, or an end and its handle, are further apart than
+     * {@code maxLength}, or the curve with the segment is longer than it
+     * @throws MaxChangedBlocksException when the curve would place more than {@code maxBlocks} blocks
+     */
     void add(BezierSegment segment) throws TooLongException, MaxChangedBlocksException {
         if (!segment.isWithin(maxLength)) throw new TooLongException();
 
@@ -90,29 +128,38 @@ final class CurveLayout {
         double segmentLength = samples.getLast().distance();
         if (laidLength + segmentLength > maxLength) throw new TooLongException();
 
-        double below = Math.floor(selection.height() / 2.0 - 0.5);
-        for (int y = 0; y < selection.height(); y++) {
-            layRow(samples, y, selection.center().add(0, y - below, 0));
+        int columns = axis == BcOptions.Axis.X ? selection.length() : selection.width();
+        int[] columnsFromTheMiddle = fromTheMiddle(columns);
+        for (int row = 0; row < selection.height(); row++) {
+            for (int column : columnsFromTheMiddle) {
+                layColumn(samples, row, column, columns);
+            }
         }
         laidLength += segmentLength;
     }
 
-    /** For each block to place, the block of the selection to place there. */
+    /**
+     * The blocks to place and, for each, the block of the selection to place there.
+     *
+     * @return a copy, in the order of the positions of the blocks to place
+     */
     NavigableMap<BlockVector3, BlockVector3> blocks() {
-        NavigableMap<BlockVector3, BlockVector3> blocks = new TreeMap<>();
-        for (Map.Entry<BlockVector3, NavigableMap<BlockVector3, Integer>> entry : votes.entrySet()) {
-            Map<BlockVector3, Integer> counts = entry.getValue();
-            blocks.put(entry.getKey(), Collections.max(counts.entrySet(), Map.Entry.comparingByValue()).getKey());
-        }
-        return blocks;
+        return new TreeMap<>(sources);
     }
 
-    /** The length of the curve laid so far. */
+    /**
+     * The length of the curve laid so far, measured along its steps.
+     *
+     * @return the length in blocks
+     */
     double length() {
         return laidLength;
     }
 
-    /** {@code steps} even steps along {@code segment}, from its start to its end, both included. */
+    /**
+     * The start and end of {@code steps} steps along {@code segment}, at even steps of t. The steps are not all equally
+     * long along the curve: they are longer where it goes faster.
+     */
     private static List<Sample> samples(BezierSegment segment, int steps) {
         List<Sample> samples = new ArrayList<>();
         Vector3 before = segment.p0();
@@ -128,8 +175,25 @@ final class CurveLayout {
     }
 
     /**
-     * {@code direction} on the xz plane, turned a quarter turn the way that takes +z to +x, and of length 1. +x when it
-     * does not move on the xz plane, as for a curve towards +z.
+     * The columns of a cross section in the order to lay them: from the middle outwards, so that where two columns
+     * fall on the same block, the one nearer the middle keeps it. Of two columns as far from the middle, the lower
+     * comes first: 5 columns give 2, 1, 3, 0, 4, and 4 columns give 1, 2, 0, 3.
+     *
+     * @param columns the number of columns across the selection
+     * @return each column from 0 to {@code columns - 1} once
+     */
+    private static int[] fromTheMiddle(int columns) {
+        double middle = (columns - 1) / 2.0;
+        return IntStream.range(0, columns)
+                .boxed()
+                .sorted(Comparator.comparingDouble(column -> Math.abs(column - middle)))
+                .mapToInt(Integer::intValue)
+                .toArray();
+    }
+
+    /**
+     * The way to the left of {@code direction} on the xz plane, of length 1: towards +x for a curve towards +z. Also +x
+     * when {@code direction} does not move on the xz plane, as straight up.
      */
     private static Vector3 across(Vector3 direction) {
         double length = Math.hypot(direction.x(), direction.z());
@@ -138,61 +202,33 @@ final class CurveLayout {
     }
 
     /**
-     * Lays row {@code y} of the cross section, from its middle outwards on both sides. The middle column is laid from
-     * both sides, so it counts twice.
+     * Lays one column of the cross section along the steps of a segment: the blocks of the selection along the axis,
+     * in row {@code row} from the bottom and column {@code column} from the lowest coordinate across it. When the
+     * column enters a block that has none yet, it gets the block of the selection at that distance along the curve.
+     *
+     * @param columns the number of columns across the selection
      */
-    private void layRow(List<Sample> samples, int y, Vector3 middle) throws MaxChangedBlocksException {
-        Vector3 sideA = middle;
-        Vector3 sideB = middle;
-        if (axis == BcOptions.Axis.X) {
-            int across = selection.length();
-            for (int side = 0; side <= across / 2; side++) {
-                if (side != across / 2 || across % 2 != 0) {
-                    layColumn(samples, side, y, sideA);
-                    sideA = sideA.add(0, 0, -1);
-                }
-                layColumn(samples, -side, y, sideB);
-                sideB = sideB.add(0, 0, 1);
-            }
-        } else {
-            int across = selection.width();
-            for (int side = 0; side <= across / 2; side++) {
-                layColumn(samples, side, y, sideA);
-                sideA = sideA.add(1, 0, 0);
-                if (side != across / 2 || across % 2 != 0) {
-                    layColumn(samples, -side, y, sideB);
-                    sideB = sideB.add(-1, 0, 0);
-                }
-            }
-        }
-    }
+    private void layColumn(List<Sample> samples, int row, int column, int columns) throws MaxChangedBlocksException {
+        // How far to the left of the curve the column is. The selection is turned, not mirrored: read along x, its +z
+        // is on the right of the curve; read along z, its +x is on the left.
+        double middle = (columns - 1) / 2.0;
+        double side = axis == BcOptions.Axis.X ? middle - column : column - middle;
+        int repeat = axis == BcOptions.Axis.X ? selection.width() : selection.length();
 
-    /**
-     * Lays one column of the cross section, {@code side} blocks beside the curve and {@code y} blocks up, from the
-     * blocks of the selection along the axis through {@code column}.
-     */
-    private void layColumn(List<Sample> samples, int side, int y, Vector3 column) throws MaxChangedBlocksException {
         BlockVector3 before = null;
         for (Sample sample : samples) {
-            Vector3 fromCurve = sample.across().multiply(side).add(0, y, 0);
-            BlockVector3 target = BlockVector3.floor(sample.point().add(fromCurve));
+            Vector3 position = sample.point().add(sample.across().multiply(side)).add(0, row, 0);
+            BlockVector3 target = BlockVector3.floor(position.add(EDGE, EDGE, EDGE));
 
-            if (!target.equals(before)) {
+            if (!target.equals(before) && !sources.containsKey(target) && mayPlace(target)) {
                 // How far into the repeating selection this block is
-                double into = sample.distance() + laidLength + offset + 0.5;
-                BlockVector3 source;
-                if (axis == BcOptions.Axis.X) {
-                    double along = wrap(into, selection.width()) - (selection.width() / 2.0);
-                    source = BlockVector3.floor(column.add(along + 0.5, 0, 0));
-                } else {
-                    double along = wrap(into, selection.length()) - (selection.length() / 2.0);
-                    source = BlockVector3.floor(column.add(0, 0, along + 0.5));
-                }
+                int along = Math.floorMod((int) Math.floor(sample.distance() + laidLength + offset + 0.5), repeat);
+                BlockVector3 source = axis == BcOptions.Axis.X
+                        ? selection.min().add(along, row, column)
+                        : selection.min().add(column, row, along);
 
-                if (!airOnly || isAir.test(target)) {
-                    votes.computeIfAbsent(target, k -> new TreeMap<>()).merge(source, 1, Integer::sum);
-                }
-                if (0 < maxBlocks && maxBlocks < votes.size()) {
+                sources.put(target, source);
+                if (0 < maxBlocks && maxBlocks < sources.size()) {
                     throw new MaxChangedBlocksException(maxBlocks);
                 }
             }
@@ -201,11 +237,15 @@ final class CurveLayout {
     }
 
     /**
-     * {@code into} brought into the range 0 to {@code size}, as the selection repeats, also when a negative offset
-     * makes it below 0.
+     * Whether a block of the selection may go to {@code target}, which has none yet: always without {@code -a}, and
+     * with it when the block there is air.
      */
-    private static double wrap(double into, int size) {
-        double wrapped = into % size;
-        return wrapped < 0 ? wrapped + size : wrapped;
+    private boolean mayPlace(BlockVector3 target) {
+        if (!airOnly) return true;
+        if (notAir.contains(target)) return false;
+        if (isAir.test(target)) return true;
+
+        notAir.add(target);
+        return false;
     }
 }

@@ -38,12 +38,28 @@ public final class PosManager {
      * @param player the player, whose position is used
      * @param n the point number
      * @param part the part to set
-     * @return the position set: the center of the block the player stands in
+     * @return the position set, as {@link #standingPosition} gives it
      */
     public static Vector3 addPos(Player player, int n, Part part) {
-        Vector3 location = adapt(player.getLocation().toVector()).blockCenter();
+        Vector3 location = standingPosition(adapt(player.getLocation().toVector()));
         addPos(player, n, part, location);
         return location;
+    }
+
+    /**
+     * The position of a point set where a player stands: x and z of the feet go to the nearest half block, the center
+     * or an edge of a block, and y to the middle of the block the feet are in.
+     *
+     * @param feet the position of the feet
+     * @return the position of the point
+     */
+    public static Vector3 standingPosition(Vector3 feet) {
+        return Vector3.at(nearestHalfBlock(feet.x()), Math.floor(feet.y()) + 0.5, nearestHalfBlock(feet.z()));
+    }
+
+    /** {@code value} to the nearest multiple of 0.5, upwards when it is halfway between two. */
+    private static double nearestHalfBlock(double value) {
+        return Math.round(value * 2) / 2.0;
     }
 
     /**

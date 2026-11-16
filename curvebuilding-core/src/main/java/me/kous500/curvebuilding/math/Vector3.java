@@ -213,24 +213,6 @@ public record Vector3(double x, double y, double z) {
     }
 
     /**
-     * The center of the block this position is in.
-     *
-     * @return a new vector
-     */
-    public Vector3 blockCenter() {
-        return floor().add(0.5, 0.5, 0.5);
-    }
-
-    /**
-     * Floors the values of all components.
-     *
-     * @return a new vector
-     */
-    public Vector3 floor() {
-        return at(Math.floor(x), Math.floor(y), Math.floor(z));
-    }
-
-    /**
      * Create a new {@code BlockVector} using the given components.
      *
      * @param x the X coordinate

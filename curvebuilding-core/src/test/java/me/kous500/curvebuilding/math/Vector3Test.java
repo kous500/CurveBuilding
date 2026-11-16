@@ -24,11 +24,6 @@ class Vector3Test {
     }
 
     @Test
-    void blockCenterIsTheMiddleOfTheBlockThePositionIsIn() {
-        assertVector(-0.5, 64.5, 3.5, Vector3.at(-0.2, 64.9, 3).blockCenter());
-    }
-
-    @Test
     void multiply() {
         assertVector(2, -4, 6, Vector3.at(1, -2, 3).multiply(2));
         assertVector(0, 0, 0, Vector3.at(1, -2, 3).multiply(0));
