@@ -59,6 +59,9 @@ final class CurveLayout {
      */
     private static final double CORNER = Math.toRadians(1);
 
+    /** The steps per block of the control polygon of a segment to measure it roughly, to choose its number of steps. */
+    private static final int ROUGH_STEPS_PER_BLOCK = 20;
+
     /** The curve, or a segment of it, is longer than the {@code max-set-length} of the config. */
     static final class TooLongException extends Exception {
         TooLongException() {
@@ -72,25 +75,35 @@ final class CurveLayout {
      * @param point where the curve is
      * @param across the way to the left of the curve, on the xz plane and of length 1
      * @param distance how far along the curve the step is from the start of the segment
-     * @param turn 0 for a step along the segment; for a step that turns the cross section at a corner, 1 when it turns
-     * towards the left of the curve and -1 when towards the right, so that the columns on that side, inside the
-     * corner, are not laid there
+     * @param insideSide for a step that turns the cross section at a corner, the side of the curve inside the corner: 1
+     * on the left, -1 on the right; 0 for a step along the segment
      */
-    private record Sample(Vector3 point, Vector3 across, double distance, int turn) {
+    private record Step(Vector3 point, Vector3 across, double distance, int insideSide) {
+        /**
+         * Whether a column {@code side} blocks to the left of the curve is inside the corner that this step turns at,
+         * where the step lays nothing.
+         */
+        boolean isInsideCorner(double side) {
+            return insideSide * side > 0;
+        }
     }
 
     /**
      * A segment added, to lay with the others.
      *
-     * @param samples its steps, after those that turn the cross section at its start
+     * @param steps its steps, after those that turn the cross section at its start
      * @param start how far along the curve it starts
      * @param cornerBefore whether it meets the segment before at a corner
      */
-    private record Added(List<Sample> samples, double start, boolean cornerBefore) {
+    private record LaidSegment(List<Step> steps, double start, boolean cornerBefore) {
     }
 
     private final Selection selection;
     private final BcOptions.Axis axis;
+    /** The number of columns across the selection, the width of the cross section. */
+    private final int columns;
+    /** The size of the selection along the axis, after which it repeats along the curve. */
+    private final int repeat;
     private final int offset;
     private final boolean airOnly;
     private final Predicate<BlockVector3> isAir;
@@ -99,7 +112,7 @@ final class CurveLayout {
     private final int stepsPerBlock;
 
     /** The segments added so far, in order. */
-    private final List<Added> added = new ArrayList<>();
+    private final List<LaidSegment> segments = new ArrayList<>();
     /** The length of the segments added so far, where the next one goes on from. */
     private double addedLength;
     /** The way to the left of the curve at the end of the segments added so far, or null before the first. */
@@ -110,10 +123,10 @@ final class CurveLayout {
     /** For each block to place, the block of the selection laid there first. */
     private final NavigableMap<BlockVector3, BlockVector3> sources = new TreeMap<>();
     /**
-     * For each column of blocks, by {@link #columnKey}, the segments that meet another at a corner and have laid on
-     * it, by their index.
+     * For each column of blocks, by {@link #columnKey}, the segments that meet another at a corner and have taken it,
+     * by their index.
      */
-    private final Map<Long, BitSet> columnsLaid = new HashMap<>();
+    private final Map<Long, BitSet> columnsTaken = new HashMap<>();
     /** The blocks found not to be air, for {@code -a}, so that the world is read once for each block. */
     private final Set<BlockVector3> notAir = new HashSet<>();
 
@@ -141,6 +154,8 @@ final class CurveLayout {
         } else {
             this.axis = selection.width() <= selection.length() ? BcOptions.Axis.X : BcOptions.Axis.Z;
         }
+        this.columns = axis == BcOptions.Axis.X ? selection.length() : selection.width();
+        this.repeat = axis == BcOptions.Axis.X ? selection.width() : selection.length();
         this.offset = arguments.offset();
         this.airOnly = arguments.air();
         this.isAir = isAir;
@@ -160,20 +175,25 @@ final class CurveLayout {
     void add(BezierSegment segment) throws TooLongException {
         if (!segment.isWithin(maxLength)) throw new TooLongException();
 
-        double roughLength = segment.length(segment.fineness(20));
+        double roughLength = segment.length(segment.fineness(ROUGH_STEPS_PER_BLOCK));
         // Two positions at the same place with no handles between them: nothing to place
         if (roughLength == 0) return;
-        List<Sample> steps = samples(segment, (int) Math.ceil(stepsPerBlock * roughLength));
-        double segmentLength = steps.getLast().distance();
+        List<Step> along = steps(segment, (int) Math.ceil(stepsPerBlock * roughLength));
+        double segmentLength = along.getLast().distance();
         if (addedLength + segmentLength > maxLength) throw new TooLongException();
 
-        List<Sample> samples = new ArrayList<>();
-        double turn = lastAcross == null ? 0 : turn(lastAcross, steps.getFirst().across());
-        samples.addAll(corner(segment.p0(), lastAcross, turn));
-        samples.addAll(steps);
-        added.add(new Added(samples, addedLength, lastAcross != null && Math.abs(turn) > CORNER));
+        List<Step> steps = new ArrayList<>();
+        boolean cornerBefore = false;
+        if (lastAcross != null) {
+            double turn = turn(lastAcross, along.getFirst().across());
+            steps.addAll(corner(segment.p0(), lastAcross, turn));
+            cornerBefore = Math.abs(turn) > CORNER;
+        }
+        steps.addAll(along);
+
+        segments.add(new LaidSegment(steps, addedLength, cornerBefore));
         addedLength += segmentLength;
-        lastAcross = steps.getLast().across();
+        lastAcross = along.getLast().across();
     }
 
     /**
@@ -186,14 +206,7 @@ final class CurveLayout {
     NavigableMap<BlockVector3, BlockVector3> blocks() throws MaxChangedBlocksException {
         if (!laid) {
             laid = true;
-            int columns = columns();
-            for (int row = selection.height() - 1; row >= 0; row--) {
-                for (int column : fromTheMiddle(columns)) {
-                    for (int index = 0; index < added.size(); index++) {
-                        layColumn(index, row, column, columns);
-                    }
-                }
-            }
+            layAll();
         }
         return new TreeMap<>(sources);
     }
@@ -207,27 +220,34 @@ final class CurveLayout {
         return addedLength;
     }
 
-    /** The number of columns across the selection, the width of the cross section. */
-    private int columns() {
-        return axis == BcOptions.Axis.X ? selection.length() : selection.width();
+    /** Lays the cross section along every segment, in the order that the class describes. */
+    private void layAll() throws MaxChangedBlocksException {
+        int[] columnsFromTheMiddle = fromTheMiddle(columns);
+        for (int row = selection.height() - 1; row >= 0; row--) {
+            for (int column : columnsFromTheMiddle) {
+                for (int index = 0; index < segments.size(); index++) {
+                    layColumn(index, row, column);
+                }
+            }
+        }
     }
 
     /**
-     * The start and end of {@code steps} steps along {@code segment}, at even steps of t. The steps are not all equally
+     * The start and end of {@code count} steps along {@code segment}, at even steps of t. The steps are not all equally
      * long along the curve: they are longer where it goes faster.
      */
-    private static List<Sample> samples(BezierSegment segment, int steps) {
-        List<Sample> samples = new ArrayList<>();
+    private static List<Step> steps(BezierSegment segment, int count) {
+        List<Step> steps = new ArrayList<>();
         Vector3 before = segment.p0();
         double distance = 0;
-        for (int step = 0; step <= steps; step++) {
-            double t = (double) step / steps;
+        for (int step = 0; step <= count; step++) {
+            double t = (double) step / count;
             Vector3 point = segment.point(t);
             distance += before.distance(point);
-            samples.add(new Sample(point, across(segment.tangent(t)), distance, 0));
+            steps.add(new Step(point, across(segment.tangent(t)), distance, 0));
             before = point;
         }
-        return samples;
+        return steps;
     }
 
     /**
@@ -241,21 +261,21 @@ final class CurveLayout {
     /**
      * Steps at {@code point}, where a segment starts, that turn the cross section from {@code from}, the way across the
      * end of the segment before, by {@code angle}, to the way across the start of this one. They fill the outside of
-     * the corner, with the outermost column moving at most a step of the curve between two; none for the first
-     * segment, or when the angle is 0.
+     * the corner, with the outermost column moving at most a step of the curve between two; none when the angle is 0.
      */
-    private List<Sample> corner(Vector3 point, @Nullable Vector3 from, double angle) {
-        if (from == null) return List.of();
-        double outermost = (columns() - 1) / 2.0;
+    private List<Step> corner(Vector3 point, Vector3 from, double angle) {
+        double outermost = (columns - 1) / 2.0;
         int turns = (int) Math.ceil(Math.abs(angle) * outermost * stepsPerBlock);
+        // A positive angle, the way from +x to +z, turns the curve to the right: the inside of the corner is there
+        int insideSide = angle > 0 ? -1 : 1;
 
-        List<Sample> corner = new ArrayList<>();
+        List<Step> corner = new ArrayList<>();
         for (int turn = 1; turn < turns; turn++) {
             double turned = angle * turn / turns;
             double cos = Math.cos(turned);
             double sin = Math.sin(turned);
             Vector3 across = Vector3.at(from.x() * cos - from.z() * sin, 0, from.x() * sin + from.z() * cos);
-            corner.add(new Sample(point, across, 0, angle > 0 ? -1 : 1));
+            corner.add(new Step(point, across, 0, insideSide));
         }
         return corner;
     }
@@ -288,46 +308,57 @@ final class CurveLayout {
     }
 
     /**
+     * How far to the left of the curve column {@code column} of the selection is laid. The selection is turned, not
+     * mirrored: read along x, its +z is on the right of the curve; read along z, its +x is on the left.
+     */
+    private double side(int column) {
+        double middle = (columns - 1) / 2.0;
+        return axis == BcOptions.Axis.X ? middle - column : column - middle;
+    }
+
+    /**
      * Lays one column of the cross section along segment {@code index}: the blocks of the selection along the axis, in
      * row {@code row} from the bottom and column {@code column} from the lowest coordinate across it. Each block the
-     * column enters gets the block of the selection at that distance along the curve, unless a block was laid there
-     * before, or a segment that meets this one at a corner has laid on that column of blocks.
-     *
-     * @param columns the number of columns across the selection
+     * column enters gets the block of the selection at that distance along the curve, unless {@link #takeColumn} keeps
+     * it from that column of blocks, a block was laid there before, or with {@code -a} it is not air.
      */
-    private void layColumn(int index, int row, int column, int columns) throws MaxChangedBlocksException {
-        Added segment = added.get(index);
-        boolean cornerAfter = index + 1 < added.size() && added.get(index + 1).cornerBefore();
-        // Only a segment that meets another at a corner keeps the columns of blocks it lays on
-        boolean atCorner = segment.cornerBefore() || cornerAfter;
-        // How far to the left of the curve the column is. The selection is turned, not mirrored: read along x, its +z
-        // is on the right of the curve; read along z, its +x is on the left.
-        double middle = (columns - 1) / 2.0;
-        double side = axis == BcOptions.Axis.X ? middle - column : column - middle;
-        int repeat = axis == BcOptions.Axis.X ? selection.width() : selection.length();
+    private void layColumn(int index, int row, int column) throws MaxChangedBlocksException {
+        LaidSegment segment = segments.get(index);
+        double side = side(column);
 
         BlockVector3 before = null;
-        for (Sample sample : segment.samples()) {
-            if (sample.turn() * side > 0) continue;
-            Vector3 position = sample.point().add(sample.across().multiply(side)).add(0, row, 0);
-            BlockVector3 target = BlockVector3.floor(position.add(EDGE, EDGE, EDGE));
+        for (Step step : segment.steps()) {
+            if (step.isInsideCorner(side)) continue;
+            BlockVector3 target = blockAt(step.point().add(step.across().multiply(side)).add(0, row, 0));
             if (target.equals(before)) continue;
             before = target;
 
-            if (atCorner) {
-                BitSet laidOnColumn = columnsLaid.computeIfAbsent(columnKey(target), key -> new BitSet());
-                boolean otherLaidFirst = segment.cornerBefore() && laidOnColumn.get(index - 1)
-                        || cornerAfter && laidOnColumn.get(index + 1);
-                if (otherLaidFirst) continue;
-                laidOnColumn.set(index);
-            }
-
-            if (sources.containsKey(target) || !mayPlace(target)) continue;
-            sources.put(target, sourceAt(sample, segment.start(), row, column, repeat));
+            if (!takeColumn(index, target) || sources.containsKey(target) || !mayPlace(target)) continue;
+            sources.put(target, source(segment.start() + step.distance(), row, column));
             if (0 < maxBlocks && maxBlocks < sources.size()) {
                 throw new MaxChangedBlocksException(maxBlocks);
             }
         }
+    }
+
+    /** The block that {@code position} is in, the one with the higher coordinate on the edge between two. */
+    private static BlockVector3 blockAt(Vector3 position) {
+        return BlockVector3.floor(position.add(EDGE, EDGE, EDGE));
+    }
+
+    /**
+     * Whether segment {@code index} may lay on the column of blocks that {@code target} is in, taking it when it meets
+     * another segment at a corner: false when a segment it meets at a corner has taken the column first.
+     */
+    private boolean takeColumn(int index, BlockVector3 target) {
+        boolean cornerBefore = segments.get(index).cornerBefore();
+        boolean cornerAfter = index + 1 < segments.size() && segments.get(index + 1).cornerBefore();
+        if (!cornerBefore && !cornerAfter) return true;
+
+        BitSet taken = columnsTaken.computeIfAbsent(columnKey(target), key -> new BitSet());
+        if (cornerBefore && taken.get(index - 1) || cornerAfter && taken.get(index + 1)) return false;
+        taken.set(index);
+        return true;
     }
 
     /** A key for the column of blocks, all along y, that {@code block} is in. */
@@ -335,13 +366,10 @@ final class CurveLayout {
         return (long) block.x() << 32 ^ (block.z() & 0xFFFFFFFFL);
     }
 
-    /**
-     * The block of the selection in {@code row} and {@code column} for where the curve is at {@code sample}, of a
-     * segment that starts {@code start} along the curve.
-     */
-    private BlockVector3 sourceAt(Sample sample, double start, int row, int column, int repeat) {
+    /** The block of the selection in {@code row} and {@code column} for {@code distance} along the curve. */
+    private BlockVector3 source(double distance, int row, int column) {
         // How far into the repeating selection the block is
-        int along = Math.floorMod((int) Math.floor(sample.distance() + start + offset + 0.5), repeat);
+        int along = Math.floorMod((int) Math.floor(distance + offset + 0.5), repeat);
         return axis == BcOptions.Axis.X
                 ? selection.min().add(along, row, column)
                 : selection.min().add(column, row, along);
