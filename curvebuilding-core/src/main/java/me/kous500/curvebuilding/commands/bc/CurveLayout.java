@@ -13,9 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
@@ -121,7 +119,7 @@ final class CurveLayout {
     /** Whether {@link #blocks} has laid the segments. */
     private boolean laid;
     /** For each block to place, the block of the selection laid there first. */
-    private final NavigableMap<BlockVector3, BlockVector3> sources = new TreeMap<>();
+    private final Map<BlockVector3, BlockVector3> sources = new HashMap<>();
     /**
      * For each column of blocks, by {@link #columnKey}, the segments that meet another at a corner and have taken it,
      * by their index.
@@ -200,15 +198,15 @@ final class CurveLayout {
      * The blocks to place and, for each, the block of the selection to place there. The first call lays the segments
      * added; after an exception, the layout is not to be used.
      *
-     * @return a copy, in the order of the positions of the blocks to place
+     * @return a copy, in no particular order
      * @throws MaxChangedBlocksException when the curve would place more than {@code maxBlocks} blocks
      */
-    NavigableMap<BlockVector3, BlockVector3> blocks() throws MaxChangedBlocksException {
+    Map<BlockVector3, BlockVector3> blocks() throws MaxChangedBlocksException {
         if (!laid) {
             laid = true;
             layAll();
         }
-        return new TreeMap<>(sources);
+        return new HashMap<>(sources);
     }
 
     /**
