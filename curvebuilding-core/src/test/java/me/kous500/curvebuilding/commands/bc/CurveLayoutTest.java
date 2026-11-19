@@ -335,9 +335,9 @@ class CurveLayoutTest {
     }
 
     @Test
-    void curvePassingOverItselfKeepsTheLowerRowOfEachPart() throws Exception {
+    void curvePassingOverItselfKeepsTheRowNearerTheMiddle() throws Exception {
         // Along x at y = 64, up four blocks, then back along x at y = 68, with a selection six blocks high: where the
-        // two parts share blocks, the bottom rows of the upper part are laid before the top rows of the lower part
+        // two parts share blocks, the row nearer the middle of the cross section is laid first
         CurveLayout.Selection tall = new CurveLayout.Selection(1, 6, 1, ORIGIN);
         Map<BlockVector3, BlockVector3> blocks = layout(tall, NO_ARGUMENTS, 0,
                 straight(Vector3.at(0, 64, 0), Vector3.at(10, 64, 0)),
@@ -345,7 +345,8 @@ class CurveLayoutTest {
                 straight(Vector3.at(10, 68, 0), Vector3.at(0, 68, 0))).blocks();
 
         for (int x = 2; x <= 8; x++) {
-            assertEquals(0, blocks.get(BlockVector3.at(x, 68, 0)).y(), String.valueOf(x));
+            // Row 4 of the lower part against row 0 of the upper part, then row 5 against row 1
+            assertEquals(4, blocks.get(BlockVector3.at(x, 68, 0)).y(), String.valueOf(x));
             assertEquals(1, blocks.get(BlockVector3.at(x, 69, 0)).y(), String.valueOf(x));
             assertEquals(2, blocks.get(BlockVector3.at(x, 70, 0)).y(), String.valueOf(x));
             assertEquals(3, blocks.get(BlockVector3.at(x, 67, 0)).y(), String.valueOf(x));
@@ -353,35 +354,51 @@ class CurveLayoutTest {
     }
 
     @Test
-    void eachRowLaysOneBlockInEachXzCellUpASlope() throws Exception {
-        // Up one block for every two: at each odd x the curve climbs into the block above halfway, so each row
-        // passes two blocks there and keeps the upper one
-        CurveLayout.Selection twoHigh = new CurveLayout.Selection(1, 2, 1, ORIGIN);
+    void topAndBottomRowsLayOneBlockInEachXzCellUpASlope() throws Exception {
+        // Up one block for every two, three rows high: at each odd x the curve climbs into the block above halfway,
+        // and the middle row, laid first, keeps the block that each row shares with the next
+        CurveLayout.Selection threeHigh = new CurveLayout.Selection(1, 3, 1, ORIGIN);
         Map<BlockVector3, BlockVector3> blocks =
-                layout(twoHigh, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(12, 70, 0))).blocks();
+                layout(threeHigh, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(12, 70, 0))).blocks();
 
         for (int x = 0; x <= 12; x++) {
-            int bottom = 64 + (x + 1) / 2;
-            assertEquals(0, blocks.get(BlockVector3.at(x, bottom, 0)).y(), String.valueOf(x));
-            assertEquals(1, blocks.get(BlockVector3.at(x, bottom + 1, 0)).y(), String.valueOf(x));
-            assertEquals(2, blocksInXzCell(blocks, x), String.valueOf(x));
+            assertEquals(1, blocksOfRowInXzCell(blocks, x, 0), String.valueOf(x));
+            assertEquals(1, blocksOfRowInXzCell(blocks, x, 2), String.valueOf(x));
         }
     }
 
     @Test
-    void oneRowLaysOneBlockInEachXzCellUpASlope() throws Exception {
+    void steepSlopeStaysConnectedFromItsStart() throws Exception {
+        // Up two blocks for each one along x: each xz cell has blocks touching those of the next, and the block the
+        // curve starts in is laid
         Map<BlockVector3, BlockVector3> blocks =
-                layout(ONE_BLOCK, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(12, 70, 0))).blocks();
+                layout(ONE_BLOCK, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(6, 76, 0))).blocks();
 
-        for (int x = 0; x <= 12; x++) {
-            assertTrue(blocks.containsKey(BlockVector3.at(x, 64 + (x + 1) / 2, 0)), String.valueOf(x));
-            assertEquals(1, blocksInXzCell(blocks, x), String.valueOf(x));
+        assertTrue(blocks.containsKey(BlockVector3.at(0, 64, 0)));
+        for (int x = 0; x < 6; x++) {
+            int top = highestInXzCell(blocks, x);
+            int nextBottom = lowestInXzCell(blocks, x + 1);
+            assertTrue(nextBottom <= top + 1, x + ": up to " + top + ", then from " + nextBottom);
         }
     }
 
-    /** How many of {@code blocks} are in the xz cell at {@code x} and z = 0. */
-    private static long blocksInXzCell(Map<BlockVector3, BlockVector3> blocks, int x) {
-        return blocks.keySet().stream().filter(block -> block.x() == x && block.z() == 0).count();
+    /** How many of {@code blocks} at z = 0 and {@code x} are from row {@code row} of the selection. */
+    private static long blocksOfRowInXzCell(Map<BlockVector3, BlockVector3> blocks, int x, int row) {
+        return blocks.entrySet().stream()
+                .filter(block -> block.getKey().x() == x && block.getKey().z() == 0 && block.getValue().y() == row)
+                .count();
+    }
+
+    /** The highest y of {@code blocks} at z = 0 and {@code x}. */
+    private static int highestInXzCell(Map<BlockVector3, BlockVector3> blocks, int x) {
+        return blocks.keySet().stream().filter(block -> block.x() == x && block.z() == 0)
+                .mapToInt(BlockVector3::y).max().orElseThrow();
+    }
+
+    /** The lowest y of {@code blocks} at z = 0 and {@code x}. */
+    private static int lowestInXzCell(Map<BlockVector3, BlockVector3> blocks, int x) {
+        return blocks.keySet().stream().filter(block -> block.x() == x && block.z() == 0)
+                .mapToInt(BlockVector3::y).min().orElseThrow();
     }
 
     @Test

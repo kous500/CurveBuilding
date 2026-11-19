@@ -22,12 +22,12 @@ import java.util.stream.IntStream;
  * curve, and the selection repeats along the curve, starting {@code offset} blocks into it. Where the curve turns at a
  * point, the cross section turns around the point, filling the outside of the corner.
  *
- * <p>The cross section is laid row by row from the bottom, and in each row column by column from the middle outwards,
- * each column along every segment in order before the next. A block that several blocks of the selection fall on keeps
- * the first. Where the curve climbs or falls within an xz cell (a cell of the xz plane: the blocks at its x and z, at
- * any height), a row passes two blocks there; the row below has laid on the lower one first, so each row keeps one. For
- * the bottom row, a row below it is worked out first, laying nothing, to keep the bottom row of the same segment off
- * those blocks.
+ * <p>The cross section is laid row by row from the middle outwards, and in each row column by column from the middle
+ * outwards, each column along every segment in order before the next. A block that several blocks of the selection
+ * fall on keeps the first. Where the curve climbs or falls within an xz cell (a cell of the xz plane: the blocks at its
+ * x and z, at any height), each row passes more than one block there, and the rows laid first keep the blocks they
+ * share: the blocks left over go to the rows nearest the middle, so that with three rows or more, the top and bottom
+ * rows keep one each.
  *
  * <p>Where two segments meet at a corner, turning by more than {@link #CORNER} on the xz plane, neither places anything
  * in an xz cell, at any height, where the other has laid first: inside the corner, the two cross sections meet where
@@ -142,8 +142,6 @@ final class CurveLayout {
     private final Map<XzCell, Set<Integer>> xzCellsTaken = new HashMap<>();
     /** The blocks found not to be air, for {@code -a}, so that the world is read once for each block. */
     private final Set<BlockVector3> notAir = new HashSet<>();
-    /** For each segment, by its index, the blocks of the row below its bottom row, where that row lays nothing. */
-    private final List<Set<BlockVector3>> belowBottom = new ArrayList<>();
 
     /**
      * A layout with nothing laid yet. The selection is read along the axis of {@code arguments}, or without one along
@@ -237,12 +235,8 @@ final class CurveLayout {
 
     /** Lays the cross section along every segment, in the order that the class describes. */
     private void layAll() throws MaxChangedBlocksException {
-        for (LaidSegment segment : segments) {
-            belowBottom.add(blocksBelowBottom(segment));
-        }
-
         int[] columnsFromTheMiddle = fromTheMiddle(columns);
-        for (int row = 0; row < selection.height(); row++) {
+        for (int row : fromTheMiddle(selection.height())) {
             for (int column : columnsFromTheMiddle) {
                 for (int index = 0; index < segments.size(); index++) {
                     layColumn(index, row, column);
@@ -300,18 +294,18 @@ final class CurveLayout {
     }
 
     /**
-     * The columns of a cross section in the order to lay them: from the middle outwards, so that where two columns
-     * fall on the same block, the one nearer the middle keeps it. Of two columns as far from the middle, the lower
-     * comes first: 5 columns give 2, 1, 3, 0, 4, and 4 columns give 1, 2, 0, 3.
+     * The rows or the columns of a cross section in the order to lay them: from the middle outwards, so that where two
+     * fall on the same block, the one nearer the middle keeps it. Of two as far from the middle, the lower comes first:
+     * 5 give 2, 1, 3, 0, 4, and 4 give 1, 2, 0, 3.
      *
-     * @param columns the number of columns across the selection
-     * @return each column from 0 to {@code columns - 1} once
+     * @param count the number of rows or columns
+     * @return each from 0 to {@code count - 1} once
      */
-    private static int[] fromTheMiddle(int columns) {
-        double middle = (columns - 1) / 2.0;
-        return IntStream.range(0, columns)
+    private static int[] fromTheMiddle(int count) {
+        double middle = (count - 1) / 2.0;
+        return IntStream.range(0, count)
                 .boxed()
-                .sorted(Comparator.comparingDouble(column -> Math.abs(column - middle)))
+                .sorted(Comparator.comparingDouble(index -> Math.abs(index - middle)))
                 .mapToInt(Integer::intValue)
                 .toArray();
     }
@@ -339,8 +333,7 @@ final class CurveLayout {
      * Lays one column of the cross section along segment {@code index}: the blocks of the selection along the axis, in
      * row {@code row} from the bottom and column {@code column} from the lowest coordinate across it. Each block the
      * column enters gets the block of the selection at that distance along the curve, unless {@link #takeXzCell} keeps
-     * it from that xz cell, it is in the row below the bottom row of the segment, a block was laid there before, or
-     * with {@code -a} it is not air.
+     * it from that xz cell, a block was laid there before, or with {@code -a} it is not air.
      */
     private void layColumn(int index, int row, int column) throws MaxChangedBlocksException {
         LaidSegment segment = segments.get(index);
@@ -354,25 +347,12 @@ final class CurveLayout {
             before = target;
 
             if (!takeXzCell(index, target)) continue;
-            if (row == 0 && belowBottom.get(index).contains(target)) continue;
             if (sources.containsKey(target) || !mayPlace(target)) continue;
             sources.put(target, source(segment.start() + step.distance(), row, column));
             if (0 < maxBlocks && maxBlocks < sources.size()) {
                 throw new MaxChangedBlocksException(maxBlocks);
             }
         }
-    }
-
-    /** The blocks that a row below the bottom row of the cross section passes along {@code segment}, in all columns. */
-    private Set<BlockVector3> blocksBelowBottom(LaidSegment segment) {
-        Set<BlockVector3> blocks = new HashSet<>();
-        for (int column = 0; column < columns; column++) {
-            double side = side(column);
-            for (Step step : segment.steps()) {
-                if (!step.isInsideCorner(side)) blocks.add(blockOf(step, side, -1));
-            }
-        }
-        return blocks;
     }
 
     /** The block that the column {@code side} blocks to the left of the curve passes at {@code step} in {@code row}. */
