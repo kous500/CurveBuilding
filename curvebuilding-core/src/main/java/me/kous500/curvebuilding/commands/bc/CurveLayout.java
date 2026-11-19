@@ -24,13 +24,14 @@ import java.util.stream.IntStream;
  *
  * <p>The cross section is laid row by row from the bottom, and in each row column by column from the middle outwards,
  * each column along every segment in order before the next. A block that several blocks of the selection fall on keeps
- * the first. Where the curve climbs or falls within a column of blocks, a row passes two blocks there; the row below
- * has laid on the lower one first, so each row keeps one. For the bottom row, a row below it is worked out first,
- * laying nothing, to keep the bottom row of the same segment off those blocks.
+ * the first. Where the curve climbs or falls within an xz cell (a cell of the xz plane: the blocks at its x and z, at
+ * any height), a row passes two blocks there; the row below has laid on the lower one first, so each row keeps one. For
+ * the bottom row, a row below it is worked out first, laying nothing, to keep the bottom row of the same segment off
+ * those blocks.
  *
  * <p>Where two segments meet at a corner, turning by more than {@link #CORNER} on the xz plane, neither places anything
- * on a column of blocks, at any height, where the other has laid first: inside the corner, the two cross sections meet
- * where they are equally far from the middle, instead of crossing each other where the curve climbs or falls.
+ * in an xz cell, at any height, where the other has laid first: inside the corner, the two cross sections meet where
+ * they are equally far from the middle, instead of crossing each other where the curve climbs or falls.
  *
  * <p>Add the segments of the curve in order with {@link #add}, then take the blocks with {@link #blocks}, which lays
  * them. The world is only read through {@code isAir}, for {@code -a}, and nothing is placed.
@@ -99,15 +100,15 @@ final class CurveLayout {
     }
 
     /**
-     * A column of blocks, all along y.
+     * A cell of the xz plane: the blocks at its x and z, at any height.
      *
      * @param x the x of its blocks
      * @param z the z of its blocks
      */
-    private record Column(int x, int z) {
-        /** The column that {@code block} is in. */
-        static Column of(BlockVector3 block) {
-            return new Column(block.x(), block.z());
+    private record XzCell(int x, int z) {
+        /** The xz cell that {@code block} is in. */
+        static XzCell of(BlockVector3 block) {
+            return new XzCell(block.x(), block.z());
         }
     }
 
@@ -136,9 +137,9 @@ final class CurveLayout {
     /** For each block to place, the block of the selection laid there first. */
     private final Map<BlockVector3, BlockVector3> sources = new HashMap<>();
     /**
-     * For each column of blocks, the segments, by their index, that meet another at a corner and have taken it.
+     * For each xz cell, the segments, by their index, that meet another at a corner and have taken it.
      */
-    private final Map<Column, Set<Integer>> columnsTaken = new HashMap<>();
+    private final Map<XzCell, Set<Integer>> xzCellsTaken = new HashMap<>();
     /** The blocks found not to be air, for {@code -a}, so that the world is read once for each block. */
     private final Set<BlockVector3> notAir = new HashSet<>();
     /** For each segment, by its index, the blocks of the row below its bottom row, where that row lays nothing. */
@@ -337,9 +338,9 @@ final class CurveLayout {
     /**
      * Lays one column of the cross section along segment {@code index}: the blocks of the selection along the axis, in
      * row {@code row} from the bottom and column {@code column} from the lowest coordinate across it. Each block the
-     * column enters gets the block of the selection at that distance along the curve, unless {@link #takeColumn} keeps
-     * it from that column of blocks, it is in the row below the bottom row of the segment, a block was laid there
-     * before, or with {@code -a} it is not air.
+     * column enters gets the block of the selection at that distance along the curve, unless {@link #takeXzCell} keeps
+     * it from that xz cell, it is in the row below the bottom row of the segment, a block was laid there before, or
+     * with {@code -a} it is not air.
      */
     private void layColumn(int index, int row, int column) throws MaxChangedBlocksException {
         LaidSegment segment = segments.get(index);
@@ -352,7 +353,7 @@ final class CurveLayout {
             if (target.equals(before)) continue;
             before = target;
 
-            if (!takeColumn(index, target)) continue;
+            if (!takeXzCell(index, target)) continue;
             if (row == 0 && belowBottom.get(index).contains(target)) continue;
             if (sources.containsKey(target) || !mayPlace(target)) continue;
             sources.put(target, source(segment.start() + step.distance(), row, column));
@@ -385,15 +386,15 @@ final class CurveLayout {
     }
 
     /**
-     * Whether segment {@code index} may lay on the column of blocks that {@code target} is in, taking it when it meets
-     * another segment at a corner: false when a segment it meets at a corner has taken the column first.
+     * Whether segment {@code index} may lay in the xz cell that {@code target} is in, taking it when it meets another
+     * segment at a corner: false when a segment it meets at a corner has taken the xz cell first.
      */
-    private boolean takeColumn(int index, BlockVector3 target) {
+    private boolean takeXzCell(int index, BlockVector3 target) {
         boolean cornerBefore = segments.get(index).cornerBefore();
         boolean cornerAfter = index + 1 < segments.size() && segments.get(index + 1).cornerBefore();
         if (!cornerBefore && !cornerAfter) return true;
 
-        Set<Integer> taken = columnsTaken.computeIfAbsent(Column.of(target), key -> new HashSet<>());
+        Set<Integer> taken = xzCellsTaken.computeIfAbsent(XzCell.of(target), key -> new HashSet<>());
         if (cornerBefore && taken.contains(index - 1) || cornerAfter && taken.contains(index + 1)) return false;
         taken.add(index);
         return true;

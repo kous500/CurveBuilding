@@ -317,7 +317,7 @@ class CurveLayoutTest {
     @Test
     void segmentsGoingOnTheSameWayKeepTheBlocksOfBoth() throws Exception {
         // Flat along +x to x = 8.5, then on the same way up two blocks for each: not a corner, so the steep segment
-        // also lays on the last column of blocks of the flat one, at y = 65
+        // also lays in the last xz cell of the flat one, at y = 65
         BezierSegment flat = straight(Vector3.at(0, 64, 0), Vector3.at(8, 64, 0));
         BezierSegment steep = straight(Vector3.at(8, 64, 0), Vector3.at(16, 80, 0));
         Map<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, flat, steep).blocks();
@@ -353,8 +353,8 @@ class CurveLayoutTest {
     }
 
     @Test
-    void eachRowLaysOneBlockInEachColumnUpASlope() throws Exception {
-        // Up one block for every two: in each odd column the curve climbs into the block above halfway, so each row
+    void eachRowLaysOneBlockInEachXzCellUpASlope() throws Exception {
+        // Up one block for every two: at each odd x the curve climbs into the block above halfway, so each row
         // passes two blocks there and keeps the upper one
         CurveLayout.Selection twoHigh = new CurveLayout.Selection(1, 2, 1, ORIGIN);
         Map<BlockVector3, BlockVector3> blocks =
@@ -364,23 +364,23 @@ class CurveLayoutTest {
             int bottom = 64 + (x + 1) / 2;
             assertEquals(0, blocks.get(BlockVector3.at(x, bottom, 0)).y(), String.valueOf(x));
             assertEquals(1, blocks.get(BlockVector3.at(x, bottom + 1, 0)).y(), String.valueOf(x));
-            assertEquals(2, blocksInColumn(blocks, x), String.valueOf(x));
+            assertEquals(2, blocksInXzCell(blocks, x), String.valueOf(x));
         }
     }
 
     @Test
-    void oneRowLaysOneBlockInEachColumnUpASlope() throws Exception {
+    void oneRowLaysOneBlockInEachXzCellUpASlope() throws Exception {
         Map<BlockVector3, BlockVector3> blocks =
                 layout(ONE_BLOCK, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(12, 70, 0))).blocks();
 
         for (int x = 0; x <= 12; x++) {
             assertTrue(blocks.containsKey(BlockVector3.at(x, 64 + (x + 1) / 2, 0)), String.valueOf(x));
-            assertEquals(1, blocksInColumn(blocks, x), String.valueOf(x));
+            assertEquals(1, blocksInXzCell(blocks, x), String.valueOf(x));
         }
     }
 
-    /** How many of {@code blocks} are in the column of blocks at {@code x} and z = 0. */
-    private static long blocksInColumn(Map<BlockVector3, BlockVector3> blocks, int x) {
+    /** How many of {@code blocks} are in the xz cell at {@code x} and z = 0. */
+    private static long blocksInXzCell(Map<BlockVector3, BlockVector3> blocks, int x) {
         return blocks.keySet().stream().filter(block -> block.x() == x && block.z() == 0).count();
     }
 
