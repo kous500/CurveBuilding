@@ -335,9 +335,9 @@ class CurveLayoutTest {
     }
 
     @Test
-    void curvePassingOverItselfKeepsTheHigherRowOfEachPart() throws Exception {
+    void curvePassingOverItselfKeepsTheLowerRowOfEachPart() throws Exception {
         // Along x at y = 64, up four blocks, then back along x at y = 68, with a selection six blocks high: where the
-        // two parts share blocks, the top rows of the lower part are laid before the bottom rows of the upper part
+        // two parts share blocks, the bottom rows of the upper part are laid before the top rows of the lower part
         CurveLayout.Selection tall = new CurveLayout.Selection(1, 6, 1, ORIGIN);
         Map<BlockVector3, BlockVector3> blocks = layout(tall, NO_ARGUMENTS, 0,
                 straight(Vector3.at(0, 64, 0), Vector3.at(10, 64, 0)),
@@ -345,25 +345,43 @@ class CurveLayoutTest {
                 straight(Vector3.at(10, 68, 0), Vector3.at(0, 68, 0))).blocks();
 
         for (int x = 2; x <= 8; x++) {
-            assertEquals(4, blocks.get(BlockVector3.at(x, 68, 0)).y(), String.valueOf(x));
-            assertEquals(5, blocks.get(BlockVector3.at(x, 69, 0)).y(), String.valueOf(x));
+            assertEquals(0, blocks.get(BlockVector3.at(x, 68, 0)).y(), String.valueOf(x));
+            assertEquals(1, blocks.get(BlockVector3.at(x, 69, 0)).y(), String.valueOf(x));
             assertEquals(2, blocks.get(BlockVector3.at(x, 70, 0)).y(), String.valueOf(x));
             assertEquals(3, blocks.get(BlockVector3.at(x, 67, 0)).y(), String.valueOf(x));
         }
     }
 
     @Test
-    void upperRowKeepsTheBlocksItSharesWithTheRowBelow() throws Exception {
-        // Up one block for every two: in each odd column the curve climbs into the block above halfway, which the
-        // bottom row reaches after the top row has
+    void eachRowLaysOneBlockInEachColumnUpASlope() throws Exception {
+        // Up one block for every two: in each odd column the curve climbs into the block above halfway, so each row
+        // passes two blocks there and keeps the upper one
         CurveLayout.Selection twoHigh = new CurveLayout.Selection(1, 2, 1, ORIGIN);
         Map<BlockVector3, BlockVector3> blocks =
                 layout(twoHigh, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(12, 70, 0))).blocks();
 
-        for (int x = 1; x <= 11; x += 2) {
-            BlockVector3 shared = BlockVector3.at(x, 65 + (x - 1) / 2, 0);
-            assertEquals(1, blocks.get(shared).y(), shared.toString());
+        for (int x = 0; x <= 12; x++) {
+            int bottom = 64 + (x + 1) / 2;
+            assertEquals(0, blocks.get(BlockVector3.at(x, bottom, 0)).y(), String.valueOf(x));
+            assertEquals(1, blocks.get(BlockVector3.at(x, bottom + 1, 0)).y(), String.valueOf(x));
+            assertEquals(2, blocksInColumn(blocks, x), String.valueOf(x));
         }
+    }
+
+    @Test
+    void oneRowLaysOneBlockInEachColumnUpASlope() throws Exception {
+        Map<BlockVector3, BlockVector3> blocks =
+                layout(ONE_BLOCK, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(12, 70, 0))).blocks();
+
+        for (int x = 0; x <= 12; x++) {
+            assertTrue(blocks.containsKey(BlockVector3.at(x, 64 + (x + 1) / 2, 0)), String.valueOf(x));
+            assertEquals(1, blocksInColumn(blocks, x), String.valueOf(x));
+        }
+    }
+
+    /** How many of {@code blocks} are in the column of blocks at {@code x} and z = 0. */
+    private static long blocksInColumn(Map<BlockVector3, BlockVector3> blocks, int x) {
+        return blocks.keySet().stream().filter(block -> block.x() == x && block.z() == 0).count();
     }
 
     @Test
