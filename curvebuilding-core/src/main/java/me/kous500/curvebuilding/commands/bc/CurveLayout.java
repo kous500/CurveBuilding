@@ -7,7 +7,6 @@ import me.kous500.curvebuilding.math.Vector3;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -99,6 +98,19 @@ final class CurveLayout {
     private record LaidSegment(List<Step> steps, double start, boolean cornerBefore) {
     }
 
+    /**
+     * A column of blocks, all along y.
+     *
+     * @param x the x of its blocks
+     * @param z the z of its blocks
+     */
+    private record Column(int x, int z) {
+        /** The column that {@code block} is in. */
+        static Column of(BlockVector3 block) {
+            return new Column(block.x(), block.z());
+        }
+    }
+
     private final Selection selection;
     private final BcOptions.Axis axis;
     /** The number of columns across the selection, the width of the cross section. */
@@ -124,10 +136,9 @@ final class CurveLayout {
     /** For each block to place, the block of the selection laid there first. */
     private final Map<BlockVector3, BlockVector3> sources = new HashMap<>();
     /**
-     * For each column of blocks, by {@link #columnKey}, the segments that meet another at a corner and have taken it,
-     * by their index.
+     * For each column of blocks, the segments, by their index, that meet another at a corner and have taken it.
      */
-    private final Map<Long, BitSet> columnsTaken = new HashMap<>();
+    private final Map<Column, Set<Integer>> columnsTaken = new HashMap<>();
     /** The blocks found not to be air, for {@code -a}, so that the world is read once for each block. */
     private final Set<BlockVector3> notAir = new HashSet<>();
     /** For each segment, by its index, the blocks of the row below its bottom row, where that row lays nothing. */
@@ -382,15 +393,10 @@ final class CurveLayout {
         boolean cornerAfter = index + 1 < segments.size() && segments.get(index + 1).cornerBefore();
         if (!cornerBefore && !cornerAfter) return true;
 
-        BitSet taken = columnsTaken.computeIfAbsent(columnKey(target), key -> new BitSet());
-        if (cornerBefore && taken.get(index - 1) || cornerAfter && taken.get(index + 1)) return false;
-        taken.set(index);
+        Set<Integer> taken = columnsTaken.computeIfAbsent(Column.of(target), key -> new HashSet<>());
+        if (cornerBefore && taken.contains(index - 1) || cornerAfter && taken.contains(index + 1)) return false;
+        taken.add(index);
         return true;
-    }
-
-    /** A key for the column of blocks, all along y, that {@code block} is in. */
-    private static long columnKey(BlockVector3 block) {
-        return (long) block.x() << 32 ^ (block.z() & 0xFFFFFFFFL);
     }
 
     /** The block of the selection in {@code row} and {@code column} for {@code distance} along the curve. */
