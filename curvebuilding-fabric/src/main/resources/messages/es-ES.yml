@@ -12,7 +12,7 @@ messages:
   pos-remove: "Se ha eliminado el punto de conexión {0}."
   pos-shift: "Se ha desplazado la posición."
   bc-changed: "{0} bloques han sido modificados. Puedes deshacer con //undo"
-  bc-length: "Longitud de la curva: {0} bloques (aprox.)"
+  bc-length: "Longitud de la curva: {0} bloques"
   incomplete-region: "Selecciona primero una región."
   incomplete-pos: "Selecciona primero una posición de inicio."
   max-changed-blocks: "Se ha alcanzado el límite máximo de bloques modificados ({0})."

@@ -12,7 +12,7 @@ messages:
   pos-remove: "接続点 {0} を取り除きました。"
   pos-shift: "posをシフトしました。"
   bc-changed: "{0} 個のブロックが変更されました。//undo で元に戻します。"
-  bc-length: "曲線の長さ: {0} ブロック (推定)"
+  bc-length: "曲線の長さ: {0} ブロック"
   incomplete-region: "領域を選択してください。"
   incomplete-pos: "始点を選択してください。"
   max-changed-blocks: "変更できるブロックの最大値は ({0}) に設定されています。"
