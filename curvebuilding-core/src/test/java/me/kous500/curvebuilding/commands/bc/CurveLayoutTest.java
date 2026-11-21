@@ -77,6 +77,27 @@ class CurveLayoutTest {
     }
 
     @Test
+    void curveEndingOnTheEdgeOfABlockPlacesNothingPastIt() throws Exception {
+        Vector3 start = Vector3.at(1.0, 64.5, 0.5);
+        Vector3 end = Vector3.at(5.0, 64.5, 0.5);
+        BezierSegment line = new BezierSegment(start, start, end, end);
+        Map<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, line).blocks();
+
+        assertEquals(Set.of(1, 2, 3, 4), xs(blocks));
+    }
+
+    @Test
+    void blockThatTheCurveOnlyTouchesGetsNothing() throws Exception {
+        // The curve goes through 0.05 blocks of x = 0, less than the least it lays a block for
+        Vector3 start = Vector3.at(0.95, 64.5, 0.5);
+        Vector3 end = Vector3.at(5.5, 64.5, 0.5);
+        BezierSegment line = new BezierSegment(start, start, end, end);
+        Map<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, line).blocks();
+
+        assertEquals(Set.of(1, 2, 3, 4, 5), xs(blocks));
+    }
+
+    @Test
     void crossSectionIsLaidAcrossTheCurve() throws Exception {
         // Three blocks high and three wide across x, so the curve along x gets a 3 x 3 cross section
         CurveLayout.Selection selection = new CurveLayout.Selection(1, 3, 3, ORIGIN);
@@ -461,9 +482,24 @@ class CurveLayoutTest {
 
     @Test
     void lengthReachesTheEndOfEachSegment() throws Exception {
-        // 10 steps per block do not make a whole number of steps along 1.95 blocks
+        // Segments that are not a whole number of blocks long
         CurveLayout layout = layout(ONE_BLOCK, NO_ARGUMENTS, 0, segmentsOf(1.95, 10));
 
         assertEquals(19.5, layout.length(), 1e-9);
     }
+
+    @Test
+    void lengthIsMeasuredAlongTheCurveItself() throws Exception {
+        BezierSegment arch = new BezierSegment(
+                Vector3.at(0.5, 64.5, 0.5),
+                Vector3.at(0.5, 64.5, 8.5),
+                Vector3.at(8.5, 64.5, 8.5),
+                Vector3.at(8.5, 64.5, 0.5));
+
+        CurveLayout layout = layout(ONE_BLOCK, NO_ARGUMENTS, 0, arch);
+
+        // A million straight steps along the arch stray from it by far less than the tolerance of this test
+        assertEquals(arch.length(1_000_000), layout.length(), 1e-6);
+    }
+
 }
