@@ -29,9 +29,11 @@ import java.util.stream.IntStream;
  * share: the blocks left over go to the rows nearest the middle, so that with three rows or more, the top and bottom
  * rows keep one each.
  *
- * <p>Where two segments meet at a corner, turning by more than {@link #CORNER} on the xz plane, neither places anything
- * in an xz cell, at any height, where the other has laid first: inside the corner, the two cross sections meet where
- * they are equally far from the middle, instead of crossing each other where the curve climbs or falls.
+ * <p>Where two segments meet at a corner, turning by more than {@link #CORNER} on the xz plane, and neither is steep,
+ * neither places anything in an xz cell, at any height, where the other has laid first: inside the corner, the two
+ * cross sections meet where they are equally far from the middle, instead of crossing each other where the curve climbs
+ * or falls. A steep segment, which climbs or falls more along its steps than it goes across the xz plane, passes few
+ * xz cells, most of which the segment beside it would take, so it splits none.
  *
  * <p>Add the segments of the curve in order with {@link #add}, then take the blocks with {@link #blocks}, which lays
  * them. The world is only read through {@code isAir}, for {@code -a}, and nothing is placed.
@@ -94,9 +96,10 @@ final class CurveLayout {
      *
      * @param steps its steps, after those that turn the cross section at its start
      * @param start how far along the curve it starts
-     * @param cornerBefore whether it meets the segment before at a corner
+     * @param splitsWithBefore whether it splits the xz cells it shares with the segment before: whether they meet at a
+     * corner and neither is steep
      */
-    private record LaidSegment(List<Step> steps, double start, boolean cornerBefore) {
+    private record LaidSegment(List<Step> steps, double start, boolean splitsWithBefore) {
     }
 
     /**
@@ -131,13 +134,16 @@ final class CurveLayout {
     private double addedLength;
     /** The way to the left of the curve at the end of the segments added so far, or null before the first. */
     private @Nullable Vector3 lastAcross;
+    /** Whether the last segment added is steep. */
+    private boolean lastSteep;
 
     /** Whether {@link #blocks} has laid the segments. */
     private boolean laid;
     /** For each block to place, the block of the selection laid there first. */
     private final Map<BlockVector3, BlockVector3> sources = new HashMap<>();
     /**
-     * For each xz cell, the segments, by their index, that meet another at a corner and have taken it.
+     * For each xz cell, the segments, by their index, that split xz cells with the segment before or after and have
+     * taken it.
      */
     private final Map<XzCell, Set<Integer>> xzCellsTaken = new HashMap<>();
     /** The blocks found not to be air, for {@code -a}, so that the world is read once for each block. */
@@ -196,17 +202,19 @@ final class CurveLayout {
         if (addedLength + segmentLength > maxLength) throw new TooLongException();
 
         List<Step> steps = new ArrayList<>();
-        boolean cornerBefore = false;
+        boolean steep = isSteep(along);
+        boolean splitsWithBefore = false;
         if (lastAcross != null) {
             double turn = turn(lastAcross, along.getFirst().across());
             steps.addAll(corner(segment.p0(), lastAcross, turn));
-            cornerBefore = Math.abs(turn) > CORNER;
+            splitsWithBefore = Math.abs(turn) > CORNER && !lastSteep && !steep;
         }
         steps.addAll(along);
 
-        segments.add(new LaidSegment(steps, addedLength, cornerBefore));
+        segments.add(new LaidSegment(steps, addedLength, splitsWithBefore));
         addedLength += segmentLength;
         lastAcross = along.getLast().across();
+        lastSteep = steep;
     }
 
     /**
@@ -269,6 +277,19 @@ final class CurveLayout {
      */
     private static double turn(Vector3 from, Vector3 to) {
         return Math.atan2(from.x() * to.z() - from.z() * to.x(), from.x() * to.x() + from.z() * to.z());
+    }
+
+    /** Whether the curve along {@code steps} climbs or falls more than it goes across the xz plane. */
+    private static boolean isSteep(List<Step> steps) {
+        double across = 0;
+        double upAndDown = 0;
+        for (int i = 1; i < steps.size(); i++) {
+            Vector3 from = steps.get(i - 1).point();
+            Vector3 to = steps.get(i).point();
+            across += Math.hypot(to.x() - from.x(), to.z() - from.z());
+            upAndDown += Math.abs(to.y() - from.y());
+        }
+        return upAndDown > across;
     }
 
     /**
@@ -366,16 +387,16 @@ final class CurveLayout {
     }
 
     /**
-     * Whether segment {@code index} may lay in the xz cell that {@code target} is in, taking it when it meets another
-     * segment at a corner: false when a segment it meets at a corner has taken the xz cell first.
+     * Whether segment {@code index} may lay in the xz cell that {@code target} is in, taking it when it splits xz
+     * cells with the segment before or after: false when such a segment has taken the xz cell first.
      */
     private boolean takeXzCell(int index, BlockVector3 target) {
-        boolean cornerBefore = segments.get(index).cornerBefore();
-        boolean cornerAfter = index + 1 < segments.size() && segments.get(index + 1).cornerBefore();
-        if (!cornerBefore && !cornerAfter) return true;
+        boolean splitsWithBefore = segments.get(index).splitsWithBefore();
+        boolean splitsWithAfter = index + 1 < segments.size() && segments.get(index + 1).splitsWithBefore();
+        if (!splitsWithBefore && !splitsWithAfter) return true;
 
         Set<Integer> taken = xzCellsTaken.computeIfAbsent(XzCell.of(target), key -> new HashSet<>());
-        if (cornerBefore && taken.contains(index - 1) || cornerAfter && taken.contains(index + 1)) return false;
+        if (splitsWithBefore && taken.contains(index - 1) || splitsWithAfter && taken.contains(index + 1)) return false;
         taken.add(index);
         return true;
     }

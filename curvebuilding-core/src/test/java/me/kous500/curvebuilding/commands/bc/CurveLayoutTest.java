@@ -326,6 +326,20 @@ class CurveLayoutTest {
         assertTrue(blocks.containsKey(BlockVector3.at(8, 65, 0)));
     }
 
+    @Test
+    void steepPartBetweenCornersIsLaidWhole() throws Exception {
+        // Along x, straight up six blocks at x = 5, then along x again: the part going up is steep, so it splits no xz
+        // cells with the parts beside it and the curve stays connected
+        Map<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0,
+                straight(Vector3.at(0, 64, 0), Vector3.at(5, 64, 0)),
+                straight(Vector3.at(5, 64, 0), Vector3.at(5, 70, 0)),
+                straight(Vector3.at(5, 70, 0), Vector3.at(10, 70, 0))).blocks();
+
+        for (int y = 64; y <= 70; y++) {
+            assertTrue(blocks.containsKey(BlockVector3.at(5, y, 0)), String.valueOf(y));
+        }
+    }
+
     /** A road five blocks wide along +x to x = 8, then along -z, turning without handles. */
     private static Map<BlockVector3, BlockVector3> turnLeft() throws Exception {
         CurveLayout.Selection road = new CurveLayout.Selection(1, 1, 5, ORIGIN);
