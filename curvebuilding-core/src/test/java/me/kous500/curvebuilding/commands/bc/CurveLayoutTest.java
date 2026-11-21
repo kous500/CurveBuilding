@@ -49,7 +49,7 @@ class CurveLayoutTest {
             BcArguments arguments,
             int maxBlocks,
             BezierSegment... segments) throws Exception {
-        CurveLayout layout = new CurveLayout(selection, arguments, NEVER_AIR, maxBlocks, 10000, 10);
+        CurveLayout layout = new CurveLayout(selection, arguments, NEVER_AIR, maxBlocks, 10000);
         for (BezierSegment segment : segments) {
             layout.add(segment);
         }
@@ -96,10 +96,10 @@ class CurveLayoutTest {
 
     @Test
     void crossSectionIsAcrossTheCurveAtItsEnd() throws Exception {
-        // With one step per block, the last step is at the end, where the segment has no handle
+        // The end of the segment has no handle, where the way across it comes from the handle at its start
         CurveLayout.Selection selection = new CurveLayout.Selection(1, 1, 3, ORIGIN);
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(4, 64, 0));
-        CurveLayout layout = new CurveLayout(selection, NO_ARGUMENTS, NEVER_AIR, 0, 10000, 1);
+        CurveLayout layout = new CurveLayout(selection, NO_ARGUMENTS, NEVER_AIR, 0, 10000);
         layout.add(line);
         Map<BlockVector3, BlockVector3> blocks = layout.blocks();
 
@@ -216,7 +216,7 @@ class CurveLayoutTest {
 
     @Test
     void airOnlyPlacesNothingWhereThereIsNoAir() throws Exception {
-        CurveLayout layout = new CurveLayout(ONE_BLOCK, new BcArguments(0, true, null), NEVER_AIR, 0, 10000, 10);
+        CurveLayout layout = new CurveLayout(ONE_BLOCK, new BcArguments(0, true, null), NEVER_AIR, 0, 10000);
         layout.add(straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0)));
 
         assertTrue(layout.blocks().isEmpty());
@@ -231,7 +231,7 @@ class CurveLayoutTest {
             return position.z() == 1;
         };
         CurveLayout.Selection selection = new CurveLayout.Selection(1, 1, 3, ORIGIN);
-        CurveLayout layout = new CurveLayout(selection, new BcArguments(0, true, null), isAir, 0, 10000, 10);
+        CurveLayout layout = new CurveLayout(selection, new BcArguments(0, true, null), isAir, 0, 10000);
         layout.add(straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0)));
         layout.add(straight(Vector3.at(6, 64, 0), Vector3.at(0, 64, 0)));
         Set<BlockVector3> placed = layout.blocks().keySet();
@@ -430,7 +430,7 @@ class CurveLayoutTest {
 
     @Test
     void segmentLongerThanTheMaximumIsRejected() {
-        CurveLayout layout = new CurveLayout(ONE_BLOCK, NO_ARGUMENTS, NEVER_AIR, 0, 5, 10);
+        CurveLayout layout = new CurveLayout(ONE_BLOCK, NO_ARGUMENTS, NEVER_AIR, 0, 5);
 
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0));
         assertThrows(CurveLayout.TooLongException.class, () -> layout.add(line));
@@ -438,7 +438,7 @@ class CurveLayoutTest {
 
     @Test
     void curveLongerThanTheMaximumIsRejectedByItsWholeLength() throws Exception {
-        CurveLayout layout = new CurveLayout(ONE_BLOCK, NO_ARGUMENTS, NEVER_AIR, 0, 3, 10);
+        CurveLayout layout = new CurveLayout(ONE_BLOCK, NO_ARGUMENTS, NEVER_AIR, 0, 3);
         BezierSegment[] segments = segmentsOf(1.4, 3);
 
         // 1.4 + 1.4 is within the maximum of 3, and 1.4 more goes over it

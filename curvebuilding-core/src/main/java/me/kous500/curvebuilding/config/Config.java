@@ -7,8 +7,6 @@ public class Config {
     /** The path of the message file, with {@code %datafolder%} for the data folder, or null without a setting. */
     public @Nullable String messageFilePath;
 
-    /** How many steps {@code //bc} takes along the curve per block, at least 1. */
-    public int fineness;
     /** The longest curve that {@code //bc} builds, in blocks. */
     public int maxSetLength;
     /** The highest point number of {@code //bcpos}, at least 1. */
@@ -27,7 +25,6 @@ public class Config {
     public Config(YamlConfig config) {
         messageFilePath = config.getString("message-file");
 
-        fineness = config.getInteger("curve.fineness", 1, Integer.MAX_VALUE);
         maxSetLength = config.getInteger("curve.max-set-length", 0, Integer.MAX_VALUE);
         maxPosValue = config.getInteger("curve.max-pos-value", 1, Integer.MAX_VALUE);
         // Every negative number means no limit

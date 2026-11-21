@@ -39,7 +39,8 @@ class LoadResourcesTest {
         Log.setConsole(console);
         jar = temp.resolve("jar");
         dataFolder = temp.resolve("data");
-        write(jar.resolve("config.yml"), "message-file: \"%datafolder%/messages/ja-JP.yml\"\ncurve:\n  fineness: 3\n");
+        write(jar.resolve("config.yml"),
+                "message-file: \"%datafolder%/messages/ja-JP.yml\"\ncurve:\n  max-pos-value: 3\n");
         write(jar.resolve("messages/en-US.yml"), "messages:\n  pos-shift: Shifted\n  pos-remove: Removed {0}\n");
         write(jar.resolve("messages/ja-JP.yml"), "messages:\n  pos-shift: シフト\n  pos-remove: \"{0} を削除\"\n");
     }
@@ -59,7 +60,7 @@ class LoadResourcesTest {
             config = CurveBuilding.loadResources(dataFolder, classLoader, Config::new);
         }
 
-        assertEquals(3, config.fineness);
+        assertEquals(3, config.maxPosValue);
         assertTrue(Files.exists(dataFolder.resolve("config.yml")), "the default config is copied");
         assertEquals("移動しました", Messages.getMessage(Message.POS_SHIFT));
         assertEquals("2 を削除", Messages.getMessage(Message.POS_REMOVE, 2));
@@ -86,8 +87,8 @@ class LoadResourcesTest {
 
         Config config = load();
 
-        assertEquals(3, config.fineness);
-        assertEquals("message-file: \"%datafolder%/messages/ja-JP.yml\"\ncurve:\n  fineness: 3\n",
+        assertEquals(3, config.maxPosValue);
+        assertEquals("message-file: \"%datafolder%/messages/ja-JP.yml\"\ncurve:\n  max-pos-value: 3\n",
                 Files.readString(dataFolder.resolve("config.yml")));
         assertEquals("messages:\n  pos-shift: 移動しました\n  pos-remove: \"{0} を削除\"\n",
                 Files.readString(dataFolder.resolve("messages/ja-JP.yml"), StandardCharsets.UTF_8));

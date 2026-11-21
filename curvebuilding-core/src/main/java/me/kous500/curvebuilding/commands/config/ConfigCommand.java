@@ -47,7 +47,7 @@ public final class ConfigCommand {
     /**
      * The keys that can be shown and set: those of config.yml in the jar in the sections of this command.
      *
-     * @return the keys, such as {@code curve.fineness}, in the order of config.yml
+     * @return the keys, such as {@code curve.max-set-length}, in the order of config.yml
      */
     public List<String> keys() {
         return file.keys().stream()

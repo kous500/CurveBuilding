@@ -58,7 +58,7 @@ public final class ConfigFile {
     }
 
     /**
-     * The paths of the values of config.yml in the jar, such as {@code curve.fineness}, in the order of the file.
+     * The paths of the values of config.yml in the jar, such as {@code curve.max-set-length}, in the order of the file.
      *
      * @return the paths, or an empty list when the jar has no config.yml
      */

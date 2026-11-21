@@ -2,8 +2,6 @@
 message-file: "%datafolder%/messages/en-US.yml"
 
 curve:
-  # Fineness of the curve
-  fineness: 10
   # Maximum length a curve can be built
   max-set-length: 10000
   # Maximum value of pos that can be set with the pos command

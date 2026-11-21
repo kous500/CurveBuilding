@@ -38,7 +38,7 @@ class ResourceWarningsTest {
         jar = temp.resolve("jar");
         dataFolder = temp.resolve("data");
         Files.createDirectories(jar);
-        Files.writeString(jar.resolve("config.yml"), "curve:\n  fineness: 3\n", StandardCharsets.UTF_8);
+        Files.writeString(jar.resolve("config.yml"), "curve:\n  max-pos-value: 3\n", StandardCharsets.UTF_8);
     }
 
     @AfterEach
@@ -56,7 +56,7 @@ class ResourceWarningsTest {
             config = YamlConfig.load(configFile, classLoader, "config.yml");
         }
 
-        assertEquals(3, config.getInteger("curve.fineness"));
+        assertEquals(3, config.getInteger("curve.max-pos-value"));
         assertEquals(1, console.entries.size(), String.valueOf(console.entries));
         RecordingConsole.Entry entry = console.entries.getFirst();
         assertEquals("warning", entry.level());
