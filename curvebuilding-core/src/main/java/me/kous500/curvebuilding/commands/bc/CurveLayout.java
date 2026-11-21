@@ -75,6 +75,13 @@ final class CurveLayout {
     /** The least length, in blocks, that a column goes through a block to lay one there. */
     private static final double LEAST_PASS = 0.1;
 
+    /**
+     * The most, in radians and in any direction, that the curve turns along one straight piece. Where the curve turns
+     * back on itself, its speed falls to nothing with a kink, which the {@linkplain #GAUSS_POINTS Gauss-Legendre rule}
+     * measures badly unless the piece around it is short.
+     */
+    private static final double MOST_BEND = Math.toRadians(45);
+
     /** The most times that a part of a segment is split in half to follow it with straight pieces. */
     private static final int MAX_SPLITS = 20;
 
@@ -274,8 +281,9 @@ final class CurveLayout {
 
     /**
      * The vertices of straight pieces along {@code segment}, from its start to its end. A part of the segment is split
-     * in half until its control polygon is within {@link #TOLERANCE} of the line between its ends, and the outermost
-     * columns turn with it by little enough to stray at most that far, or it has been split {@link #MAX_SPLITS} times.
+     * in half until its control polygon is within {@link #TOLERANCE} of the line between its ends, the outermost
+     * columns turn with it by little enough to stray at most that far, and it bends by at most {@link #MOST_BEND}, or
+     * it has been split {@link #MAX_SPLITS} times.
      */
     private List<Vertex> vertices(BezierSegment segment) {
         List<Vertex> vertices = new ArrayList<>();
@@ -305,10 +313,12 @@ final class CurveLayout {
      * Whether the columns may follow {@code part} of a segment along one straight piece: its control polygon, which
      * the curve stays within, is within {@link #TOLERANCE} of the line between its ends, and the outermost columns,
      * which turn with the curve around its middle, stray at most that far from the straight piece between their ends.
+     * Its length is measured closely only when it also bends by at most {@link #MOST_BEND}.
      */
     private boolean isStraight(BezierSegment part) {
         if (distanceToLine(part.p1(), part.p0(), part.p3()) > TOLERANCE) return false;
         if (distanceToLine(part.p2(), part.p0(), part.p3()) > TOLERANCE) return false;
+        if (largestBend(part) > MOST_BEND) return false;
         // A column turned by an angle around a point strays from the straight line between its ends by about
         // outermost * angle^2 / 8
         double turn = largestTurn(part);
@@ -348,6 +358,32 @@ final class CurveLayout {
             most = Math.max(most, turn);
         }
         return most - least;
+    }
+
+    /**
+     * The most, in radians and in any direction, that the curve along {@code part} bends: at most the largest angle
+     * between two sides of its control polygon, for the reason that {@link #largestTurn} gives. Sides of length 0, at
+     * an end without a handle, do not bend it.
+     */
+    private static double largestBend(BezierSegment part) {
+        Vector3[] sides = {part.p1().subtract(part.p0()), part.p2().subtract(part.p1()), part.p3().subtract(part.p2())};
+        double most = 0;
+        for (int i = 0; i < sides.length; i++) {
+            for (int j = i + 1; j < sides.length; j++) {
+                if (sides[i].lengthSq() == 0 || sides[j].lengthSq() == 0) continue;
+                most = Math.max(most, angle(sides[i], sides[j]));
+            }
+        }
+        return most;
+    }
+
+    /** The angle, from 0 to pi, between {@code a} and {@code b}. */
+    private static double angle(Vector3 a, Vector3 b) {
+        double crossX = a.y() * b.z() - a.z() * b.y();
+        double crossY = a.z() * b.x() - a.x() * b.z();
+        double crossZ = a.x() * b.y() - a.y() * b.x();
+        double dot = a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
+        return Math.atan2(Math.sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ), dot);
     }
 
     /** The two halves of {@code part}, cut at t = 0.5, by the construction of de Casteljau. */
