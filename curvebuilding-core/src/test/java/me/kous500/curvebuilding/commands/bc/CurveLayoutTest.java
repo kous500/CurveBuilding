@@ -56,7 +56,7 @@ class CurveLayoutTest {
         return layout;
     }
 
-    private static Set<Integer> xs(NavigableMap<BlockVector3, BlockVector3> blocks) {
+    private static Set<Integer> xs(Map<BlockVector3, BlockVector3> blocks) {
         Set<Integer> xs = new TreeSet<>();
         for (BlockVector3 target : blocks.keySet()) {
             xs.add(target.x());
@@ -67,7 +67,7 @@ class CurveLayoutTest {
     @Test
     void straightCurvePlacesOneBlockAtEachStep() throws Exception {
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0));
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, line).blocks();
+        Map<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, line).blocks();
 
         assertEquals(Set.of(0, 1, 2, 3, 4, 5, 6), xs(blocks));
         for (BlockVector3 target : blocks.keySet()) {
@@ -81,7 +81,7 @@ class CurveLayoutTest {
         // Three blocks high and three wide across x, so the curve along x gets a 3 x 3 cross section
         CurveLayout.Selection selection = new CurveLayout.Selection(1, 3, 3, ORIGIN);
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(4, 64, 0));
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
+        Map<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
 
         Set<Integer> ys = new TreeSet<>();
         Set<Integer> zs = new TreeSet<>();
@@ -101,7 +101,7 @@ class CurveLayoutTest {
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(4, 64, 0));
         CurveLayout layout = new CurveLayout(selection, NO_ARGUMENTS, NEVER_AIR, 0, 10000, 1);
         layout.add(line);
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout.blocks();
+        Map<BlockVector3, BlockVector3> blocks = layout.blocks();
 
         assertEquals(Set.of(0, 1, 2, 3, 4), xs(blocks));
         assertEquals(5 * 3, blocks.size());
@@ -111,7 +111,7 @@ class CurveLayoutTest {
     void crossSectionTurnsWithTheCurve() throws Exception {
         CurveLayout.Selection selection = new CurveLayout.Selection(1, 3, 3, ORIGIN);
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(0, 64, 4));
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
+        Map<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
 
         assertEquals(Set.of(-1, 0, 1), xs(blocks));
         assertEquals(5 * 9, blocks.size());
@@ -130,7 +130,7 @@ class CurveLayoutTest {
                 : new BezierSegment(east, east, west, west);
 
         NavigableMap<Integer, Integer> sources = new TreeMap<>();
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
+        Map<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
         for (Map.Entry<BlockVector3, BlockVector3> block : blocks.entrySet()) {
             if (block.getKey().x() == 4) sources.put(block.getKey().z(), block.getValue().z());
         }
@@ -155,7 +155,7 @@ class CurveLayoutTest {
     void evenCrossSectionAlongTheMiddleOfBlocksHasFourBlocksAtEachStep() throws Exception {
         CurveLayout.Selection selection = new CurveLayout.Selection(1, 1, 4, ORIGIN);
         BezierSegment line = straight(Vector3.at(0, 64, 0), Vector3.at(40, 64, 0));
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
+        Map<BlockVector3, BlockVector3> blocks = layout(selection, NO_ARGUMENTS, 0, line).blocks();
 
         assertEquals(41 * 4, blocks.size());
         for (BlockVector3 target : blocks.keySet()) {
@@ -167,7 +167,8 @@ class CurveLayoutTest {
     private static List<Integer> blocksUsed(int offset, BezierSegment... segments) throws Exception {
         List<Integer> used = new ArrayList<>();
         BcArguments arguments = new BcArguments(offset, false, BcOptions.Axis.X);
-        for (BlockVector3 source : layout(FOUR_ALONG_X, arguments, 0, segments).blocks().values()) {
+        // In the order of x, along the curve
+        for (BlockVector3 source : new TreeMap<>(layout(FOUR_ALONG_X, arguments, 0, segments).blocks()).values()) {
             used.add(Math.floorMod(source.x(), 4));
         }
         return used;
@@ -223,7 +224,7 @@ class CurveLayoutTest {
 
     @Test
     void airOnlyReadsEachBlockOfTheWorldOnce() throws Exception {
-        // Air on the side of z = 1 only, over a curve that goes along x and back, three blocks wide
+        // Air where z = 1 only, over a curve that goes along x and back, three blocks wide
         Map<BlockVector3, Integer> reads = new TreeMap<>();
         Predicate<BlockVector3> isAir = position -> {
             reads.merge(position, 1, Integer::sum);
@@ -233,13 +234,14 @@ class CurveLayoutTest {
         CurveLayout layout = new CurveLayout(selection, new BcArguments(0, true, null), isAir, 0, 10000, 10);
         layout.add(straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0)));
         layout.add(straight(Vector3.at(6, 64, 0), Vector3.at(0, 64, 0)));
+        Set<BlockVector3> placed = layout.blocks().keySet();
 
-        assertEquals(7 * 3, reads.size());
         assertEquals(Set.of(1), Set.copyOf(reads.values()));
-        assertEquals(7, layout.blocks().size());
-        for (BlockVector3 target : layout.blocks().keySet()) {
-            assertEquals(1, target.z());
+        Set<BlockVector3> air = new TreeSet<>();
+        for (BlockVector3 position : reads.keySet()) {
+            if (position.z() == 1) air.add(position);
         }
+        assertEquals(air, placed);
     }
 
     /** How many blocks each column of a road five blocks wide, read along x, gives along {@code segments}. */
@@ -262,43 +264,168 @@ class CurveLayoutTest {
     }
 
     @Test
-    void earlierSegmentKeepsTheBlocksItSharesWithTheNext() throws Exception {
-        // A turn to the left: the corner inside the turn keeps the rows of the segment along x
-        CurveLayout.Selection road = new CurveLayout.Selection(1, 1, 5, ORIGIN);
-        BezierSegment first = straight(Vector3.at(0, 64, 0), Vector3.at(8, 64, 0));
-        BezierSegment second = straight(Vector3.at(8, 64, 0), Vector3.at(8, 64, -8));
-        NavigableMap<BlockVector3, BlockVector3> blocks = layout(road, NO_ARGUMENTS, 0, first, second).blocks();
+    void cornerInsideATurnIsSplitBetweenTheSegmentsOnTheirNearerSide() throws Exception {
+        // A turn to the left: from x = 6 to 8 and z = -2 to 0, each block takes the column of the segment whose column
+        // there is nearer its middle; where both are as near, they give the same column
+        Map<BlockVector3, BlockVector3> blocks = turnLeft();
+        int[][] columns = {
+                {0, 1, 2}, // z = -2
+                {1, 1, 2}, // z = -1
+                {2, 2, 2}, // z = 0
+        };
 
-        for (int x = 6; x <= 8; x++) {
-            for (int z = -2; z <= 0; z++) {
-                assertEquals(z + 2, blocks.get(BlockVector3.at(x, 64, z)).z(), x + ", " + z);
+        for (int z = -2; z <= 0; z++) {
+            for (int x = 6; x <= 8; x++) {
+                assertEquals(columns[z + 2][x - 6], blocks.get(BlockVector3.at(x, 64, z)).z(), x + ", " + z);
             }
         }
     }
 
     @Test
-    void lowerRowKeepsTheBlocksItSharesWithTheRowAbove() throws Exception {
-        // Up a slope, the block the curve goes through gets the bottom row of the selection
-        CurveLayout.Selection twoHigh = new CurveLayout.Selection(1, 2, 1, ORIGIN);
-        NavigableMap<BlockVector3, BlockVector3> blocks =
-                layout(twoHigh, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(12, 72, 0))).blocks();
+    void cornerOutsideATurnIsFilledAroundThePoint() throws Exception {
+        // The cross section turns around (8.5, 0.5); beyond its reach of two and a half blocks, the corner stays empty
+        Map<BlockVector3, BlockVector3> blocks = turnLeft();
 
-        for (int x = 0; x <= 12; x++) {
-            int y = (int) Math.floor(64.5 + x * 8 / 12.0);
-            assertEquals(0, blocks.get(BlockVector3.at(x, y, 0)).y(), x + ", " + y);
+        assertTrue(blocks.containsKey(BlockVector3.at(9, 64, 1)));
+        assertTrue(blocks.containsKey(BlockVector3.at(9, 64, 2)));
+        assertTrue(blocks.containsKey(BlockVector3.at(10, 64, 1)));
+        assertFalse(blocks.containsKey(BlockVector3.at(10, 64, 2)));
+    }
+
+    @Test
+    void cornerOfACurveThatFallsHasOneLayerInside() throws Exception {
+        // Flat along +x, then down along -z, one block for each: inside the turn, each block keeps the height of the
+        // segment that takes it, with nothing of the other above or below
+        CurveLayout.Selection road = new CurveLayout.Selection(1, 1, 5, ORIGIN);
+        BezierSegment flat = straight(Vector3.at(0, 64, 0), Vector3.at(8, 64, 0));
+        BezierSegment down = straight(Vector3.at(8, 64, 0), Vector3.at(8, 56, -8));
+        Map<BlockVector3, BlockVector3> blocks =
+                layout(road, new BcArguments(0, false, BcOptions.Axis.X), 0, flat, down).blocks();
+
+        // On the side of the flat segment, the road stays at y = 64
+        for (int[] xz : new int[][] {{6, 0}, {7, 0}, {6, -1}}) {
+            for (BlockVector3 target : blocks.keySet()) {
+                if (target.x() == xz[0] && target.z() == xz[1]) assertEquals(64, target.y(), target.toString());
+            }
+        }
+        // On the side of the segment going down, nothing is left at y = 64
+        for (int[] xz : new int[][] {{7, -2}, {8, -2}, {8, -1}}) {
+            assertFalse(blocks.containsKey(BlockVector3.at(xz[0], 64, xz[1])), xz[0] + ", " + xz[1]);
         }
     }
 
     @Test
+    void segmentsGoingOnTheSameWayKeepTheBlocksOfBoth() throws Exception {
+        // Flat along +x to x = 8.5, then on the same way up two blocks for each: not a corner, so the steep segment
+        // also lays in the last xz cell of the flat one, at y = 65
+        BezierSegment flat = straight(Vector3.at(0, 64, 0), Vector3.at(8, 64, 0));
+        BezierSegment steep = straight(Vector3.at(8, 64, 0), Vector3.at(16, 80, 0));
+        Map<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, flat, steep).blocks();
+
+        assertTrue(blocks.containsKey(BlockVector3.at(8, 64, 0)));
+        assertTrue(blocks.containsKey(BlockVector3.at(8, 65, 0)));
+    }
+
+    @Test
+    void steepPartBetweenCornersIsLaidWhole() throws Exception {
+        // Along x, straight up six blocks at x = 5, then along x again: the part going up is steep, so it splits no xz
+        // cells with the parts beside it and the curve stays connected
+        Map<BlockVector3, BlockVector3> blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0,
+                straight(Vector3.at(0, 64, 0), Vector3.at(5, 64, 0)),
+                straight(Vector3.at(5, 64, 0), Vector3.at(5, 70, 0)),
+                straight(Vector3.at(5, 70, 0), Vector3.at(10, 70, 0))).blocks();
+
+        for (int y = 64; y <= 70; y++) {
+            assertTrue(blocks.containsKey(BlockVector3.at(5, y, 0)), String.valueOf(y));
+        }
+    }
+
+    /** A road five blocks wide along +x to x = 8, then along -z, turning without handles. */
+    private static Map<BlockVector3, BlockVector3> turnLeft() throws Exception {
+        CurveLayout.Selection road = new CurveLayout.Selection(1, 1, 5, ORIGIN);
+        BezierSegment first = straight(Vector3.at(0, 64, 0), Vector3.at(8, 64, 0));
+        BezierSegment second = straight(Vector3.at(8, 64, 0), Vector3.at(8, 64, -8));
+        return layout(road, new BcArguments(0, false, BcOptions.Axis.X), 0, first, second).blocks();
+    }
+
+    @Test
+    void curvePassingOverItselfKeepsTheRowNearerTheMiddle() throws Exception {
+        // Along x at y = 64, up four blocks, then back along x at y = 68, with a selection six blocks high: where the
+        // two parts share blocks, the row nearer the middle of the cross section is laid first
+        CurveLayout.Selection tall = new CurveLayout.Selection(1, 6, 1, ORIGIN);
+        Map<BlockVector3, BlockVector3> blocks = layout(tall, NO_ARGUMENTS, 0,
+                straight(Vector3.at(0, 64, 0), Vector3.at(10, 64, 0)),
+                straight(Vector3.at(10, 64, 0), Vector3.at(10, 68, 0)),
+                straight(Vector3.at(10, 68, 0), Vector3.at(0, 68, 0))).blocks();
+
+        for (int x = 2; x <= 8; x++) {
+            // Row 4 of the lower part against row 0 of the upper part, then row 5 against row 1
+            assertEquals(4, blocks.get(BlockVector3.at(x, 68, 0)).y(), String.valueOf(x));
+            assertEquals(1, blocks.get(BlockVector3.at(x, 69, 0)).y(), String.valueOf(x));
+            assertEquals(2, blocks.get(BlockVector3.at(x, 70, 0)).y(), String.valueOf(x));
+            assertEquals(3, blocks.get(BlockVector3.at(x, 67, 0)).y(), String.valueOf(x));
+        }
+    }
+
+    @Test
+    void topAndBottomRowsLayOneBlockInEachXzCellUpASlope() throws Exception {
+        // Up one block for every two, three rows high: at each odd x the curve climbs into the block above halfway,
+        // and the middle row, laid first, keeps the block that each row shares with the next
+        CurveLayout.Selection threeHigh = new CurveLayout.Selection(1, 3, 1, ORIGIN);
+        Map<BlockVector3, BlockVector3> blocks =
+                layout(threeHigh, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(12, 70, 0))).blocks();
+
+        for (int x = 0; x <= 12; x++) {
+            assertEquals(1, blocksOfRowInXzCell(blocks, x, 0), String.valueOf(x));
+            assertEquals(1, blocksOfRowInXzCell(blocks, x, 2), String.valueOf(x));
+        }
+    }
+
+    @Test
+    void steepSlopeStaysConnectedFromItsStart() throws Exception {
+        // Up two blocks for each one along x: each xz cell has blocks touching those of the next, and the block the
+        // curve starts in is laid
+        Map<BlockVector3, BlockVector3> blocks =
+                layout(ONE_BLOCK, NO_ARGUMENTS, 0, straight(Vector3.at(0, 64, 0), Vector3.at(6, 76, 0))).blocks();
+
+        assertTrue(blocks.containsKey(BlockVector3.at(0, 64, 0)));
+        for (int x = 0; x < 6; x++) {
+            int top = highestInXzCell(blocks, x);
+            int nextBottom = lowestInXzCell(blocks, x + 1);
+            assertTrue(nextBottom <= top + 1, x + ": up to " + top + ", then from " + nextBottom);
+        }
+    }
+
+    /** How many of {@code blocks} at z = 0 and {@code x} are from row {@code row} of the selection. */
+    private static long blocksOfRowInXzCell(Map<BlockVector3, BlockVector3> blocks, int x, int row) {
+        return blocks.entrySet().stream()
+                .filter(block -> block.getKey().x() == x && block.getKey().z() == 0 && block.getValue().y() == row)
+                .count();
+    }
+
+    /** The highest y of {@code blocks} at z = 0 and {@code x}. */
+    private static int highestInXzCell(Map<BlockVector3, BlockVector3> blocks, int x) {
+        return blocks.keySet().stream().filter(block -> block.x() == x && block.z() == 0)
+                .mapToInt(BlockVector3::y).max().orElseThrow();
+    }
+
+    /** The lowest y of {@code blocks} at z = 0 and {@code x}. */
+    private static int lowestInXzCell(Map<BlockVector3, BlockVector3> blocks, int x) {
+        return blocks.keySet().stream().filter(block -> block.x() == x && block.z() == 0)
+                .mapToInt(BlockVector3::y).min().orElseThrow();
+    }
+
+    @Test
     void limitCountsTheBlocksToPlace() throws Exception {
-        // There and back, so each position is laid twice and the limit has to count the positions
+        // There and back over the same blocks, which the limit counts once
         BezierSegment there = straight(Vector3.at(0, 64, 0), Vector3.at(6, 64, 0));
         BezierSegment back = straight(Vector3.at(6, 64, 0), Vector3.at(0, 64, 0));
         int blocks = layout(ONE_BLOCK, NO_ARGUMENTS, 0, there, back).blocks().size();
 
         assertEquals(7, blocks);
         assertEquals(blocks, layout(ONE_BLOCK, NO_ARGUMENTS, blocks, there, back).blocks().size());
-        assertThrows(MaxChangedBlocksException.class, () -> layout(ONE_BLOCK, NO_ARGUMENTS, blocks - 1, there, back));
+        CurveLayout tooMany = layout(ONE_BLOCK, NO_ARGUMENTS, blocks - 1, there, back);
+        assertThrows(MaxChangedBlocksException.class, tooMany::blocks);
     }
 
     @Test
