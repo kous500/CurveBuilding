@@ -39,7 +39,7 @@ public final class BcEdit {
      *
      * @param player the player who ran the command, whose positions and selection are used
      * @param arguments the arguments of {@code //bc}
-     * @param config the config in use, for the limits and the {@code fineness}
+     * @param config the config in use, for the limits
      */
     public static void build(Player player, BcArguments arguments, Config config) {
         LocalSession session = WorldEdit.getInstance().getSessionManager().get(player);
@@ -81,8 +81,7 @@ public final class BcEdit {
                     arguments,
                     position -> editSession.getBlock(adapt(position)).getBlockType().getMaterial().isAir(),
                     maxBlocks,
-                    config.maxSetLength,
-                    config.fineness
+                    config.maxSetLength
             );
             for (BezierSegment segment : BezierSegment.through(posData.points())) {
                 layout.add(segment);

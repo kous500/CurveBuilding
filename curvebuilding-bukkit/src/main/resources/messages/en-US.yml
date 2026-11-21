@@ -12,7 +12,7 @@ messages:
   pos-remove: "Removed connection point {0}."
   pos-shift: "Pos shifted."
   bc-changed: "{0} blocks changed. Undo with //undo"
-  bc-length: "Curve length: {0} blocks (estimated)"
+  bc-length: "Curve length: {0} blocks"
   incomplete-region: "Select a region first."
   incomplete-pos: "Select a starting position first."
   max-changed-blocks: "Max blocks changed in an operation reached ({0})."

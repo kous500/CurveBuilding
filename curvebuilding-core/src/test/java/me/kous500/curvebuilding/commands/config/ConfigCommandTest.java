@@ -33,8 +33,6 @@ class ConfigCommandTest {
             message-file: "%datafolder%/messages/en-US.yml"
 
             curve:
-              # Fineness of the curve
-              fineness: 10
               max-set-length: 10000
               max-pos-value: 100
               default-max-change-limit: -1
@@ -74,7 +72,6 @@ class ConfigCommandTest {
     @Test
     void keysAreThoseOfTheSections() {
         assertEquals(List.of(
-                "curve.fineness",
                 "curve.max-set-length",
                 "curve.max-pos-value",
                 "curve.default-max-change-limit",
@@ -83,25 +80,25 @@ class ConfigCommandTest {
 
     @Test
     void valueIsShownAsItIsWritten() throws IOException {
-        write(file, TEMPLATE.replace("fineness: 10", "fineness: 20").replace("0x00FFFF", "0X123456"));
+        write(file, TEMPLATE.replace("max-pos-value: 100", "max-pos-value: 20").replace("0x00FFFF", "0X123456"));
 
-        assertReply(Message.CONFIG_VALUE, false, List.of("curve.fineness", "20"), "curve.fineness");
+        assertReply(Message.CONFIG_VALUE, false, List.of("curve.max-pos-value", "20"), "curve.max-pos-value");
         assertReply(Message.CONFIG_VALUE, false, List.of("color.pos", "0X123456"), "color.pos");
         assertEquals(0, reloads);
     }
 
     @Test
     void valueThatTheFileDoesNotHaveIsTheDefault() {
-        assertReply(Message.CONFIG_VALUE, false, List.of("curve.fineness", "10"), "curve.fineness");
+        assertReply(Message.CONFIG_VALUE, false, List.of("curve.max-pos-value", "100"), "curve.max-pos-value");
     }
 
     @Test
     void valueIsWrittenAndTheFilesAreReadAgain() throws IOException {
         write(file, TEMPLATE);
 
-        assertReply(Message.CONFIG_SET, false, List.of("curve.fineness", "20"), "curve.fineness", "20");
+        assertReply(Message.CONFIG_SET, false, List.of("curve.max-pos-value", "20"), "curve.max-pos-value", "20");
 
-        assertEquals(TEMPLATE.replace("fineness: 10", "fineness: 20"), Files.readString(file));
+        assertEquals(TEMPLATE.replace("max-pos-value: 100", "max-pos-value: 20"), Files.readString(file));
         assertEquals(1, reloads);
     }
 
@@ -116,9 +113,9 @@ class ConfigCommandTest {
 
     @Test
     void defaultSetsTheDefault() throws IOException {
-        write(file, TEMPLATE.replace("fineness: 10", "fineness: 20"));
+        write(file, TEMPLATE.replace("max-pos-value: 100", "max-pos-value: 20"));
 
-        assertReply(Message.CONFIG_SET, false, List.of("curve.fineness", "10"), "curve.fineness", "default");
+        assertReply(Message.CONFIG_SET, false, List.of("curve.max-pos-value", "100"), "curve.max-pos-value", "default");
 
         assertEquals(TEMPLATE, Files.readString(file));
     }
@@ -134,17 +131,18 @@ class ConfigCommandTest {
     @ParameterizedTest
     @ValueSource(strings = {"0", "abc", "2.5", "null", "[1]", "{a: 1}", "3000000000"})
     void invalidValueIsNotWritten(String value) throws IOException {
-        String content = TEMPLATE.replace("fineness: 10", "fineness: 20");
+        String content = TEMPLATE.replace("max-pos-value: 100", "max-pos-value: 20");
         write(file, content);
 
-        assertReply(Message.CONFIG_INVALID_VALUE, true, List.of("curve.fineness", value), "curve.fineness", value);
+        assertReply(Message.CONFIG_INVALID_VALUE, true, List.of("curve.max-pos-value", value),
+                "curve.max-pos-value", value);
 
         assertEquals(content, Files.readString(file));
         assertEquals(0, reloads);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"message-file", "curve.finess", "curve", "particles.pos.density"})
+    @ValueSource(strings = {"message-file", "curve.max-pos", "curve", "particles.pos.density"})
     void keyOutsideTheSectionsIsUnknown(String key) {
         assertReply(Message.CONFIG_UNKNOWN_KEY, true, List.of(key), key, "1");
         assertReply(Message.CONFIG_UNKNOWN_KEY, true, List.of(key), key);
@@ -154,30 +152,30 @@ class ConfigCommandTest {
     void valueThatCannotBeSavedIsReported() throws IOException {
         // A file in place of the backup folder, and a file that needs a backup before it is rewritten
         write(temp.resolve("data/backups"), "");
-        write(file, "curve:\n  fineness: 20\n");
+        write(file, "curve:\n  max-pos-value: 20\n");
 
-        assertReply(Message.CONFIG_NOT_SAVED, true, List.of(), "curve.fineness", "30");
+        assertReply(Message.CONFIG_NOT_SAVED, true, List.of(), "curve.max-pos-value", "30");
 
-        assertEquals("curve:\n  fineness: 20\n", Files.readString(file));
+        assertEquals("curve:\n  max-pos-value: 20\n", Files.readString(file));
         assertEquals(0, reloads);
     }
 
     @Test
     void withoutAKeyOrWithTooManyArgumentsThereIsNoReply() {
         assertNull(command.run(new String[0]));
-        assertNull(command.run(new String[]{"curve.fineness", "1", "2"}));
+        assertNull(command.run(new String[]{"curve.max-pos-value", "1", "2"}));
     }
 
     @Test
     void keysAndValuesAreSuggested() throws IOException {
-        write(file, TEMPLATE.replace("fineness: 10", "fineness: 20"));
+        write(file, TEMPLATE.replace("max-pos-value: 100", "max-pos-value: 20"));
 
         assertEquals(command.keys(), command.complete(new String[]{""}));
-        assertEquals(List.of("curve.fineness"), command.complete(new String[]{"curve.f"}));
-        assertEquals(List.of("20", "default"), command.complete(new String[]{"curve.fineness", ""}));
-        assertEquals(List.of("default"), command.complete(new String[]{"curve.fineness", "d"}));
+        assertEquals(List.of("curve.max-pos-value"), command.complete(new String[]{"curve.max-p"}));
+        assertEquals(List.of("20", "default"), command.complete(new String[]{"curve.max-pos-value", ""}));
+        assertEquals(List.of("default"), command.complete(new String[]{"curve.max-pos-value", "d"}));
         assertEquals(List.of(), command.complete(new String[]{"message-file", ""}));
-        assertEquals(List.of(), command.complete(new String[]{"curve.fineness", "1", ""}));
+        assertEquals(List.of(), command.complete(new String[]{"curve.max-pos-value", "1", ""}));
     }
 
     private void assertReply(Message message, boolean error, List<Object> args, String... input) {

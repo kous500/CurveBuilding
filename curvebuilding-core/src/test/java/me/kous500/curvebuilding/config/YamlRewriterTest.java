@@ -35,8 +35,8 @@ class YamlRewriterTest {
             message-file: "%datafolder%/messages/en-US.yml"
 
             curve:
-              # Fineness of the curve
-              fineness: 10
+              # Maximum length a curve can be built
+              max-set-length: 10000
               # Maximum value of pos
               max-pos-value: 100
               # If this value is -1, it means unlimited
@@ -83,7 +83,7 @@ class YamlRewriterTest {
 
     @Test
     void fileInTheLayoutOfTheTemplateIsLeftAsItIs() throws IOException {
-        String content = TEMPLATE.replace("fineness: 10", "fineness: 20").replace("\n", "\r\n");
+        String content = TEMPLATE.replace("max-set-length: 10000", "max-set-length: 20000").replace("\n", "\r\n");
         write(file, content);
 
         rewrite();
@@ -98,7 +98,7 @@ class YamlRewriterTest {
         String content = """
                 message-file: "%datafolder%/messages/ja-JP.yml"
                 curve:
-                  fineness: 20
+                  max-set-length: 20000
                   default-max-change-limit: -1
                 color: 0x00FFFF
                 """;
@@ -106,7 +106,7 @@ class YamlRewriterTest {
 
         rewrite();
 
-        assertEquals(TEMPLATE.replace("en-US", "ja-JP").replace("fineness: 10", "fineness: 20"),
+        assertEquals(TEMPLATE.replace("en-US", "ja-JP").replace("max-set-length: 10000", "max-set-length: 20000"),
                 Files.readString(file));
         assertEquals(content, Files.readString(backups.resolve(BACKUP_NAME)));
         assertLogs(
@@ -120,9 +120,9 @@ class YamlRewriterTest {
                 # My settings
                 message-file: '%datafolder%/messages/ja-JP.yml'
                 curve:
-                  # Smoother
-                  fineness: 20   # raised
-                  finess: 30
+                  # Longer
+                  max-set-length: 20000   # raised
+                  max-length: 30
                   max-pos-value: 100
                   default-max-change-limit: -1
                 color: 0X123456
@@ -133,7 +133,7 @@ class YamlRewriterTest {
 
         String expected = TEMPLATE
                 .replace("\"%datafolder%/messages/en-US.yml\"", "'%datafolder%/messages/ja-JP.yml'")
-                .replace("fineness: 10", "fineness: 20")
+                .replace("max-set-length: 10000", "max-set-length: 20000")
                 .replace("0x00FFFF", "0X123456");
         assertEquals(expected, Files.readString(file), "the values are kept as they are written");
         assertLogs("info: " + file + " was rewritten. The previous file is saved as " + backups.resolve(BACKUP_NAME));
@@ -141,14 +141,15 @@ class YamlRewriterTest {
 
     @Test
     void invalidValuesAreTheDefaultsWithAWarning() throws IOException {
-        String content = TEMPLATE.replace("fineness: 10", "fineness: abc");
+        String content = TEMPLATE.replace("max-set-length: 10000", "max-set-length: abc");
         write(file, content.replace("max-pos-value: 100", "max-pos-value: 0"));
 
         rewrite();
 
         assertEquals(TEMPLATE, Files.readString(file));
         assertLogs(
-                "warning: curve.fineness in " + file + " was not an integer: abc, so the default 10 was written",
+                "warning: curve.max-set-length in " + file
+                        + " was not an integer: abc, so the default 10000 was written",
                 "warning: curve.max-pos-value in " + file + " was out of range: 0, so the default 100 was written",
                 "info: " + file + " was rewritten. The previous file is saved as " + backups.resolve(BACKUP_NAME));
     }
@@ -166,18 +167,18 @@ class YamlRewriterTest {
 
     @Test
     void emptyValueIsMissing() throws IOException {
-        write(file, TEMPLATE.replace("fineness: 10", "fineness:"));
+        write(file, TEMPLATE.replace("max-set-length: 10000", "max-set-length:"));
 
         rewrite();
 
         assertEquals(TEMPLATE, Files.readString(file));
-        assertTrue(console.entries.getFirst().message().contains("did not have curve.fineness"),
+        assertTrue(console.entries.getFirst().message().contains("did not have curve.max-set-length"),
                 String.valueOf(console.entries));
     }
 
     @Test
     void fileThatIsNotYamlIsMovedAside() throws IOException {
-        String content = "curve:\n  fineness: [10\n";
+        String content = "curve:\n  max-set-length: [10\n";
         write(file, content);
 
         rewrite();
@@ -206,12 +207,12 @@ class YamlRewriterTest {
     @Test
     void backupsOfTheSameSecondAreNumbered() throws IOException {
         write(backups.resolve(BACKUP_NAME), "older");
-        write(file, "curve:\n  fineness: 20\n");
+        write(file, "curve:\n  max-set-length: 20000\n");
 
         rewrite();
 
         assertEquals("older", Files.readString(backups.resolve(BACKUP_NAME)));
-        assertEquals("curve:\n  fineness: 20\n",
+        assertEquals("curve:\n  max-set-length: 20000\n",
                 Files.readString(backups.resolve("config-2026-11-15_10-30-00-1.yml")));
     }
 
@@ -219,7 +220,7 @@ class YamlRewriterTest {
     void fileIsNotRewrittenWithoutABackup() throws IOException {
         // A file in place of the backup folder
         write(backups, "");
-        String content = "curve:\n  fineness: 20\n";
+        String content = "curve:\n  max-set-length: 20000\n";
         write(file, content);
 
         rewrite();
@@ -232,29 +233,29 @@ class YamlRewriterTest {
 
     @Test
     void newValuesAreWrittenInPlaceOfThoseOfTheFile() throws IOException {
-        write(file, TEMPLATE.replace("fineness: 10", "fineness: abc"));
+        write(file, TEMPLATE.replace("max-set-length: 10000", "max-set-length: abc"));
 
-        assertTrue(rewrite(Map.of("curve.fineness", "20", "color", "0xFF0000")));
+        assertTrue(rewrite(Map.of("curve.max-set-length", "20000", "color", "0xFF0000")));
 
-        assertEquals(TEMPLATE.replace("fineness: 10", "fineness: 20").replace("0x00FFFF", "0xFF0000"),
+        assertEquals(TEMPLATE.replace("max-set-length: 10000", "max-set-length: 20000").replace("0x00FFFF", "0xFF0000"),
                 Files.readString(file));
         assertLogs("info: " + file + " was rewritten. The previous file is saved as " + backups.resolve(BACKUP_NAME));
     }
 
     @Test
     void newValuesAreWrittenToANewFile() throws IOException {
-        assertTrue(rewrite(Map.of("curve.fineness", "20")));
+        assertTrue(rewrite(Map.of("curve.max-set-length", "20000")));
 
-        assertEquals(TEMPLATE.replace("fineness: 10", "fineness: 20"), Files.readString(file));
+        assertEquals(TEMPLATE.replace("max-set-length: 10000", "max-set-length: 20000"), Files.readString(file));
     }
 
     @Test
     void fileThatIsNotRewrittenIsReported() throws IOException {
         write(backups, "");
-        write(file, "curve:\n  fineness: 20\n");
+        write(file, "curve:\n  max-set-length: 20000\n");
 
-        assertFalse(rewrite(Map.of("curve.fineness", "30")));
-        assertEquals("curve:\n  fineness: 20\n", Files.readString(file));
+        assertFalse(rewrite(Map.of("curve.max-set-length", "30")));
+        assertEquals("curve:\n  max-set-length: 20000\n", Files.readString(file));
     }
 
     /** The default files of the platforms stay as they are, so that a new installation gets no backups. */

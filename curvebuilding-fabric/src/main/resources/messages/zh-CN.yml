@@ -12,7 +12,7 @@ messages:
   pos-remove: "已移除连接点 {0}."
   pos-shift: "选区已移动。"
   bc-changed: "{0} 个方块已更改。使用 //undo 指令可复原"
-  bc-length: "曲线长度：{0} 个方块（估计）"
+  bc-length: "曲线长度：{0} 个方块"
   incomplete-region: "请先选择一个区域。"
   incomplete-pos: "请先选择起始位置。"
   max-changed-blocks: "达到操作中的最大方块更改数量限制（{0}）。"

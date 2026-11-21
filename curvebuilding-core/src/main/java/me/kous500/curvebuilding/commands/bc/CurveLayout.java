@@ -22,18 +22,22 @@ import java.util.stream.IntStream;
  * curve, and the selection repeats along the curve, starting {@code offset} blocks into it. Where the curve turns at a
  * point, the cross section turns around the point, filling the outside of the corner.
  *
+ * <p>Each column of the cross section follows the curve along straight pieces, which stray at most {@link #TOLERANCE}
+ * from where the column would go, and lays a block in each block it passes through for at least {@link #LEAST_PASS}:
+ * the block of the selection at the distance along the curve where the column enters it.
+ *
  * <p>The cross section is laid row by row from the middle outwards, and in each row column by column from the middle
- * outwards, each column along every segment in order before the next. A block that several blocks of the selection
- * fall on keeps the first. Where the curve climbs or falls within an xz cell (a cell of the xz plane: the blocks at its
- * x and z, at any height), each row passes more than one block there, and the rows laid first keep the blocks they
- * share: the blocks left over go to the rows nearest the middle, so that with three rows or more, the top and bottom
- * rows keep one each.
+ * outwards, each column along the whole curve before the next. A block that several blocks of the selection fall on
+ * keeps the first. Where the curve climbs or falls within an xz cell (a cell of the xz plane: the blocks at its x and
+ * z, at any height), each row passes more than one block there, and the rows laid first keep the blocks they share:
+ * the blocks left over go to the rows nearest the middle, so that with three rows or more, the top and bottom rows
+ * keep one each.
  *
  * <p>Where two segments meet at a corner, turning by more than {@link #CORNER} on the xz plane, and neither is steep,
  * neither places anything in an xz cell, at any height, where the other has laid first: inside the corner, the two
  * cross sections meet where they are equally far from the middle, instead of crossing each other where the curve climbs
- * or falls. A steep segment, which climbs or falls more along its steps than it goes across the xz plane, passes few
- * xz cells, most of which the segment beside it would take, so it splits none.
+ * or falls. A steep segment, which climbs or falls more than it goes across the xz plane, passes few xz cells, most of
+ * which the segment beside it would take, so it splits none.
  *
  * <p>Add the segments of the curve in order with {@link #add}, then take the blocks with {@link #blocks}, which lays
  * them. The world is only read through {@code isAir}, for {@code -a}, and nothing is placed.
@@ -62,8 +66,34 @@ final class CurveLayout {
      */
     private static final double CORNER = Math.toRadians(1);
 
-    /** The steps per block of the control polygon of a segment to measure it roughly, to choose its number of steps. */
-    private static final int ROUGH_STEPS_PER_BLOCK = 20;
+    /**
+     * How far, in blocks, the straight pieces that the columns follow may stray from the curve: from the middle of the
+     * cross section and from its outermost columns.
+     */
+    private static final double TOLERANCE = 0.05;
+
+    /** The least length, in blocks, that a column goes through a block to lay one there. */
+    private static final double LEAST_PASS = 0.1;
+
+    /**
+     * The most, in radians and in any direction, that the curve turns along one straight piece. Where the curve turns
+     * back on itself, its speed falls to nothing with a kink, which the {@linkplain #GAUSS_POINTS Gauss-Legendre rule}
+     * measures badly unless the piece around it is short.
+     */
+    private static final double MOST_BEND = Math.toRadians(45);
+
+    /** The most times that a part of a segment is split in half to follow it with straight pieces. */
+    private static final int MAX_SPLITS = 20;
+
+    /** The points of the five-point Gauss-Legendre rule on -1 to 1, with which the length of a piece is measured. */
+    private static final double[] GAUSS_POINTS = {
+            0, -0.5384693101056831, 0.5384693101056831, -0.9061798459386640, 0.9061798459386640
+    };
+
+    /** The weights of {@link #GAUSS_POINTS}, in the same order. */
+    private static final double[] GAUSS_WEIGHTS = {
+            0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891
+    };
 
     /** The curve, or a segment of it, is longer than the {@code max-set-length} of the config. */
     static final class TooLongException extends Exception {
@@ -73,18 +103,18 @@ final class CurveLayout {
     }
 
     /**
-     * A step along a segment.
+     * A vertex of the straight pieces that the columns follow along a segment.
      *
      * @param point where the curve is
      * @param across the way to the left of the curve, on the xz plane and of length 1
-     * @param distance how far along the curve the step is from the start of the segment
-     * @param insideSide for a step that turns the cross section at a corner, the side of the curve inside the corner: 1
-     * on the left, -1 on the right; 0 for a step along the segment
+     * @param distance how far along the curve the vertex is from the start of the segment
+     * @param insideSide for a vertex that turns the cross section at a corner, the side of the curve inside the corner:
+     * 1 on the left, -1 on the right; 0 for a vertex along the segment
      */
-    private record Step(Vector3 point, Vector3 across, double distance, int insideSide) {
+    private record Vertex(Vector3 point, Vector3 across, double distance, int insideSide) {
         /**
-         * Whether a column {@code side} blocks to the left of the curve is inside the corner that this step turns at,
-         * where the step lays nothing.
+         * Whether a column {@code side} blocks to the left of the curve is inside the corner that this vertex turns
+         * at, where the column skips the piece to the next vertex.
          */
         boolean isInsideCorner(double side) {
             return insideSide * side > 0;
@@ -94,12 +124,12 @@ final class CurveLayout {
     /**
      * A segment added, to lay with the others.
      *
-     * @param steps its steps, after those that turn the cross section at its start
+     * @param vertices its vertices, after those that turn the cross section at its start
      * @param start how far along the curve it starts
      * @param splitsWithBefore whether it splits the xz cells it shares with the segment before: whether they meet at a
      * corner and neither is steep
      */
-    private record LaidSegment(List<Step> steps, double start, boolean splitsWithBefore) {
+    private record LaidSegment(List<Vertex> vertices, double start, boolean splitsWithBefore) {
     }
 
     /**
@@ -119,6 +149,8 @@ final class CurveLayout {
     private final BcOptions.Axis axis;
     /** The number of columns across the selection, the width of the cross section. */
     private final int columns;
+    /** How far the outermost columns of the cross section are from its middle, which is that far from column 0. */
+    private final double outermost;
     /** The size of the selection along the axis, after which it repeats along the curve. */
     private final int repeat;
     private final int offset;
@@ -126,7 +158,6 @@ final class CurveLayout {
     private final Predicate<BlockVector3> isAir;
     private final int maxBlocks;
     private final int maxLength;
-    private final int stepsPerBlock;
 
     /** The segments added so far, in order. */
     private final List<LaidSegment> segments = new ArrayList<>();
@@ -158,15 +189,13 @@ final class CurveLayout {
      * @param isAir whether the block at a position in the world is air, for {@code -a}
      * @param maxBlocks the most blocks to place, or 0 or less for no limit
      * @param maxLength the longest curve, from the {@code max-set-length} of the config
-     * @param stepsPerBlock the steps along the curve per block, from the {@code fineness} of the config
      */
     CurveLayout(
             Selection selection,
             BcArguments arguments,
             Predicate<BlockVector3> isAir,
             int maxBlocks,
-            int maxLength,
-            int stepsPerBlock) {
+            int maxLength) {
         this.selection = selection;
         if (arguments.axis() != null) {
             this.axis = arguments.axis();
@@ -174,13 +203,13 @@ final class CurveLayout {
             this.axis = selection.width() <= selection.length() ? BcOptions.Axis.X : BcOptions.Axis.Z;
         }
         this.columns = axis == BcOptions.Axis.X ? selection.length() : selection.width();
+        this.outermost = (columns - 1) / 2.0;
         this.repeat = axis == BcOptions.Axis.X ? selection.width() : selection.length();
         this.offset = arguments.offset();
         this.airOnly = arguments.air();
         this.isAir = isAir;
         this.maxBlocks = maxBlocks;
         this.maxLength = maxLength;
-        this.stepsPerBlock = stepsPerBlock;
     }
 
     /**
@@ -194,24 +223,23 @@ final class CurveLayout {
     void add(BezierSegment segment) throws TooLongException {
         if (!segment.isWithin(maxLength)) throw new TooLongException();
 
-        double roughLength = segment.length(segment.fineness(ROUGH_STEPS_PER_BLOCK));
-        // Two positions at the same place with no handles between them: nothing to place
-        if (roughLength == 0) return;
-        List<Step> along = steps(segment, (int) Math.ceil(stepsPerBlock * roughLength));
+        List<Vertex> along = vertices(segment);
         double segmentLength = along.getLast().distance();
+        // Two positions at the same place with no handles between them: nothing to place
+        if (segmentLength == 0) return;
         if (addedLength + segmentLength > maxLength) throw new TooLongException();
 
-        List<Step> steps = new ArrayList<>();
+        List<Vertex> vertices = new ArrayList<>();
         boolean steep = isSteep(along);
         boolean splitsWithBefore = false;
         if (lastAcross != null) {
             double turn = turn(lastAcross, along.getFirst().across());
-            steps.addAll(corner(segment.p0(), lastAcross, turn));
+            vertices.addAll(corner(segment.p0(), lastAcross, turn));
             splitsWithBefore = Math.abs(turn) > CORNER && !lastSteep && !steep;
         }
-        steps.addAll(along);
+        vertices.addAll(along);
 
-        segments.add(new LaidSegment(steps, addedLength, splitsWithBefore));
+        segments.add(new LaidSegment(vertices, addedLength, splitsWithBefore));
         addedLength += segmentLength;
         lastAcross = along.getLast().across();
         lastSteep = steep;
@@ -233,7 +261,7 @@ final class CurveLayout {
     }
 
     /**
-     * The length of the curve added so far, measured along its steps.
+     * The length of the curve added so far, measured along the curve itself, not along the straight pieces.
      *
      * @return the length in blocks
      */
@@ -241,34 +269,154 @@ final class CurveLayout {
         return addedLength;
     }
 
-    /** Lays the cross section along every segment, in the order that the class describes. */
+    /** Lays the cross section along the curve, in the order that the class describes. */
     private void layAll() throws MaxChangedBlocksException {
         int[] columnsFromTheMiddle = fromTheMiddle(columns);
         for (int row : fromTheMiddle(selection.height())) {
             for (int column : columnsFromTheMiddle) {
-                for (int index = 0; index < segments.size(); index++) {
-                    layColumn(index, row, column);
-                }
+                layColumn(row, column);
             }
         }
     }
 
     /**
-     * The start and end of {@code count} steps along {@code segment}, at even steps of t. The steps are not all equally
-     * long along the curve: they are longer where it goes faster.
+     * The vertices of straight pieces along {@code segment}, from its start to its end. A part of the segment is split
+     * in half until its control polygon is within {@link #TOLERANCE} of the line between its ends, the outermost
+     * columns turn with it by little enough to stray at most that far, and it bends by at most {@link #MOST_BEND}, or
+     * it has been split {@link #MAX_SPLITS} times.
      */
-    private static List<Step> steps(BezierSegment segment, int count) {
-        List<Step> steps = new ArrayList<>();
-        Vector3 before = segment.p0();
-        double distance = 0;
-        for (int step = 0; step <= count; step++) {
-            double t = (double) step / count;
-            Vector3 point = segment.point(t);
-            distance += before.distance(point);
-            steps.add(new Step(point, across(segment.tangent(t)), distance, 0));
-            before = point;
+    private List<Vertex> vertices(BezierSegment segment) {
+        List<Vertex> vertices = new ArrayList<>();
+        vertices.add(new Vertex(segment.p0(), across(segment.tangent(0)), 0, 0));
+        addVertices(segment, segment, 0, 1, 0, vertices);
+        return vertices;
+    }
+
+    /**
+     * Adds to {@code vertices} those of the part of {@code segment} from t = {@code from} to {@code to}, whose control
+     * points are those of {@code part}, after the vertex at {@code from}, which {@code vertices} ends with.
+     */
+    private void addVertices(BezierSegment segment, BezierSegment part, double from, double to, int splits,
+            List<Vertex> vertices) {
+        if (splits < MAX_SPLITS && !isStraight(part)) {
+            double middle = (from + to) / 2;
+            BezierSegment[] halves = halves(part);
+            addVertices(segment, halves[0], from, middle, splits + 1, vertices);
+            addVertices(segment, halves[1], middle, to, splits + 1, vertices);
+            return;
         }
-        return steps;
+        double distance = vertices.getLast().distance() + length(segment, from, to);
+        vertices.add(new Vertex(segment.point(to), across(segment.tangent(to)), distance, 0));
+    }
+
+    /**
+     * Whether the columns may follow {@code part} of a segment along one straight piece: its control polygon, which
+     * the curve stays within, is within {@link #TOLERANCE} of the line between its ends, and the outermost columns,
+     * which turn with the curve around its middle, stray at most that far from the straight piece between their ends.
+     * Its length is measured closely only when it also bends by at most {@link #MOST_BEND}.
+     */
+    private boolean isStraight(BezierSegment part) {
+        if (distanceToLine(part.p1(), part.p0(), part.p3()) > TOLERANCE) return false;
+        if (distanceToLine(part.p2(), part.p0(), part.p3()) > TOLERANCE) return false;
+        if (largestBend(part) > MOST_BEND) return false;
+        // A column turned by an angle around a point strays from the straight line between its ends by about
+        // outermost * angle^2 / 8
+        double turn = largestTurn(part);
+        return outermost * turn * turn / 8 <= TOLERANCE;
+    }
+
+    /** How far {@code point} is from the straight line from {@code from} to {@code to}, between those ends. */
+    private static double distanceToLine(Vector3 point, Vector3 from, Vector3 to) {
+        Vector3 line = to.subtract(from);
+        Vector3 toPoint = point.subtract(from);
+        double lengthSq = line.lengthSq();
+        double along = lengthSq == 0
+                ? 0
+                : (toPoint.x() * line.x() + toPoint.y() * line.y() + toPoint.z() * line.z()) / lengthSq;
+        along = Math.clamp(along, 0, 1);
+        return point.distance(from.add(line.multiply(along)));
+    }
+
+    /**
+     * The most, in radians on the xz plane, that the curve along {@code part} turns: at most the angle between the
+     * sides of its control polygon, since the way the curve goes is always a sum of those sides, weighted by the
+     * quadratic Bernstein polynomials. Sides straight up or down do not turn it.
+     */
+    private static double largestTurn(BezierSegment part) {
+        Vector3[] sides = {part.p1().subtract(part.p0()), part.p2().subtract(part.p1()), part.p3().subtract(part.p2())};
+        Vector3 first = null;
+        double least = 0;
+        double most = 0;
+        for (Vector3 side : sides) {
+            if (side.x() == 0 && side.z() == 0) continue;
+            if (first == null) {
+                first = side;
+                continue;
+            }
+            double turn = turn(first, side);
+            least = Math.min(least, turn);
+            most = Math.max(most, turn);
+        }
+        return most - least;
+    }
+
+    /**
+     * The most, in radians and in any direction, that the curve along {@code part} bends: at most the largest angle
+     * between two sides of its control polygon, for the reason that {@link #largestTurn} gives. Sides of length 0, at
+     * an end without a handle, do not bend it.
+     */
+    private static double largestBend(BezierSegment part) {
+        Vector3[] sides = {part.p1().subtract(part.p0()), part.p2().subtract(part.p1()), part.p3().subtract(part.p2())};
+        double most = 0;
+        for (int i = 0; i < sides.length; i++) {
+            for (int j = i + 1; j < sides.length; j++) {
+                if (sides[i].lengthSq() == 0 || sides[j].lengthSq() == 0) continue;
+                most = Math.max(most, angle(sides[i], sides[j]));
+            }
+        }
+        return most;
+    }
+
+    /** The angle, from 0 to pi, between {@code a} and {@code b}. */
+    private static double angle(Vector3 a, Vector3 b) {
+        double crossX = a.y() * b.z() - a.z() * b.y();
+        double crossY = a.z() * b.x() - a.x() * b.z();
+        double crossZ = a.x() * b.y() - a.y() * b.x();
+        double dot = a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
+        return Math.atan2(Math.sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ), dot);
+    }
+
+    /** The two halves of {@code part}, cut at t = 0.5, by the construction of de Casteljau. */
+    private static BezierSegment[] halves(BezierSegment part) {
+        Vector3 a = halfway(part.p0(), part.p1());
+        Vector3 b = halfway(part.p1(), part.p2());
+        Vector3 c = halfway(part.p2(), part.p3());
+        Vector3 ab = halfway(a, b);
+        Vector3 bc = halfway(b, c);
+        Vector3 middle = halfway(ab, bc);
+        return new BezierSegment[]{
+                new BezierSegment(part.p0(), a, ab, middle),
+                new BezierSegment(middle, bc, c, part.p3())
+        };
+    }
+
+    private static Vector3 halfway(Vector3 from, Vector3 to) {
+        return from.add(to).multiply(0.5);
+    }
+
+    /**
+     * The length of {@code segment} from t = {@code from} to {@code to}, by the five-point Gauss-Legendre rule on its
+     * speed, the length of its derivative.
+     */
+    private static double length(BezierSegment segment, double from, double to) {
+        double half = (to - from) / 2;
+        double middle = (from + to) / 2;
+        double sum = 0;
+        for (int i = 0; i < GAUSS_POINTS.length; i++) {
+            // The derivative is 3 times the direction
+            sum += GAUSS_WEIGHTS[i] * 3 * segment.direction(middle + half * GAUSS_POINTS[i]).length();
+        }
+        return half * sum;
     }
 
     /**
@@ -279,13 +427,13 @@ final class CurveLayout {
         return Math.atan2(from.x() * to.z() - from.z() * to.x(), from.x() * to.x() + from.z() * to.z());
     }
 
-    /** Whether the curve along {@code steps} climbs or falls more than it goes across the xz plane. */
-    private static boolean isSteep(List<Step> steps) {
+    /** Whether the curve along {@code vertices} climbs or falls more than it goes across the xz plane. */
+    private static boolean isSteep(List<Vertex> vertices) {
         double across = 0;
         double upAndDown = 0;
-        for (int i = 1; i < steps.size(); i++) {
-            Vector3 from = steps.get(i - 1).point();
-            Vector3 to = steps.get(i).point();
+        for (int i = 1; i < vertices.size(); i++) {
+            Vector3 from = vertices.get(i - 1).point();
+            Vector3 to = vertices.get(i).point();
             across += Math.hypot(to.x() - from.x(), to.z() - from.z());
             upAndDown += Math.abs(to.y() - from.y());
         }
@@ -293,23 +441,27 @@ final class CurveLayout {
     }
 
     /**
-     * Steps at {@code point}, where a segment starts, that turn the cross section from {@code from}, the way across the
-     * end of the segment before, by {@code angle}, to the way across the start of this one. They fill the outside of
-     * the corner, with the outermost column moving at most a step of the curve between two; none when the angle is 0.
+     * Vertices at {@code point}, where a segment starts, that turn the cross section from {@code from}, the way across
+     * the end of the segment before, by {@code angle}, towards the way across the start of this one, which the first
+     * vertex of the segment has. The outermost columns go around the outside of the corner along straight pieces that
+     * stray at most {@link #TOLERANCE} from the arc; none when the angle is 0.
      */
-    private List<Step> corner(Vector3 point, Vector3 from, double angle) {
-        double outermost = (columns - 1) / 2.0;
-        int turns = (int) Math.ceil(Math.abs(angle) * outermost * stepsPerBlock);
+    private List<Vertex> corner(Vector3 point, Vector3 from, double angle) {
+        if (angle == 0) return List.of();
+        // The angle of the arc of the outermost columns whose chord strays TOLERANCE from it at its middle; a half turn
+        // when the columns are that near the middle
+        double largestTurn = outermost <= TOLERANCE / 2 ? Math.PI : 2 * Math.acos(1 - TOLERANCE / outermost);
+        int pieces = (int) Math.ceil(Math.abs(angle) / largestTurn);
         // A positive angle, the way from +x to +z, turns the curve to the right: the inside of the corner is there
         int insideSide = angle > 0 ? -1 : 1;
 
-        List<Step> corner = new ArrayList<>();
-        for (int turn = 1; turn < turns; turn++) {
-            double turned = angle * turn / turns;
+        List<Vertex> corner = new ArrayList<>();
+        for (int piece = 0; piece < pieces; piece++) {
+            double turned = angle * piece / pieces;
             double cos = Math.cos(turned);
             double sin = Math.sin(turned);
             Vector3 across = Vector3.at(from.x() * cos - from.z() * sin, 0, from.x() * sin + from.z() * cos);
-            corner.add(new Step(point, across, 0, insideSide));
+            corner.add(new Vertex(point, across, 0, insideSide));
         }
         return corner;
     }
@@ -346,44 +498,152 @@ final class CurveLayout {
      * mirrored: read along x, its +z is on the right of the curve; read along z, its +x is on the left.
      */
     private double side(int column) {
-        double middle = (columns - 1) / 2.0;
-        return axis == BcOptions.Axis.X ? middle - column : column - middle;
+        return axis == BcOptions.Axis.X ? outermost - column : column - outermost;
     }
 
     /**
-     * Lays one column of the cross section along segment {@code index}: the blocks of the selection along the axis, in
-     * row {@code row} from the bottom and column {@code column} from the lowest coordinate across it. Each block the
-     * column enters gets the block of the selection at that distance along the curve, unless {@link #takeXzCell} keeps
-     * it from that xz cell, a block was laid there before, or with {@code -a} it is not air.
+     * Lays one column of the cross section along the whole curve: the blocks of the selection along the axis, in row
+     * {@code row} from the bottom and column {@code column} from the lowest coordinate across it. The column follows
+     * the pieces between the vertices of each segment in order, skipping those inside a corner.
      */
-    private void layColumn(int index, int row, int column) throws MaxChangedBlocksException {
-        LaidSegment segment = segments.get(index);
+    private void layColumn(int row, int column) throws MaxChangedBlocksException {
         double side = side(column);
+        ColumnPass pass = new ColumnPass(row, column);
+        for (int index = 0; index < segments.size(); index++) {
+            LaidSegment segment = segments.get(index);
+            List<Vertex> vertices = segment.vertices();
+            for (int i = 0; i + 1 < vertices.size(); i++) {
+                Vertex from = vertices.get(i);
+                if (from.isInsideCorner(side)) continue;
+                Vertex to = vertices.get(i + 1);
+                pass.follow(
+                        index,
+                        positionOf(from, side, row),
+                        positionOf(to, side, row),
+                        segment.start() + from.distance(),
+                        segment.start() + to.distance()
+                );
+            }
+        }
+        pass.finish();
+    }
 
-        BlockVector3 before = null;
-        for (Step step : segment.steps()) {
-            if (step.isInsideCorner(side)) continue;
-            BlockVector3 target = blockOf(step, side, row);
-            if (target.equals(before)) continue;
-            before = target;
+    /**
+     * Where the column {@code side} blocks to the left of the curve is at {@code vertex} in {@code row}, moved by
+     * {@link #EDGE} so that its block is the one it is in with the higher coordinate on the edge between two.
+     */
+    private static Vector3 positionOf(Vertex vertex, double side, int row) {
+        return vertex.point().add(vertex.across().multiply(side)).add(EDGE, row + EDGE, EDGE);
+    }
 
-            if (!takeXzCell(index, target)) continue;
-            if (sources.containsKey(target) || !mayPlace(target)) continue;
-            sources.put(target, source(segment.start() + step.distance(), row, column));
+    /**
+     * A column followed along the curve, block by block, laying each block it leaves when it went through for at
+     * least {@link #LEAST_PASS}.
+     */
+    private final class ColumnPass {
+        private final int row;
+        private final int column;
+        /** The block the column is in, or null before it starts. */
+        private @Nullable BlockVector3 block;
+        /** The segment, by its index, along which the column entered {@link #block}. */
+        private int entrySegment;
+        /** How far along the curve the column entered {@link #block}. */
+        private double entryDistance;
+        /** How far the column has gone through {@link #block}. */
+        private double passed;
+
+        ColumnPass(int row, int column) {
+            this.row = row;
+            this.column = column;
+        }
+
+        /**
+         * Follows the straight piece from {@code from} to {@code to} along segment {@code index}, which are
+         * {@code fromDistance} and {@code toDistance} along the curve, through each block it crosses, as Amanatides
+         * and Woo traverse a grid. A column that skipped a piece inside a corner jumps to {@code from}.
+         */
+        void follow(int index, Vector3 from, Vector3 to, double fromDistance, double toDistance)
+                throws MaxChangedBlocksException {
+            BlockVector3 start = BlockVector3.floor(from);
+            if (!start.equals(block)) enter(start, index, fromDistance);
+
+            Vector3 way = to.subtract(from);
+            double length = way.length();
+            if (length == 0) return;
+
+            double[] origin = {from.x(), from.y(), from.z()};
+            double[] delta = {way.x(), way.y(), way.z()};
+            int[] cell = {start.x(), start.y(), start.z()};
+            int[] step = new int[3];
+            // For each axis, the fraction of the piece at which it crosses the next edge, and between two edges
+            double[] nextEdge = new double[3];
+            double[] betweenEdges = new double[3];
+            for (int axis = 0; axis < 3; axis++) {
+                if (delta[axis] > 0) {
+                    step[axis] = 1;
+                    nextEdge[axis] = (cell[axis] + 1 - origin[axis]) / delta[axis];
+                    betweenEdges[axis] = 1 / delta[axis];
+                } else if (delta[axis] < 0) {
+                    step[axis] = -1;
+                    nextEdge[axis] = (cell[axis] - origin[axis]) / delta[axis];
+                    betweenEdges[axis] = -1 / delta[axis];
+                } else {
+                    nextEdge[axis] = Double.POSITIVE_INFINITY;
+                    betweenEdges[axis] = Double.POSITIVE_INFINITY;
+                }
+            }
+
+            double fraction = 0;
+            while (true) {
+                int axis = nextEdge[0] <= nextEdge[1]
+                        ? (nextEdge[0] <= nextEdge[2] ? 0 : 2)
+                        : (nextEdge[1] <= nextEdge[2] ? 1 : 2);
+                double crossing = nextEdge[axis];
+                if (crossing >= 1) {
+                    passed += (1 - fraction) * length;
+                    return;
+                }
+                passed += (crossing - fraction) * length;
+                cell[axis] += step[axis];
+                nextEdge[axis] += betweenEdges[axis];
+                fraction = crossing;
+                // Where the curve itself, not moved by EDGE, crosses the edge
+                double edgeOfTheCurve = Math.clamp(crossing + EDGE / delta[axis], 0, 1);
+                enter(
+                        BlockVector3.at(cell[0], cell[1], cell[2]),
+                        index,
+                        fromDistance + (toDistance - fromDistance) * edgeOfTheCurve
+                );
+            }
+        }
+
+        /** Lays the last block the column is in, once it has followed the whole curve. */
+        void finish() throws MaxChangedBlocksException {
+            lay();
+        }
+
+        private void enter(BlockVector3 next, int index, double distance) throws MaxChangedBlocksException {
+            lay();
+            block = next;
+            entrySegment = index;
+            entryDistance = distance;
+            passed = 0;
+        }
+
+        /**
+         * Lays the block the column is in, unless it went through for less than {@link #LEAST_PASS},
+         * {@link #takeXzCell} keeps it from that xz cell, a block was laid there before, or with {@code -a} it is not
+         * air.
+         */
+        private void lay() throws MaxChangedBlocksException {
+            if (block == null || passed < LEAST_PASS) return;
+            if (!takeXzCell(entrySegment, block)) return;
+            if (sources.containsKey(block) || !mayPlace(block)) return;
+            sources.put(block, source(entryDistance, row, column));
             if (0 < maxBlocks && maxBlocks < sources.size()) {
                 throw new MaxChangedBlocksException(maxBlocks);
             }
         }
-    }
-
-    /** The block that the column {@code side} blocks to the left of the curve passes at {@code step} in {@code row}. */
-    private static BlockVector3 blockOf(Step step, double side, int row) {
-        return blockAt(step.point().add(step.across().multiply(side)).add(0, row, 0));
-    }
-
-    /** The block that {@code position} is in, the one with the higher coordinate on the edge between two. */
-    private static BlockVector3 blockAt(Vector3 position) {
-        return BlockVector3.floor(position.add(EDGE, EDGE, EDGE));
     }
 
     /**
@@ -403,8 +663,8 @@ final class CurveLayout {
 
     /** The block of the selection in {@code row} and {@code column} for {@code distance} along the curve. */
     private BlockVector3 source(double distance, int row, int column) {
-        // How far into the repeating selection the block is
-        int along = Math.floorMod((int) Math.floor(distance + offset + 0.5), repeat);
+        // How far into the repeating selection the block is; on the edge between two, the further one
+        int along = Math.floorMod((int) Math.floor(distance + offset + 0.5 + EDGE), repeat);
         return axis == BcOptions.Axis.X
                 ? selection.min().add(along, row, column)
                 : selection.min().add(column, row, along);
