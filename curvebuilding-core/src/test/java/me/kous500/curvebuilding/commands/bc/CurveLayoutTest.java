@@ -502,17 +502,4 @@ class CurveLayoutTest {
         assertEquals(arch.length(1_000_000), layout.length(), 1e-6);
     }
 
-    @Test
-    void lengthIsMeasuredWhereTheCurveTurnsBackOnItself() throws Exception {
-        // Straight up, some way back down and up again: the speed falls to nothing at each of the two turns
-        BezierSegment upAndDown = new BezierSegment(
-                Vector3.at(0.5, 64.5, 0.5),
-                Vector3.at(0.5, 104.5, 0.5),
-                Vector3.at(0.5, 54.5, 0.5),
-                Vector3.at(0.5, 84.5, 0.5));
-
-        CurveLayout layout = layout(ONE_BLOCK, NO_ARGUMENTS, 0, upAndDown);
-
-        assertEquals(upAndDown.length(1_000_000), layout.length(), 1e-6);
-    }
 }

@@ -149,6 +149,56 @@ class BezierSegmentTest {
     }
 
     @Nested
+    class LengthBetween {
+        @Test
+        void straightLineHasItsDistance() {
+            assertEquals(15, straight(Vector3.at(-3, 70, 2), Vector3.at(2, 80, 12)).length(0, 1), 1e-12);
+        }
+
+        @Test
+        void archWhoseSpeedIsAPolynomialIsMeasuredExactly() {
+            // The speed of ARCH is 30 (2t^2 - 2t + 1), whose integral from 0 to 1 is 20
+            assertEquals(20, ARCH.length(0, 1), 1e-12);
+            assertEquals(10, ARCH.length(0, 0.5), 1e-12);
+        }
+
+        @Test
+        void parabolaHasItsArcLength() {
+            // x = 10t, y = 10t^2, whose arc length is 10 * (sqrt(5) / 2 + asinh(2) / 4)
+            BezierSegment parabola = new BezierSegment(
+                    Vector3.at(0, 0, 0),
+                    Vector3.at(10.0 / 3, 0, 0),
+                    Vector3.at(20.0 / 3, 10.0 / 3, 0),
+                    Vector3.at(10, 10, 0)
+            );
+            double expected = 10 * (Math.sqrt(5) / 2 + Math.log(2 + Math.sqrt(5)) / 4);
+
+            assertEquals(expected, parabola.length(0, 1), 1e-4);
+        }
+
+        @Test
+        void isNegativeBackwards() {
+            assertEquals(-ARCH.length(0.25, 0.75), ARCH.length(0.75, 0.25), 1e-12);
+        }
+    }
+
+    @Nested
+    class Halves {
+        @Test
+        void eachHalfFollowsItsPartOfTheSegment() {
+            List<BezierSegment> halves = ARCH.halves();
+
+            assertEquals(2, halves.size());
+            for (double t : new double[]{0, 0.3, 0.5, 0.8, 1}) {
+                Vector3 inFirst = ARCH.point(t / 2);
+                Vector3 inSecond = ARCH.point(0.5 + t / 2);
+                assertVector(inFirst.x(), inFirst.y(), inFirst.z(), halves.getFirst().point(t));
+                assertVector(inSecond.x(), inSecond.y(), inSecond.z(), halves.getLast().point(t));
+            }
+        }
+    }
+
+    @Nested
     class Fineness {
         private static final Vector3 A = Vector3.at(0, 64, 0);
 
