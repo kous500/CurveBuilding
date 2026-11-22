@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
 
@@ -17,6 +19,7 @@ import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
 public final class PosManager {
     // Concurrent, as a client in single player clears it on its own thread while the server in the same game runs
     private static final Map<UUID, PosData> POS_MAP = new ConcurrentHashMap<>();
+    private static final AtomicReference<@Nullable Consumer<UUID>> CHANGE_LISTENER = new AtomicReference<>();
 
     private PosManager() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
@@ -80,6 +83,7 @@ public final class PosManager {
         }
 
         posData.set(n, part, position);
+        changed(player);
     }
 
     /**
@@ -89,7 +93,7 @@ public final class PosManager {
      * @return whether they had a curve
      */
     public static boolean clearPos(Player player) {
-        return POS_MAP.remove(player.getUniqueId()) != null;
+        return changed(player, POS_MAP.remove(player.getUniqueId()) != null);
     }
 
     /**
@@ -102,7 +106,7 @@ public final class PosManager {
      */
     public static boolean clearPos(Player player, int n, Part part) {
         PosData posData = get(player);
-        return posData != null && posData.clear(n, part);
+        return changed(player, posData != null && posData.clear(n, part));
     }
 
     /**
@@ -118,7 +122,7 @@ public final class PosManager {
         if (posData == null || !posData.contains(n)) return false;
 
         posData.insertAt(n);
-        return true;
+        return changed(player, true);
     }
 
     /**
@@ -133,7 +137,7 @@ public final class PosManager {
         if (posData == null || !posData.contains(n)) return false;
 
         posData.removeAt(n);
-        return true;
+        return changed(player, true);
     }
 
     /**
@@ -148,7 +152,7 @@ public final class PosManager {
         if (posData == null) return false;
 
         posData.move(offset);
-        return true;
+        return changed(player, true);
     }
 
     /**
@@ -165,5 +169,51 @@ public final class PosManager {
      */
     public static void clearPosMap() {
         POS_MAP.clear();
+    }
+
+    /**
+     * Gives {@code player} the curve {@code posData}, such as one read from a file, or removes their curve. The change
+     * listener is not told.
+     *
+     * @param player the UUID of the player
+     * @param posData the curve, or null to remove it
+     */
+    public static void setCurve(UUID player, @Nullable PosData posData) {
+        if (posData == null) {
+            POS_MAP.remove(player);
+        } else {
+            POS_MAP.put(player, posData);
+        }
+    }
+
+    /**
+     * Tells {@code listener} the UUID of a player right after {@link #addPos}, {@link #clearPos}, {@link #insertAt},
+     * {@link #remove} or {@link #move} changes their curve, on the thread that changed it. There is one listener at a
+     * time.
+     *
+     * @param listener the listener, which replaces the one set before
+     */
+    public static void setChangeListener(Consumer<UUID> listener) {
+        CHANGE_LISTENER.set(listener);
+    }
+
+    /**
+     * Removes {@code listener}, when it is still the one set.
+     *
+     * @param listener the listener to remove
+     */
+    public static void removeChangeListener(Consumer<UUID> listener) {
+        CHANGE_LISTENER.compareAndSet(listener, null);
+    }
+
+    private static void changed(Player player) {
+        Consumer<UUID> listener = CHANGE_LISTENER.get();
+        if (listener != null) listener.accept(player.getUniqueId());
+    }
+
+    /** Tells the listener about {@code player} when {@code isChanged}, and returns {@code isChanged}. */
+    private static boolean changed(Player player, boolean isChanged) {
+        if (isChanged) changed(player);
+        return isChanged;
     }
 }

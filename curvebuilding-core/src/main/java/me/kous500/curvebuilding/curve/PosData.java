@@ -36,6 +36,26 @@ public class PosData {
     }
 
     /**
+     * A curve with {@code points} in the world {@code worldId}.
+     *
+     * @param worldId the ID of the world, as {@link WorldeditAdapter#getWorldId} gives it
+     * @param points the points by their number, which this copies
+     */
+    public PosData(String worldId, NavigableMap<Integer, CurvePoint> points) {
+        this(points);
+        this.worldId = worldId;
+    }
+
+    /**
+     * The world of the points.
+     *
+     * @return the ID of the world, as {@link WorldeditAdapter#getWorldId} gives it, or null before the first point
+     */
+    public @Nullable String worldId() {
+        return worldId;
+    }
+
+    /**
      * The points by their number.
      *
      * @return the points, in a map that is never changed

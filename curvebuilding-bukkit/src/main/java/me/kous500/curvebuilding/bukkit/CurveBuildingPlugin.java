@@ -13,6 +13,8 @@ import me.kous500.curvebuilding.commands.config.ConfigCommand;
 import me.kous500.curvebuilding.config.ConfigFile;
 import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.log.Console;
+import me.kous500.curvebuilding.storage.PlayerStore;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.Nullable;
 
@@ -25,7 +27,8 @@ import static me.kous500.curvebuilding.log.Log.console;
 import static me.kous500.curvebuilding.log.Log.setConsole;
 
 /**
- * The Bukkit plugin: reads the files, registers the commands and shows the curves with particles.
+ * The Bukkit plugin: reads the files, registers the commands, keeps the curves in the files of the players and shows
+ * them with particles.
  */
 public final class CurveBuildingPlugin extends JavaPlugin {
     /**
@@ -36,6 +39,7 @@ public final class CurveBuildingPlugin extends JavaPlugin {
 
     @SuppressWarnings("NotNullFieldNotInitialized") // onEnable reads it before it registers the commands
     private BukkitConfig config;
+    private @Nullable PlayerStore playerStore;
 
     @Override
     public void onEnable() {
@@ -49,7 +53,8 @@ public final class CurveBuildingPlugin extends JavaPlugin {
             console().warning("Could not load ParticleNativeAPI, so the curves are not shown with particles", e);
         }
 
-        reloadConfigAndResources();
+        getServer().getPluginManager().registerEvents(new PlayerFiles(() -> playerStore), this);
+        reload();
 
         Bc bc = new Bc(() -> config);
         requireNonNull(this.getCommand("/bc")).setExecutor(bc);
@@ -61,29 +66,45 @@ public final class CurveBuildingPlugin extends JavaPlugin {
 
         ConfigFile configFile = CurveBuilding.configFile(DATA_FOLDER, getClassLoader(), BukkitConfig::new);
         // The particles are sent by the server, so their settings can be changed too
-        ConfigCommand configCommand =
-                new ConfigCommand(configFile, List.of("curve", "particles"), this::reloadConfigAndResources);
-        CurveBuildingCommand curveBuildingCommand =
-                new CurveBuildingCommand(this::reloadConfigAndResources, configCommand);
+        ConfigCommand configCommand = new ConfigCommand(configFile, List.of("curve", "particles"), this::reload);
+        CurveBuildingCommand curveBuildingCommand = new CurveBuildingCommand(this::reload, configCommand);
         requireNonNull(this.getCommand("curvebuilding")).setExecutor(curveBuildingCommand);
         requireNonNull(this.getCommand("curvebuilding")).setTabCompleter(curveBuildingCommand);
     }
 
     /**
-     * Reads the config and the message file again, and restarts the particles with the new config. The curves of every
-     * player are removed.
+     * Starts over: stops the particles, waits until the files of the players are written and stops keeping them,
+     * removes the curves of every player, reads the config and the message file again, keeps the curves in a new
+     * {@link PlayerStore} with those of the players who are on read from their files, and starts the particles with
+     * the new config.
      */
-    private void reloadConfigAndResources() {
+    private void reload() {
         SendParticles.stop();
+        closePlayerStore();
         PosManager.clearPosMap();
 
         config = loadResources(DATA_FOLDER, getClassLoader(), BukkitConfig::new);
 
+        PlayerStore store = PlayerStore.start(DATA_FOLDER);
+        playerStore = store;
+        // The players who are on do not join again
+        for (Player player : getServer().getOnlinePlayers()) {
+            store.load(player.getUniqueId());
+        }
+
         SendParticles.start(this, config);
+    }
+
+    private void closePlayerStore() {
+        if (playerStore != null) {
+            playerStore.close();
+            playerStore = null;
+        }
     }
 
     @Override
     public void onDisable() {
         SendParticles.stop();
+        closePlayerStore();
     }
 }

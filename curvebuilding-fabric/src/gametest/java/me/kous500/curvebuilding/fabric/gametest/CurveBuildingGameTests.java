@@ -1,5 +1,6 @@
 package me.kous500.curvebuilding.fabric.gametest;
 
+import com.google.gson.JsonPrimitive;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
@@ -22,6 +23,7 @@ import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.fabric.CurveBuildingFabric;
 import me.kous500.curvebuilding.fabric.compat.FabricCompat;
 import me.kous500.curvebuilding.math.Vector3;
+import me.kous500.curvebuilding.storage.PlayerStore;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -31,6 +33,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
 //? if >=1.21.8 {
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -39,11 +42,15 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.gametest.framework.GameTest;
 *///?}
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import static net.minecraft.commands.arguments.coordinates.Vec3Argument.vec3;
@@ -291,6 +298,97 @@ public class CurveBuildingGameTests {
         curve.undo();
 
         assertBlocks(helper, Blocks.STONE, List.of(new BlockPos(0, 1, 0)));
+        helper.succeed();
+    }
+
+    //$ game_test
+    @GameTest
+    public void curveIsKeptInTheFileOfThePlayer(GameTestHelper helper) {
+        PlayerStore store = CurveBuildingFabric.playerStore();
+        if (store == null) {
+            fail(helper, "the curves of the players are not kept");
+            return;
+        }
+        Curve curve = new Curve(helper);
+        UUID uuid = curve.serverPlayer.getUUID();
+        // A fake player does not join, so its curve is read as when a player joins
+        store.load(uuid);
+        curve.run("//bcpos set 1", new BlockPos(1, 1, 3));
+        curve.run("//bcpos set 2", new BlockPos(6, 1, 3));
+        PosData set = PosManager.get(curve.player);
+        if (set == null) {
+            fail(helper, "no curve was set");
+            return;
+        }
+        NavigableMap<Integer, CurvePoint> points = set.points();
+
+        assertTrue(helper, store.awaitWrites(Duration.ofSeconds(10)), "the file was not written in 10 seconds");
+        Path file = helper.getLevel().getServer().getWorldPath(LevelResource.ROOT)
+                .resolve("curvebuilding/players/" + uuid + ".json");
+        assertTrue(helper, Files.isRegularFile(file), file + " was not written");
+
+        store.unload(uuid);
+        assertTrue(helper, PosManager.get(curve.player) == null, "the curve stayed after the player left");
+        store.load(uuid);
+        PosData read = PosManager.get(curve.player);
+        store.unload(uuid);
+        if (read == null) {
+            fail(helper, "the curve was not read");
+            return;
+        }
+        assertTrue(helper, read.isIn(curve.player.getWorld()), "the curve is not in its world");
+        assertTrue(helper, read.points().equals(points), "read " + read.points() + ", set " + points);
+        helper.succeed();
+    }
+
+    //$ game_test
+    @GameTest
+    public void reloadStartsOverFromTheFilesOfThePlayers(GameTestHelper helper) throws IOException {
+        PlayerStore store = CurveBuildingFabric.playerStore();
+        if (store == null) {
+            fail(helper, "the curves of the players are not kept");
+            return;
+        }
+        Curve curve = new Curve(helper);
+        UUID uuid = curve.serverPlayer.getUUID();
+        store.load(uuid);
+        curve.run("//bcpos set 1", new BlockPos(1, 1, 3));
+        PosData set = PosManager.get(curve.player);
+        String world = set != null ? set.worldId() : null;
+        assertTrue(helper, store.awaitWrites(Duration.ofSeconds(10)), "the file was not written in 10 seconds");
+        if (world == null) {
+            fail(helper, "no curve was set");
+            return;
+        }
+
+        // The file as a server owner would change it by hand
+        MinecraftServer server = helper.getLevel().getServer();
+        Path file = server.getWorldPath(LevelResource.ROOT).resolve("curvebuilding/players/" + uuid + ".json");
+        Files.writeString(file, "{\"version\": 1, \"current\": {\"type\": \"bezier\", \"world\": "
+                + new JsonPrimitive(world) + ", \"points\": {\"2\": {\"point\": [1.5, 2.5, 3.5]}}}}");
+        try {
+            server.getCommands().getDispatcher().execute("curvebuilding reload", server.createCommandSourceStack());
+        } catch (CommandSyntaxException e) {
+            fail(helper, "/curvebuilding reload failed: " + e.getMessage());
+        }
+
+        assertTrue(helper, PosManager.get(curve.player) == null, "the curve stayed after the reload");
+        PlayerStore reloaded = CurveBuildingFabric.playerStore();
+        if (reloaded == null || reloaded == store) {
+            fail(helper, "the reload did not keep the curves in a new store");
+            return;
+        }
+        // A fake player is not among the players who are on, so its file is read here, as when a player joins
+        reloaded.load(uuid);
+        PosData read = PosManager.get(curve.player);
+        reloaded.unload(uuid);
+        if (read == null) {
+            fail(helper, "the curve in the file was not read");
+            return;
+        }
+        NavigableMap<Integer, CurvePoint> expected = new TreeMap<>();
+        expected.put(2, new CurvePoint(Vector3.at(1.5, 2.5, 3.5), null, null));
+        assertTrue(helper, read.points().equals(expected), "read " + read.points() + " in place of " + expected);
         helper.succeed();
     }
 
