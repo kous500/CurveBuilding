@@ -34,11 +34,11 @@ public final class CurveBuildingCommand {
     }
 
     /**
-     * Registers {@code /curvebuilding}. After the files are read again, every player's client is told that the
-     * positions were removed.
+     * Registers {@code /curvebuilding}. After the files are read again, every player's client is sent the positions
+     * read.
      *
      * @param dispatcher the dispatcher to register it with
-     * @param reload reads the files again and removes the positions of every player
+     * @param reload reads the files again, those of the players among them
      * @param config shows and sets the values of config.yml, with {@code reload} after a value is set
      */
     public static void register(
@@ -80,7 +80,7 @@ public final class CurveBuildingCommand {
                         .then(argument("value", word()).suggests(suggestions).executes(runConfig)))));
     }
 
-    /** Tells every player's client which positions they have, which is none after the files are read again. */
+    /** Tells every player's client which positions they have. */
     private static void resendPositions(CommandSourceStack source) {
         for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
             sendPosPacket(player);

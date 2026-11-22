@@ -1,6 +1,7 @@
 package me.kous500.curvebuilding.config;
 
 import me.kous500.curvebuilding.config.YamlConfig.InvalidValue;
+import me.kous500.curvebuilding.storage.SafeFiles;
 import org.jspecify.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -21,14 +22,9 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,8 +39,6 @@ import static me.kous500.curvebuilding.log.Log.console;
  * template. Keys that the template does not have are left out.
  */
 public final class YamlRewriter {
-    private static final DateTimeFormatter BACKUP_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-
     private YamlRewriter() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
@@ -128,7 +122,7 @@ public final class YamlRewriter {
             return false;
         }
         if (text.isBlank()) {
-            return write(file, defaultText);
+            return SafeFiles.write(file, defaultText);
         }
 
         Object values;
@@ -160,14 +154,14 @@ public final class YamlRewriter {
 
         Path backup;
         try {
-            backup = backupPath(file, backupFolder, clock);
+            backup = SafeFiles.backupPath(file, backupFolder, clock);
             Files.createDirectories(backupFolder);
             Files.copy(file, backup);
         } catch (IOException e) {
             console().warning("Could not copy " + file + " into " + backupFolder + ", so it was not rewritten", e);
             return false;
         }
-        if (!write(file, rewritten)) return false;
+        if (!SafeFiles.write(file, rewritten)) return false;
         logs.forEach(Runnable::run);
         console().info(file + " was rewritten. The previous file is saved as " + backup);
         return true;
@@ -287,7 +281,7 @@ public final class YamlRewriter {
         String where = details == null ? "" : ":\n" + details;
         Path backup;
         try {
-            backup = backupPath(file, backupFolder, clock);
+            backup = SafeFiles.backupPath(file, backupFolder, clock);
             Files.createDirectories(backupFolder);
             Files.move(file, backup);
         } catch (IOException e) {
@@ -296,50 +290,7 @@ public final class YamlRewriter {
         }
         console().warning(file + " " + problem + ", so it was moved to " + backup + " and the defaults were written"
                 + where);
-        return write(file, defaultText);
-    }
-
-    /** A file in {@code folder} that does not exist yet, named after {@code file} and the time. */
-    private static Path backupPath(Path file, Path folder, Clock clock) {
-        String name = file.getFileName().toString();
-        int dot = name.lastIndexOf('.');
-        String base = dot > 0 ? name.substring(0, dot) : name;
-        String extension = dot > 0 ? name.substring(dot) : "";
-        String time = LocalDateTime.now(clock).format(BACKUP_TIME);
-
-        Path backup = folder.resolve(base + "-" + time + extension);
-        for (int i = 1; Files.exists(backup); i++) {
-            backup = folder.resolve(base + "-" + time + "-" + i + extension);
-        }
-        return backup;
-    }
-
-    /**
-     * Writes {@code text} to a temporary file first and then moves it to {@code file}, so that a failure does not
-     * leave half a file.
-     *
-     * @return whether the file was written; a failure is logged
-     */
-    private static boolean write(Path file, String text) {
-        try {
-            Path folder = file.toAbsolutePath().getParent();
-            Files.createDirectories(folder);
-            Path temporary = Files.createTempFile(folder, file.getFileName().toString(), ".tmp");
-            try {
-                Files.writeString(temporary, text, StandardCharsets.UTF_8);
-                try {
-                    Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-                } catch (AtomicMoveNotSupportedException e) {
-                    Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
-                }
-            } finally {
-                Files.deleteIfExists(temporary);
-            }
-            return true;
-        } catch (IOException e) {
-            console().warning("Could not write " + file, e);
-            return false;
-        }
+        return SafeFiles.write(file, defaultText);
     }
 
     static @Nullable String readTemplate(ClassLoader jar, String template) {
