@@ -24,6 +24,21 @@ class Vector3Test {
     }
 
     @Test
+    void dotIsZeroAtRightAnglesAndNegativeFacingAway() {
+        assertEquals(32, Vector3.at(1, 2, 3).dot(Vector3.at(4, 5, 6)));
+        assertEquals(0, Vector3.at(1, 0, 0).dot(Vector3.at(0, 0, 5)));
+        assertEquals(-2, Vector3.at(1, 0, 0).dot(Vector3.at(-2, 0, 0)));
+    }
+
+    @Test
+    void crossFollowsTheRightHandRule() {
+        assertVector(0, 0, 1, Vector3.at(1, 0, 0).cross(Vector3.at(0, 1, 0)));
+        assertVector(0, 0, -1, Vector3.at(0, 1, 0).cross(Vector3.at(1, 0, 0)));
+        assertVector(-3, 6, -3, Vector3.at(1, 2, 3).cross(Vector3.at(4, 5, 6)));
+        assertVector(0, 0, 0, Vector3.at(1, 2, 3).cross(Vector3.at(2, 4, 6)));
+    }
+
+    @Test
     void multiply() {
         assertVector(2, -4, 6, Vector3.at(1, -2, 3).multiply(2));
         assertVector(0, 0, 0, Vector3.at(1, -2, 3).multiply(0));

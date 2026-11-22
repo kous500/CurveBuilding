@@ -19,6 +19,16 @@ import static java.util.Objects.requireNonNullElse;
  * @param p3 where the segment ends
  */
 public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
+    /** The points of the five-point Gauss-Legendre rule on -1 to 1, for {@link #length(double, double)}. */
+    private static final double[] GAUSS_POINTS = {
+            0, -0.5384693101056831, 0.5384693101056831, -0.9061798459386640, 0.9061798459386640
+    };
+
+    /** The weights of {@link #GAUSS_POINTS}, in the same order. */
+    private static final double[] GAUSS_WEIGHTS = {
+            0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891
+    };
+
     public BezierSegment {
         Objects.requireNonNull(p0, "p0");
         Objects.requireNonNull(p1, "p1");
@@ -143,9 +153,30 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
     }
 
     /**
-     * A fineness for {@link #length}: {@code stepsPerBlock} steps per block of the control polygon, at least 1. The
-     * polygon, not the distance between the ends, so that a curve whose ends are at the same place still gets steps
-     * along its handles.
+     * The length of the curve from {@code from} to {@code to}, by the five-point Gauss-Legendre rule on its speed, the
+     * length of its derivative. Close where the curve bends little between them. Where it turns back on itself, its
+     * speed falls to nothing with a kink, which the rule measures badly unless {@code from} and {@code to} are close
+     * around it.
+     *
+     * @param from where on the segment to start, from 0 to 1
+     * @param to where on the segment to end, from 0 to 1
+     * @return the length in blocks, negative when {@code to} is before {@code from}
+     */
+    public double length(double from, double to) {
+        double half = (to - from) / 2;
+        double middle = (from + to) / 2;
+        double sum = 0;
+        for (int i = 0; i < GAUSS_POINTS.length; i++) {
+            // The derivative is 3 times the direction
+            sum += GAUSS_WEIGHTS[i] * 3 * direction(middle + half * GAUSS_POINTS[i]).length();
+        }
+        return half * sum;
+    }
+
+    /**
+     * A fineness for {@link #length(double)}: {@code stepsPerBlock} steps per block of the control polygon, at least
+     * 1. The polygon, not the distance between the ends, so that a curve whose ends are at the same place still gets
+     * steps along its handles.
      *
      * @param stepsPerBlock the steps per block
      * @return the fineness
@@ -181,5 +212,26 @@ public record BezierSegment(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) {
             points.add(point((double) step / divisions));
         }
         return points;
+    }
+
+    /**
+     * The two halves of the segment, cut at t = 0.5 by the construction of de Casteljau. Each is a segment of its own:
+     * the first goes from {@code p0} to {@code point(0.5)} as this one does from 0 to 0.5, and the second from there
+     * to {@code p3}.
+     *
+     * @return the first half and the second
+     */
+    public List<BezierSegment> halves() {
+        Vector3 a = halfway(p0, p1);
+        Vector3 b = halfway(p1, p2);
+        Vector3 c = halfway(p2, p3);
+        Vector3 ab = halfway(a, b);
+        Vector3 bc = halfway(b, c);
+        Vector3 middle = halfway(ab, bc);
+        return List.of(new BezierSegment(p0, a, ab, middle), new BezierSegment(middle, bc, c, p3));
+    }
+
+    private static Vector3 halfway(Vector3 from, Vector3 to) {
+        return from.add(to).multiply(0.5);
     }
 }

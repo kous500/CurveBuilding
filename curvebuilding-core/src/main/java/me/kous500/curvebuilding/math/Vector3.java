@@ -203,6 +203,28 @@ public record Vector3(double x, double y, double z) {
     }
 
     /**
+     * The dot product of this vector and {@code other}: the product of their lengths and the cosine of the angle
+     * between them.
+     *
+     * @param other the other vector
+     * @return the dot product
+     */
+    public double dot(Vector3 other) {
+        return x * other.x + y * other.y + z * other.z;
+    }
+
+    /**
+     * The cross product of this vector and {@code other}: at right angles to both, by the right-hand rule, and as long
+     * as the product of their lengths and the sine of the angle between them.
+     *
+     * @param other the other vector
+     * @return a new vector
+     */
+    public Vector3 cross(Vector3 other) {
+        return at(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
+    }
+
+    /**
      * Get the normalized vector, which is the vector divided by its
      * length, as a new vector.
      *
