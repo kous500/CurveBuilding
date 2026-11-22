@@ -88,6 +88,10 @@ loom {
         if (name != "gameTest") {
             runDir = "../../run/${minecraftVersion}"
         }
+        // The same name on each start, so that the player has the same UUID and finds their data in the world again
+        if (name == "client") {
+            programArgs("--username", "Dev")
+        }
     }
 }
 
