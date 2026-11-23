@@ -18,10 +18,10 @@ dependencies {
     implementation 'org.yaml:snakeyaml:2.7'
     // Minecraft has Gson, so the jars do not. Compiled and tested with 2.10, the one of Minecraft 1.20 (the
     // api-version in plugin.yml), in place of the newer one that WorldEdit asks for, so that newer methods are not used.
-    compileOnly 'com.google.code.gson:gson:2.10'
+    compileOnly 'com.google.code.gson:gson:2.15.0'
     compileOnly "org.jspecify:jspecify:1.0.1"
 
-    testImplementation 'com.google.code.gson:gson:2.10'
+    testImplementation 'com.google.code.gson:gson:2.15.0'
     testImplementation("com.sk89q.worldedit:worldedit-core:7.4.2") {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
