@@ -40,3 +40,6 @@ updates:
       - dependency-name: "net.fabricmc.fabric-api:*"
       - dependency-name: "com.sk89q.worldedit:*"
       - dependency-name: "org.spigotmc:spigot-api"
+      # curvebuilding-core compiles against the Gson of Minecraft 1.20 (see its build.gradle). This also stops the
+      # updates of the Gson forced in curvebuilding-bukkit/build.gradle, which is updated by hand.
+      - dependency-name: "com.google.code.gson:gson"

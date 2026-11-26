@@ -8,8 +8,8 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 //? if >=1.21.10 {
-/^import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
-^///?} else {
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+//?} else {
 /^import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 ^///?}
 import net.minecraft.client.Minecraft;
@@ -46,11 +46,11 @@ public final class LegacyPreviewBackend implements PreviewBackend {
         quadsThroughWalls = create("filled_through_walls", VertexFormat.Mode.QUADS, true);
 
         //? if >=1.21.10 {
-        /^WorldRenderEvents.END_MAIN.register(context -> {
+        WorldRenderEvents.END_MAIN.register(context -> {
             pose = context.matrices().last().pose();
             onFrame.run();
         });
-        ^///?} else {
+        //?} else {
         /^WorldRenderEvents.LAST.register(context -> onFrame.run());
         ^///?}
     }
