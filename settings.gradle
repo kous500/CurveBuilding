@@ -13,7 +13,7 @@ pluginManagement {
 }
 
 plugins {
-    id "dev.kikugie.stonecutter" version "0.9.8"
+    id "dev.kikugie.stonecutter" version "0.10"
     // Downloads the JDKs that the build needs and does not find: those that the jars are compiled with, and Java 25 for
     // Gradle itself, which Loom 1.18 requires. gradle/gradle-daemon-jvm.properties is written by
     // `./gradlew updateDaemonJvm --jvm-version=25`.

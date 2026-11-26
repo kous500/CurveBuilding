@@ -11,8 +11,8 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 //? if >=1.21.4 {
-/^import net.minecraft.client.renderer.CoreShaders;
-^///?} else {
+import net.minecraft.client.renderer.CoreShaders;
+//?} else {
 /^import net.minecraft.client.renderer.GameRenderer;
 ^///?}
 import net.minecraft.world.phys.Vec3;
@@ -83,8 +83,8 @@ public final class TesselatorPreviewBackend implements PreviewBackend {
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(isThroughWalls ? GL11.GL_ALWAYS : GL11.GL_LEQUAL);
         //? if >=1.21.4 {
-        /^RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-        ^///?} else {
+        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        //?} else {
         /^RenderSystem.setShader(GameRenderer::getPositionColorShader);
         ^///?}
         BufferUploader.drawWithShader(mesh);
