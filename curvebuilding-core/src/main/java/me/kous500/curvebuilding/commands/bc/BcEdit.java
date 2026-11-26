@@ -11,12 +11,13 @@ import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.config.Config;
 import me.kous500.curvebuilding.curve.BezierSegment;
 import me.kous500.curvebuilding.curve.PosData;
-import me.kous500.curvebuilding.curve.PosManager;
 import me.kous500.curvebuilding.math.BlockVector3;
 import me.kous500.curvebuilding.message.Chat;
 import me.kous500.curvebuilding.message.Message;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static me.kous500.curvebuilding.WorldeditAdapter.adapt;
 
@@ -34,14 +35,21 @@ public final class BcEdit {
     }
 
     /**
-     * Builds the curve through the positions of {@code player} with the blocks of their selection, as one change that
+     * Builds the curve of {@code posData} with the blocks of the selection of {@code player}, as one change that
      * {@code //undo} takes back.
      *
-     * @param player the player who ran the command, whose positions and selection are used
+     * @param player the player who ran the command, whose selection is used
      * @param arguments the arguments of {@code //bc}
      * @param config the config in use, for the limits
+     * @param posData the curve, which must not change while it is built, or null without one
+     * @param started given the edit session before anything is read or placed with it
      */
-    public static void build(Player player, BcArguments arguments, Config config) {
+    public static void build(
+            Player player,
+            BcArguments arguments,
+            Config config,
+            @Nullable PosData posData,
+            Consumer<EditSession> started) {
         LocalSession session = WorldEdit.getInstance().getSessionManager().get(player);
         World world = session.getSelectionWorld();
 
@@ -54,10 +62,10 @@ public final class BcEdit {
 
         EditSession editSession = session.createEditSession(player);
         try (editSession) {
+            started.accept(editSession);
             if (world == null) throw new IncompleteRegionException();
             Region region = session.getSelection(world);
 
-            PosData posData = PosManager.get(player);
             if (posData == null || posData.points().get(1) == null || posData.points().get(1).point() == null) {
                 throw new IncompletePosException();
             }

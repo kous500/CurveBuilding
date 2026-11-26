@@ -1,10 +1,12 @@
 package me.kous500.curvebuilding.curve;
 
+import com.sk89q.worldedit.world.World;
 import me.kous500.curvebuilding.curve.CurvePoint.Part;
 import me.kous500.curvebuilding.math.Vector3;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Proxy;
 import java.util.NavigableMap;
 
 import static me.kous500.curvebuilding.math.VectorAssertions.assertVector;
@@ -166,5 +168,33 @@ class PosDataTest {
         assertEquals(2, before.size());
         assertVector(10, 0, 0, before.get(2).point());
         assertThrows(UnsupportedOperationException.class, () -> before.put(3, CurvePoint.EMPTY));
+    }
+
+    @Test
+    void changesDoNotReachACopy() {
+        World world = world("overworld");
+        data.reset(world);
+        setPoints(2);
+
+        PosData copy = data.copy();
+        data.set(2, Part.POINT, Vector3.at(99, 0, 0));
+        data.reset(world("nether"));
+
+        assertTrue(copy.isIn(world));
+        assertEquals(2, copy.points().size());
+        assertVector(10, 0, 0, copy.points().get(2).point());
+    }
+
+    /** A world with only its ID. */
+    private static World world(String id) {
+        return (World) Proxy.newProxyInstance(
+                World.class.getClassLoader(),
+                new Class<?>[]{World.class},
+                (proxy, method, args) -> switch (method.getName()) {
+                    case "equals" -> proxy == args[0];
+                    case "hashCode" -> System.identityHashCode(proxy);
+                    default -> id;
+                }
+        );
     }
 }

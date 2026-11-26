@@ -56,6 +56,17 @@ public class PosData {
     }
 
     /**
+     * The curve as it is, to use while this one may change.
+     *
+     * @return a copy in the same world, which changes to this one do not reach
+     */
+    public PosData copy() {
+        PosData copy = new PosData(points);
+        copy.worldId = worldId;
+        return copy;
+    }
+
+    /**
      * The points by their number.
      *
      * @return the points, in a map that is never changed

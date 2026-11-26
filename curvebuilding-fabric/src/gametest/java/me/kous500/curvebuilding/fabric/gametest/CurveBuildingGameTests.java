@@ -509,7 +509,13 @@ public class CurveBuildingGameTests {
         /** Builds the curve, as //bc without arguments does. */
         void build(String... arguments) {
             try {
-                BcEdit.build(player, BcArguments.parse(arguments), CurveBuildingFabric.fabricConfig);
+                BcEdit.build(
+                        player,
+                        BcArguments.parse(arguments),
+                        CurveBuildingFabric.fabricConfig,
+                        PosManager.get(player),
+                        ignored -> { }
+                );
             } catch (ArgumentException e) {
                 fail(helper, "invalid arguments: " + String.join(" ", arguments));
             }
